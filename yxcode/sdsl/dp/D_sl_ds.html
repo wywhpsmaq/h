@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David的扫雷游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .password-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .password-container {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+        
+        .password-input {
+            padding: 8px;
+            margin: 10px 0;
+            width: 200px;
+        }
+        
+        .password-button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .password-button:hover {
+            background-color: #45a049;
+        }
+        
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        
+        .game-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .difficulty-btn {
+            padding: 8px 15px;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .difficulty-btn:hover {
+            background-color: #e1e1e1;
+        }
+        
+        .custom-settings {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        .custom-input {
+            width: 60px;
+            padding: 5px;
+            margin: 0 5px;
+        }
+        
+        .game-info {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--cols, 10), 30px);
+            grid-template-rows: repeat(var(--rows, 10), 30px);
+            gap: 2px;
+            margin-bottom: 20px;
+        }
+        
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid #bbb;
+        }
+        
+        .cell.revealed {
+            background-color: #f5f5f5;
+            cursor: default;
+        }
+        
+        .cell.mine {
+            background-color: #ff6b6b;
+        }
+        
+        .cell.flagged {
+            background-color: #ffcccb;
+        }
+        
+        .number-1 { color: green; }
+        .number-2 { color: blue; }
+        .number-3 { color: red; }
+        .number-4 { color: brown; }
+        .number-5 { color: purple; }
+        .number-6 { color: yellow; }
+        .number-7 { color: orange; }
+        .number-8 { color: black; }
+        
+        .game-over {
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+            margin-bottom: 20px;
+        }
+        
+        .game-win {
+            font-size: 24px;
+            font-weight: bold;
+            color: green;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="password-screen">
+        <div class="password-container">
+            <h2>David的扫雷游戏</h2>
+            <p>请输入密码进入游戏</p>
+            <input type="password" class="password-input" placeholder="密码">
+            <button class="password-button">进入游戏</button>
+            <div class="error-message"></div>
+        </div>
+    </div>
+    
+    <h1>David的扫雷游戏</h1>
+    
+    <div class="game-controls">
+        <button class="difficulty-btn" data-difficulty="easy">普通 (10×10, 10雷)</button>
+        <button class="difficulty-btn" data-difficulty="hard">高级 (30×30, 75雷)</button>
+        <button class="difficulty-btn" data-difficulty="custom">自定义</button>
+        
+        <div class="custom-settings">
+            <div>
+                <label>行数: <input type="number" class="custom-input" id="custom-rows" min="1" value="10"></label>
+                <label>列数: <input type="number" class="custom-input" id="custom-cols" min="1" value="10"></label>
+                <label>雷数: <input type="number" class="custom-input" id="custom-mines" min="1" value="10"></label>
+            </div>
+            <button class="difficulty-btn" id="start-custom" style="margin-top: 10px;">开始游戏</button>
+        </div>
+    </div>
+    
+    <div class="game-info">
+        剩余雷数: <span id="mines-left">0</span> | 
+        剩余生命: <span id="lives-left">0</span>
+    </div>
+    
+    <div class="game-status"></div>
+    
+    <div class="game-board"></div>
+    
+    <script>
+        // 密码验证
+        const passwordScreen = document.querySelector('.password-screen');
+        const passwordInput = document.querySelector('.password-input');
+        const passwordButton = document.querySelector('.password-button');
+        const errorMessage = document.querySelector('.error-message');
+        const CORRECT_PASSWORD = '123456';
+        
+        passwordButton.addEventListener('click', () => {
+            if (passwordInput.value === CORRECT_PASSWORD) {
+                passwordScreen.style.display = 'none';
+            } else {
+                errorMessage.textContent = '不是哥们，你配玩扫雷吗？';
+                setTimeout(() => {
+                    window.close();
+                }, 1500);
+            }
+        });
+        
+        // 游戏逻辑
+        let board = [];
+        let rows = 10;
+        let cols = 10;
+        let mineCount = 10;
+        let lives = 2;
+        let revealedCount = 0;
+        let flaggedPositions = new Set();
+        let gameOver = false;
+        let gameWon = false;
+        let firstClick = true;
+        
+        const gameBoard = document.querySelector('.game-board');
+        const minesLeftDisplay = document.getElementById('mines-left');
+        const livesLeftDisplay = document.getElementById('lives-left');
+        const gameStatusDisplay = document.querySelector('.game-status');
+        const customSettings = document.querySelector('.custom-settings');
+        
+        // 初始化游戏
+        function initGame() {
+            board = [];
+            revealedCount = 0;
+            flaggedPositions = new Set();
+            gameOver = false;
+            gameWon = false;
+            firstClick = true;
+            gameStatusDisplay.innerHTML = '';
+            
+            // 设置游戏板样式
+            gameBoard.style.setProperty('--cols', cols);
+            gameBoard.style.setProperty('--rows', rows);
+            gameBoard.innerHTML = '';
+            
+            // 更新显示
+            minesLeftDisplay.textContent = mineCount;
+            livesLeftDisplay.textContent = lives;
+            
+            // 创建空板
+            for (let i = 0; i < rows; i++) {
+                board[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    board[i][j] = {
+                        isMine: false,
+                        revealed: false,
+                        flagged: false,
+                        adjacentMines: 0
+                    };
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        handleRightClick(i, j);
+                    });
+                    
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+        
+        // 放置地雷（避开第一次点击的位置）
+        function placeMines(safeRow, safeCol) {
+            let minesPlaced = 0;
+            
+            // 确保安全区域（点击位置及其周围8格）没有地雷
+            const safeArea = [];
+            for (let di = -1; di <= 1; di++) {
+                for (let dj = -1; dj <= 1; dj++) {
+                    const ni = safeRow + di;
+                    const nj = safeCol + dj;
+                    if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
+                        safeArea.push(`${ni},${nj}`);
+                    }
+                }
+            }
+            
+            while (minesPlaced < mineCount) {
+                const randomRow = Math.floor(Math.random() * rows);
+                const randomCol = Math.floor(Math.random() * cols);
+                const positionKey = `${randomRow},${randomCol}`;
+                
+                // 确保不在安全区域放置地雷
+                if (!board[randomRow][randomCol].isMine && !safeArea.includes(positionKey)) {
+                    board[randomRow][randomCol].isMine = true;
+                    minesPlaced++;
+                }
+            }
+            
+            // 计算相邻地雷数
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (!board[i][j].isMine) {
+                        let count = 0;
+                        
+                        // 检查所有相邻单元格
+                        for (let di = -1; di <= 1; di++) {
+                            for (let dj = -1; dj <= 1; dj++) {
+                                if (di === 0 && dj === 0) continue;
+                                
+                                const ni = i + di;
+                                const nj = j + dj;
+                                
+                                if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && board[ni][nj].isMine) {
+                                    count++;
+                                }
+                            }
+                        }
+                        
+                        board[i][j].adjacentMines = count;
+                    }
+                }
+            }
+        }
+        
+        // 处理单元格点击
+        function handleCellClick(row, col) {
+            if (gameOver || gameWon || board[row][col].revealed || board[row][col].flagged) {
+                return;
+            }
+            
+            const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+            
+            // 如果是第一次点击，先生成地雷（避开点击位置）
+            if (firstClick) {
+                firstClick = false;
+                placeMines(row, col);
+            }
+            
+            if (board[row][col].isMine) {
+                // 踩到地雷
+                board[row][col].revealed = true;
+                cell.classList.add('revealed', 'mine');
+                cell.textContent = '💣';
+                
+                lives--;
+                livesLeftDisplay.textContent = lives;
+                
+                if (lives <= 0) {
+                    gameOver = true;
+                    revealAllMines();
+                    gameStatusDisplay.innerHTML = '<div class="game-over">游戏结束！你输了！</div>';
+                }
+            } else {
+                revealCell(row, col);
+                
+                // 检查是否胜利
+                checkWinCondition();
+            }
+        }
+        
+        // 处理右键点击（插旗）
+        function handleRightClick(row, col) {
+            if (gameOver || gameWon || board[row][col].revealed) {
+                return;
+            }
+            
+            const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+            const positionKey = `${row},${col}`;
+            
+            if (board[row][col].flagged) {
+                // 移除旗子
+                board[row][col].flagged = false;
+                cell.classList.remove('flagged');
+                cell.textContent = '';
+                flaggedPositions.delete(positionKey);
+                minesLeftDisplay.textContent = parseInt(minesLeftDisplay.textContent) + 1;
+            } else {
+                // 放置旗子
+                board[row][col].flagged = true;
+                cell.classList.add('flagged');
+                cell.textContent = '🚩';
+                flaggedPositions.add(positionKey);
+                minesLeftDisplay.textContent = parseInt(minesLeftDisplay.textContent) - 1;
+                
+                // 检查是否胜利
+                checkWinCondition();
+            }
+        }
+        
+        // 揭示单元格
+        function revealCell(row, col) {
+            if (row < 0 || row >= rows || col < 0 || col >= cols || board[row][col].revealed || board[row][col].flagged) {
+                return;
+            }
+            
+            board[row][col].revealed = true;
+            revealedCount++;
+            
+            const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+            cell.classList.add('revealed');
+            
+            if (board[row][col].adjacentMines > 0) {
+                cell.textContent = board[row][col].adjacentMines;
+                cell.classList.add(`number-${board[row][col].adjacentMines}`);
+            } else {
+                // 如果是空白单元格，递归揭示相邻单元格
+                for (let di = -1; di <= 1; di++) {
+                    for (let dj = -1; dj <= 1; dj++) {
+                        if (di === 0 && dj === 0) continue;
+                        revealCell(row + di, col + dj);
+                    }
+                }
+            }
+        }
+        
+        // 揭示所有地雷
+        function revealAllMines() {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (board[i][j].isMine && !board[i][j].flagged) {
+                        const cell = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+                        cell.classList.add('revealed', 'mine');
+                        cell.textContent = '💣';
+                    }
+                }
+            }
+        }
+        
+        // 检查胜利条件
+        function checkWinCondition() {
+            // 条件1: 所有非地雷单元格都被揭示
+            const nonMineCells = rows * cols - mineCount;
+            if (revealedCount === nonMineCells) {
+                gameWon = true;
+                gameStatusDisplay.innerHTML = '<div class="game-win">恭喜！你赢了！</div>';
+                return;
+            }
+            
+            // 条件2: 所有旗子都插在地雷上
+            let allFlagsCorrect = true;
+            for (const pos of flaggedPositions) {
+                const [row, col] = pos.split(',').map(Number);
+                if (!board[row][col].isMine) {
+                    allFlagsCorrect = false;
+                    break;
+                }
+            }
+            
+            if (allFlagsCorrect && flaggedPositions.size === mineCount) {
+                gameWon = true;
+                gameStatusDisplay.innerHTML = '<div class="game-win">恭喜！你赢了！</div>';
+                revealAllMines();
+            }
+        }
+        
+        // 难度选择
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const difficulty = this.dataset.difficulty;
+                
+                if (difficulty === 'easy') {
+                    rows = 10;
+                    cols = 10;
+                    mineCount = 10;
+                    lives = 2;
+                    customSettings.style.display = 'none';
+                    initGame();
+                } else if (difficulty === 'hard') {
+                    rows = 30;
+                    cols = 30;
+                    mineCount = 75;
+                    lives = 4;
+                    customSettings.style.display = 'none';
+                    initGame();
+                } else if (difficulty === 'custom') {
+                    customSettings.style.display = 'block';
+                }
+            });
+        });
+        
+        // 自定义游戏开始
+        document.getElementById('start-custom').addEventListener('click', function() {
+            const customRows = parseInt(document.getElementById('custom-rows').value);
+            const customCols = parseInt(document.getElementById('custom-cols').value);
+            const customMines = parseInt(document.getElementById('custom-mines').value);
+            
+            if (customRows <= 0 || customCols <= 0 || customMines <= 0) {
+                alert('行数、列数和雷数必须大于0');
+                return;
+            }
+            
+            if (customMines >= customRows * customCols) {
+                alert('雷数不能超过总格子数');
+                return;
+            }
+            
+            rows = customRows;
+            cols = customCols;
+            mineCount = customMines;
+            lives = Math.min(10, Math.floor(mineCount / 2)); // 生命数不超过雷数的一半，最多10条命
+            
+            initGame();
+            customSettings.style.display = 'none';
+        });
+        
+        // 初始化为普通难度
+        initGame();
+    </script>
+</body>
+</html>
