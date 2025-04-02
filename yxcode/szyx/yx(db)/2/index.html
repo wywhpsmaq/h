@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2048 Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #faf8ef;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 10px;
+            background-color: #bbada0;
+            border-radius: 5px;
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(238, 228, 218, 0.35);
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #776e65;
+        }
+
+        .number-2 { background-color: #eee4da; }
+        .number-4 { background-color: #ede0c8; }
+        .number-8 { background-color: #f2b179; color: #f9f6f2; }
+        .number-16 { background-color: #f59563; color: #f9f6f2; }
+        .number-32 { background-color: #f67c5f; color: #f9f6f2; }
+        .number-64 { background-color: #f65e3b; color: #f9f6f2; }
+        .number-128 { background-color: #edcf72; color: #f9f6f2; }
+        .number-256 { background-color: #edcc61; color: #f9f6f2; }
+        .number-512 { background-color: #edc850; color: #f9f6f2; }
+        .number-1024 { background-color: #edc53f; color: #f9f6f2; }
+        .number-2048 { background-color: #edc22e; color: #f9f6f2; }
+
+        #score {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>2048</h1>
+    <div id="score">得分: 0</div>
+    <div id="game-board"></div>
+    <div class="game-over" id="game-over">
+        <h2>游戏结束！</h2>
+        <button onclick="startGame()">重新开始</button>
+    </div>
+
+    <script>
+        let board = [];
+        let score = 0;
+        const boardSize = 4;
+
+        function initBoard() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < boardSize; i++) {
+                board[i] = [];
+                for (let j = 0; j < boardSize; j++) {
+                    board[i][j] = 0;
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = `cell-${i}-${j}`;
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function updateDisplay() {
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const cell = document.getElementById(`cell-${i}-${j}`);
+                    const value = board[i][j];
+                    cell.className = 'cell' + (value ? ` number-${value}` : '');
+                    cell.textContent = value || '';
+                }
+            }
+            document.getElementById('score').textContent = `得分: ${score}`;
+        }
+
+        function addNewNumber() {
+            const emptyCells = [];
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === 0) {
+                        emptyCells.push({x: i, y: j});
+                    }
+                }
+            }
+            if (emptyCells.length > 0) {
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                board[randomCell.x][randomCell.y] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function move(direction) {
+            let moved = false;
+            const tempBoard = JSON.parse(JSON.stringify(board));
+
+            if (direction === 'left' || direction === 'right') {
+                for (let i = 0; i < boardSize; i++) {
+                    let row = board[i].filter(cell => cell !== 0);
+                    if (direction === 'right') row.reverse();
+
+                    // 合并相同数字
+                    for (let j = 0; j < row.length - 1; j++) {
+                        if (row[j] === row[j + 1]) {
+                            row[j] *= 2;
+                            score += row[j];
+                            row.splice(j + 1, 1);
+                            moved = true;
+                        }
+                    }
+
+                    // 补零
+                    while (row.length < boardSize) {
+                        direction === 'left' ? row.push(0) : row.unshift(0);
+                    }
+
+                    if (direction === 'right') row.reverse();
+                    board[i] = row;
+                }
+            } else {
+                for (let j = 0; j < boardSize; j++) {
+                    let column = [];
+                    for (let i = 0; i < boardSize; i++) {
+                        column.push(board[i][j]);
+                    }
+                    column = column.filter(cell => cell !== 0);
+                    if (direction === 'down') column.reverse();
+
+                    // 合并相同数字
+                    for (let i = 0; i < column.length - 1; i++) {
+                        if (column[i] === column[i + 1]) {
+                            column[i] *= 2;
+                            score += column[i];
+                            column.splice(i + 1, 1);
+                            moved = true;
+                        }
+                    }
+
+                    // 补零
+                    while (column.length < boardSize) {
+                        direction === 'up' ? column.push(0) : column.unshift(0);
+                    }
+
+                    if (direction === 'down') column.reverse();
+                    for (let i = 0; i < boardSize; i++) {
+                        board[i][j] = column[i];
+                    }
+                }
+            }
+
+            // 检查是否有移动
+            moved = moved || JSON.stringify(tempBoard) !== JSON.stringify(board);
+            if (moved) addNewNumber();
+            return moved;
+        }
+
+        function isGameOver() {
+            // 检查是否有空位
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === 0) return false;
+                }
+            }
+
+            // 检查相邻是否有相同数字
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if ((i < boardSize - 1 && board[i][j] === board[i + 1][j]) ||
+                        (j < boardSize - 1 && board[i][j] === board[i][j + 1])) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function handleKeyPress(event) {
+            const directions = {
+                37: 'left',
+                38: 'up',
+                39: 'right',
+                40: 'down'
+            };
+            
+            if (directions[event.keyCode]) {
+                event.preventDefault();
+                if (move(directions[event.keyCode])) {
+                    updateDisplay();
+                    if (isGameOver()) {
+                        document.getElementById('game-over').style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            board = [];
+            initBoard();
+            addNewNumber();
+            addNewNumber();
+            updateDisplay();
+            document.getElementById('game-over').style.display = 'none';
+        }
+
+        // 初始化游戏
+        startGame();
+        document.addEventListener('keydown', handleKeyPress);
+    </script>
+</body>
+</html>

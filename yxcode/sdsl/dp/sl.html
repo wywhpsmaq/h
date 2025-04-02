@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Mine Sweeper</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        button {
+            background: #4e54c8;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #8f94fb;
+            box-shadow: 0 0 15px #8f94fb;
+        }
+
+        .game-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4e54c8;
+            box-shadow: 0 0 20px rgba(78, 84, 200, 0.5);
+        }
+
+        .grid {
+            display: grid;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background: #2a2a4a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 3px;
+        }
+
+        .cell:hover {
+            background: #3a3a5a;
+        }
+
+        .revealed {
+            background: #1e1e3a;
+        }
+
+        .mine {
+            background: #ff4d4d !important;
+        }
+
+        .flagged::after {
+            content: "🚩";
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .custom-difficulty {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4e54c8;
+            color: white;
+            border-radius: 3px;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .success-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .success-content {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        padding: 40px;
+        border-radius: 15px;
+        border: 2px solid #4e54c8;
+        box-shadow: 0 0 50px rgba(78, 84, 200, 0.8);
+        text-align: center;
+        animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+        from {
+            box-shadow: 0 0 20px rgba(78, 84, 200, 0.5);
+        }
+        to {
+            box-shadow: 0 0 40px rgba(78, 84, 200, 0.9);
+        }
+    }
+
+    .success-content h2 {
+        font-size: 2.5em;
+        color: #8f94fb;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px rgba(143, 148, 251, 0.5);
+    }
+
+    .success-content button {
+        margin: 10px;
+        padding: 12px 25px;
+        font-size: 1.1em;
+    }
+    </style>
+</head>
+<div id="successModal" class="success-modal">
+    <div class="success-content">
+        <h2>🎉 恭喜通关！</h2>
+        <p id="finalStats"></p>
+        <button onclick="newGame()">再来一局</button>
+        <button onclick="closeSuccessModal()">关闭</button>
+    </div>
+</div>
+<body>
+    <div class="controls">
+        <select id="difficulty">
+            <option value="8,8,10">初级</option>
+            <option value="16,16,40">中级</option>
+            <option value="24,24,99">高级</option>
+            <option value="custom">自定义</option>
+        </select>
+        <div class="custom-difficulty" id="customDifficulty" style="display: none;">
+            <input type="number" id="rows" min="5" max="50" placeholder="行">
+            <input type="number" id="cols" min="5" max="50" placeholder="列">
+            <input type="number" id="mines" min="1" max="999" placeholder="雷数">
+        </div>
+        <button onclick="newGame()">新游戏</button>
+        <button onclick="giveHint()">提示</button>
+    </div>
+    <div class="game-container">
+        <div class="grid" id="grid"></div>
+    </div>
+    <div class="status" id="status"></div>
+
+    <script>
+        let hintsLeft = 3;
+        let grid = [];
+        let mines = new Set();
+        let revealed = new Set();
+        let flags = new Set();
+        let gameOver = false;
+        let startTime = null;
+        let timer = null;
+
+        function newGame() {
+            closeSuccessModal();
+            hintsLeft = 3;
+            gameOver = false;
+            revealed.clear();
+            flags.clear();
+            mines.clear();
+            clearInterval(timer);
+            startTime = Date.now();
+            timer = setInterval(updateTimer, 1000);
+            document.getElementById('status').textContent = '';
+
+            const difficulty = document.getElementById('difficulty').value;
+            let rows, cols, mineCount;
+            
+            if (difficulty === 'custom') {
+                rows = parseInt(document.getElementById('rows').value) || 10;
+                cols = parseInt(document.getElementById('cols').value) || 10;
+                mineCount = parseInt(document.getElementById('mines').value) || 10;
+                document.getElementById('customDifficulty').style.display = 'flex';
+            } else {
+                [rows, cols, mineCount] = difficulty.split(',').map(Number);
+                document.getElementById('customDifficulty').style.display = 'none';
+            }
+
+            createGrid(rows, cols);
+            placeMines(rows, cols, mineCount);
+            updateDisplay();
+        }
+        document.getElementById('successModal').addEventListener('click', function(e) {
+        if (e.target === this) closeSuccessModal();
+    });
+        function createGrid(rows, cols) {
+            const gridElement = document.getElementById('grid');
+            gridElement.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+            gridElement.innerHTML = '';
+            
+            grid = Array.from({length: rows}, (_, i) => 
+                Array.from({length: cols}, (_, j) => ({
+                    isMine: false,
+                    neighbors: 0
+                }))
+            );
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', handleClick);
+                    cell.addEventListener('contextmenu', handleRightClick);
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        function placeMines(rows, cols, mineCount) {
+            const totalCells = rows * cols;
+            mineCount = Math.min(mineCount, totalCells - 1);
+            
+            while (mines.size < mineCount) {
+                const row = Math.floor(Math.random() * rows);
+                const col = Math.floor(Math.random() * cols);
+                mines.add(`${row},${col}`);
+                grid[row][col].isMine = true;
+            }
+
+            // 计算周围雷数
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (!grid[i][j].isMine) {
+                        grid[i][j].neighbors = countNeighbors(i, j, rows, cols);
+                    }
+                }
+            }
+        }
+
+        function countNeighbors(row, col, rows, cols) {
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    const newRow = row + i;
+                    const newCol = col + j;
+                    if (newRow >= 0 && newRow < rows && 
+                        newCol >= 0 && newCol < cols &&
+                        grid[newRow][newCol].isMine) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        function handleClick(event) {
+            if (gameOver) return;
+            const row = parseInt(event.target.dataset.row);
+            const col = parseInt(event.target.dataset.col);
+            reveal(row, col);
+        }
+
+        function handleRightClick(event) {
+            event.preventDefault();
+            if (gameOver) return;
+            const row = parseInt(event.target.dataset.row);
+            const col = parseInt(event.target.dataset.col);
+            toggleFlag(row, col);
+        }
+
+        function reveal(row, col) {
+            const key = `${row},${col}`;
+            if (flags.has(key) || revealed.has(key)) return;
+
+            if (grid[row][col].isMine) {
+                gameOver = true;
+                revealAll();
+                document.getElementById('status').textContent = '游戏结束！';
+                return;
+            }
+
+            revealed.add(key);
+            if (grid[row][col].neighbors === 0) {
+                // 自动展开空白区域
+                const rows = grid.length;
+                const cols = grid[0].length;
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        const newRow = row + i;
+                        const newCol = col + j;
+                        if (newRow >= 0 && newRow < rows && 
+                            newCol >= 0 && newCol < cols) {
+                            reveal(newRow, newCol);
+                        }
+                    }
+                }
+            }
+
+            checkWin();
+            updateDisplay();
+        }
+
+        function toggleFlag(row, col) {
+            const key = `${row},${col}`;
+            if (revealed.has(key)) return;
+            
+            if (flags.has(key)) {
+                flags.delete(key);
+            } else {
+                flags.add(key);
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const cells = document.getElementsByClassName('cell');
+            for (let cell of cells) {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                const key = `${row},${col}`;
+                
+                cell.className = 'cell';
+                if (revealed.has(key)) {
+                    cell.classList.add('revealed');
+                    if (grid[row][col].neighbors > 0) {
+                        cell.textContent = grid[row][col].neighbors;
+                    }
+                }
+                if (flags.has(key)) {
+                    cell.classList.add('flagged');
+                }
+                if (gameOver && grid[row][col].isMine) {
+                    cell.classList.add('mine');
+                    cell.textContent = '💣';
+                }
+            }
+        }
+
+        function checkWin() {
+            const rows = grid.length;
+            const cols = grid[0].length;
+            const totalSafe = rows * cols - mines.size;
+        
+            if (revealed.size === totalSafe) {
+                gameOver = true;
+                clearInterval(timer);
+                showSuccessModal();
+            }
+        }
+        function showSuccessModal() {
+        const modal = document.getElementById('successModal');
+        const time = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('finalStats').innerHTML = `
+            用时: ${time}秒<br>
+            提示剩余次数: ${hintsLeft}<br>
+            地图尺寸: ${grid.length}x${grid[0].length}<br>
+            地雷数量: ${mines.size}
+        `;
+        modal.style.display = 'flex';
+    }
+
+    // 添加关闭函数
+    function closeSuccessModal() {
+        document.getElementById('successModal').style.display = 'none';
+    }
+        function revealAll() {
+            const rows = grid.length;
+            const cols = grid[0].length;
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    revealed.add(`${i},${j}`);
+                }
+            }
+            updateDisplay();
+        }
+
+        function updateTimer() {
+            updateStatus();
+        }
+
+        function giveHint() {
+            if (gameOver || hintsLeft <= 0) return;
+            
+            const rows = grid.length;
+            const cols = grid[0].length;
+            
+            // 查找第一个未揭示且不是雷的格子
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const key = `${i},${j}`;
+                    if (!revealed.has(key) && !mines.has(key)) {
+                        reveal(i, j);
+                        hintsLeft--;
+                        updateStatus(); // 更新状态显示
+                        return;
+                    }
+                }
+            }
+        }
+
+        // 新增状态更新函数
+        function updateStatus() {
+            const time = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('status').innerHTML = `
+                时间: ${time}秒<br>
+                剩余提示次数: ${hintsLeft}
+            `;
+        }
+
+        // 初始化难度选择
+        document.getElementById('difficulty').addEventListener('change', function() {
+            document.getElementById('customDifficulty').style.display = 
+                this.value === 'custom' ? 'flex' : 'none';
+        });
+
+        // 开始新游戏
+        newGame();
+    </script>
+</body>
+</html>

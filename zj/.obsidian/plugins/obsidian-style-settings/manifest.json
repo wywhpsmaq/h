@@ -1,0 +1,10 @@
+{
+    "id": "obsidian-style-settings",
+    "name": "Style Settings",
+    "version": "1.0.9",
+    "minAppVersion": "0.11.5",
+    "description": "提供用于调整主题、插件和片段 CSS 变量的控件。",
+    "author": "mgmeyers",
+    "authorUrl": "https://github.com/mgmeyers/obsidian-style-settings",
+    "isDesktopOnly": false
+}

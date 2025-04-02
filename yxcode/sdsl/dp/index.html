@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>汉诺塔游戏</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        #game-container {
+            display: flex;
+            justify-content: space-around;
+            width: 600px;
+            margin: 20px;
+            position: relative;
+        }
+
+        .peg {
+            width: 20px;
+            height: 200px;
+            background: #888;
+            border-radius: 5px;
+            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+        }
+
+        .base {
+            width: 100%;
+            height: 10px;
+            background: #666;
+            position: absolute;
+            bottom: -20px;
+            border-radius: 5px;
+        }
+
+        .disk {
+            height: 20px;
+            margin: 2px 0;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        #controls {
+            margin: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .selected {
+            background: #ffeb3b !important;
+        }
+        #custom-control {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        #custom-level {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .hint-highlight {
+            box-shadow: 0 0 10px red;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>汉诺塔游戏</h1>
+    <div id="game-container">
+        <div class="peg" id="peg1"></div>
+        <div class="peg" id="peg2"></div>
+        <div class="peg" id="peg3"></div>
+    </div>
+    <div id="controls">
+        <!-- 原有按钮 -->
+        <button onclick="startGame(3)">3层</button>
+        <button onclick="startGame(4)">4层</button>
+        <button onclick="startGame(5)">5层</button>
+        <div id="custom-control">
+            <input type="number" id="custom-level" min="1" max="10" placeholder="输入层数">
+            <button onclick="startCustomGame()">自定义</button>
+        </div>
+        <button onclick="resetGame()">重置</button>
+        <!-- 新增提示按钮 -->
+        <button id="hint-btn" onclick="giveHint()">提示</button>
+    </div>
+    <div id="moves">移动次数：0</div>
+
+    <script>
+        let hintCooldown = false;
+        let currentLevel = 3;
+        let selectedDisk = null;
+        let sourcePeg = null;
+        let moveCount = 0;
+        let disks = [];
+
+        function createDisk(size) {
+            const disk = document.createElement('div');
+            disk.className = 'disk';
+            disk.style.width = `${40 + size * 20}px`;
+            disk.style.backgroundColor = `hsl(${size * 30}, 70%, 60%)`;
+            disk.dataset.size = size;
+            return disk;
+        }
+
+        // 新增自定义游戏启动函数
+        function startCustomGame() {
+            const input = document.getElementById('custom-level');
+            const level = parseInt(input.value);
+            
+            if (level > 0 && level <= 10) {  // 限制最大层数为10
+                startGame(level);
+            } else {
+                alert("请输入1-10之间的数字");
+                input.value = '';
+            }
+        }
+
+        // 修改后的游戏启动函数
+        function startGame(level) {
+            currentLevel = level;
+            resetGame();
+            const peg1 = document.getElementById('peg1');
+            const validLevel = Math.min(Math.max(level, 1), 10);
+            for (let i = validLevel; i > 0; i--) {
+                const disk = createDisk(i);
+                peg1.appendChild(disk);
+                disks.push(disk);
+            }
+        }
+        function giveHint() {
+            if (hintCooldown) return;
+            
+            const pegs = document.querySelectorAll('.peg');
+            const nextMove = getNextMove(pegs, currentLevel);
+            
+            if (nextMove) {
+                const fromPeg = pegs[nextMove.from];
+                const toPeg = pegs[nextMove.to];
+                const disks = fromPeg.getElementsByClassName('disk');
+                
+                if (disks.length > 0) {
+                    const disk = disks[disks.length - 1];
+                    // 添加高亮效果
+                    disk.classList.add('hint-highlight');
+                    toPeg.classList.add('hint-highlight');
+                    
+                    setTimeout(() => {
+                        disk.classList.remove('hint-highlight');
+                        toPeg.classList.remove('hint-highlight');
+                    }, 1000);
+                    
+                    // 设置冷却时间
+                    hintCooldown = true;
+                    const hintBtn = document.getElementById('hint-btn');
+                    hintBtn.disabled = true;
+                    hintBtn.textContent = '冷却中（2秒）';
+                    
+                    setTimeout(() => {
+                        hintCooldown = false;
+                        hintBtn.disabled = false;
+                        hintBtn.textContent = '提示';
+                    }, 2000);
+                }
+            }
+        }
+
+        // 核心提示算法
+        function getNextMove(pegs, n) {
+            const towers = Array.from(pegs).map(peg => 
+                Array.from(peg.getElementsByClassName('disk'))
+                    .map(d => parseInt(d.dataset.size))
+                    .reverse()
+            );
+
+            // 查找最小盘子位置
+            let minPeg = -1;
+            for (let i = 0; i < 3; i++) {
+                if (towers[i].includes(1)) {
+                    minPeg = i;
+                    break;
+                }
+            }
+            if (minPeg === -1) return null;
+
+            // 确定移动方向
+            const isOdd = n % 2 !== 0;
+            const dirMap = isOdd ? {0:2, 2:1, 1:0} : {0:1, 1:2, 2:0};
+            let targetPeg = dirMap[minPeg];
+
+            // 检查合法移动
+            if (isValidHintMove(minPeg, targetPeg, towers)) {
+                return { from: minPeg, to: targetPeg };
+            }
+
+            // 备选方案：寻找最优非最小盘移动
+            const moves = [];
+            for (let from = 0; from < 3; from++) {
+                if (towers[from].length === 0) continue;
+                const disk = towers[from][towers[from].length-1];
+                for (let to = 0; to < 3; to++) {
+                    if (from === to) continue;
+                    if (towers[to].length === 0 || disk < towers[to][towers[to].length-1]) {
+                        moves.push({ 
+                            from, 
+                            to, 
+                            size: disk,
+                            priority: (to === 2 ? 2 : 0) + disk 
+                        });
+                    }
+                }
+            }
+
+            if (moves.length === 0) return null;
+            
+            // 优先选择：移动到目标柱的大盘子
+            return moves.sort((a, b) => 
+                b.priority - a.priority || b.size - a.size
+            )[0];
+        }
+
+        function isValidHintMove(from, to, towers) {
+            if (towers[from].length === 0) return false;
+            const disk = towers[from][towers[from].length-1];
+            return towers[to].length === 0 || disk < towers[to][towers[to].length-1];
+        }
+        function resetGame() {
+            document.querySelectorAll('.peg').forEach(peg => {
+                peg.innerHTML = '';
+                const base = document.createElement('div');
+                base.className = 'base';
+                peg.appendChild(base);
+            });
+            moveCount = 0;
+            document.getElementById('moves').textContent = '移动次数：0';
+            selectedDisk = null;
+            sourcePeg = null;
+            disks = [];
+        }
+
+        function isValidMove(targetPeg) {
+            const targetDisks = targetPeg.getElementsByClassName('disk');
+            if (targetDisks.length === 0) return true;
+            const topDiskSize = parseInt(targetDisks[targetDisks.length - 1].dataset.size);
+            return parseInt(selectedDisk.dataset.size) < topDiskSize;
+        }
+
+        function checkWin() {
+            return document.getElementById('peg3').childElementCount - 1 === disks.length;
+        }
+
+        document.querySelectorAll('.peg').forEach(peg => {
+            peg.addEventListener('click', function() {
+                if (!selectedDisk) {
+                    // 选择圆盘
+                    const disks = this.getElementsByClassName('disk');
+                    if (disks.length > 0) {
+                        selectedDisk = disks[disks.length - 1];
+                        sourcePeg = this;
+                        selectedDisk.classList.add('selected');
+                    }
+                } else {
+                    // 移动圆盘
+                    if (this !== sourcePeg && isValidMove(this)) {
+                        this.appendChild(selectedDisk);
+                        moveCount++;
+                        document.getElementById('moves').textContent = `移动次数：${moveCount}`;
+                        if (checkWin()) {
+                            setTimeout(() => alert(`恭喜你！通关用了 ${moveCount} 步！`), 100);
+                        }
+                    }
+                    selectedDisk.classList.remove('selected');
+                    selectedDisk = null;
+                    sourcePeg = null;
+                }
+            });
+        });
+
+        // 初始化3层游戏
+        startGame(3);
+    </script>
+</body>
+</html>
