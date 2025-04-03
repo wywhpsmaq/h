@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>David的扫雷游戏</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #game-container {
+            display: none;  /* 初始隐藏游戏容器 */
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #password-screen {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+        select, button, input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #info {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-around;
+        }
+        #minefield {
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .cell {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ddd;
+            text-align: center;
+            background-color: #e8eaed;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+        .cell:hover {
+            background-color: #d4d6d9;
+        }
+        .revealed {
+            background-color: white;
+        }
+        .mine {
+            background-color: red;
+        }
+        .flag {
+            background-color: yellow;
+        }
+        .number-1 { color: green; }
+        .number-2 { color: blue; }
+        .number-3 { color: red; }
+        .number-4 { color: #8B4513; }
+        .number-5 { color: purple; }
+        .number-6 { color: #FFD700; }
+        .number-7 { color: #FFA500; }
+        .number-8 { color: black; }
+        @keyframes celebration {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        #victory-animation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        
+        .celebrating {
+            display: block !important;
+            animation: celebration 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="password-screen">
+        <h2>请输入密码：</h2>
+        <input type="password" id="password-input">
+        <button onclick="checkPassword()">确认</button>
+    </div>
+
+    <div id="game-container">
+        <h1>David的扫雷游戏</h1>
+        <div id="controls">
+            <select id="difficulty">
+                <option value="normal">普通 (10x10, 10雷)</option>
+                <option value="expert">高级 (30x30, 75雷)</option>
+                <option value="custom">自定义</option>
+            </select>
+            <div id="custom-settings" style="display: none;">
+                行数: <input type="number" id="custom-rows" min="1">
+                列数: <input type="number" id="custom-cols" min="1">
+                雷数: <input type="number" id="custom-mines" min="1">
+            </div>
+            <button onclick="startGame()">开始游戏</button>
+        </div>
+        <div id="info">
+            <span>剩余生命: <span id="lives">2</span></span>
+            <span>剩余雷数: <span id="remaining-mines">10</span></span>
+        </div>
+        <table id="minefield"></table>
+    </div>
+
+    <div id="victory-animation">🏆 胜利！🎉</div>
+
+    <script>
+        let gameState = {
+            board: [],
+            mines: new Set(),
+            revealed: new Set(),
+            flags: new Set(),
+            lives: 2,
+            totalMines: 10,
+            rows: 10,
+            cols: 10,
+            isAuthenticated: false,  // 添加验证状态标记
+            isFirstClick: true  // 添加首次点击标记
+        };
+
+        function checkPassword() {
+            const password = document.getElementById('password-input').value;
+            if (password === '123456') {
+                document.getElementById('password-screen').style.display = 'none';
+                document.getElementById('game-container').style.display = 'block';
+                gameState.isAuthenticated = true;
+            } else {
+                alert('不是哥们，你配玩扫雷吗？');
+                window.close();  // 直接关闭窗口
+            }
+        }
+
+        // 防止通过开发者工具直接显示游戏界面
+        window.onload = function() {
+            if (!gameState.isAuthenticated) {
+                document.getElementById('game-container').style.display = 'none';
+                document.getElementById('password-screen').style.display = 'block';
+            }
+        }
+
+        document.getElementById('difficulty').addEventListener('change', function(e) {
+            document.getElementById('custom-settings').style.display = 
+                e.target.value === 'custom' ? 'block' : 'none';
+        });
+
+        function startGame() {
+            if (!gameState.isAuthenticated) {  // 添加验证检查
+                alert('请先输入正确的密码！');
+                return;
+            }
+            const difficulty = document.getElementById('difficulty').value;
+            switch(difficulty) {
+                case 'normal':
+                    gameState.rows = 10;
+                    gameState.cols = 10;
+                    gameState.totalMines = 10;
+                    gameState.lives = 2;
+                    break;
+                case 'expert':
+                    gameState.rows = 30;
+                    gameState.cols = 30;
+                    gameState.totalMines = 75;
+                    gameState.lives = 4;
+                    break;
+                case 'custom':
+                    gameState.rows = parseInt(document.getElementById('custom-rows').value);
+                    gameState.cols = parseInt(document.getElementById('custom-cols').value);
+                    gameState.totalMines = parseInt(document.getElementById('custom-mines').value);
+                    if (gameState.totalMines >= gameState.rows * gameState.cols) {
+                        alert('雷数不能超过格子数！');
+                        return;
+                    }
+                    gameState.lives = Math.min(gameState.totalMines, 
+                        parseInt(prompt('请输入生命数（不能超过雷数）：')));
+                    break;
+            }
+            initializeGame();
+        }
+
+        function initializeGame() {
+            gameState.board = [];
+            gameState.mines.clear();
+            gameState.revealed.clear();
+            gameState.flags.clear();
+            gameState.isFirstClick = true;
+            document.getElementById('lives').textContent = gameState.lives;
+            document.getElementById('remaining-mines').textContent = gameState.totalMines;
+
+            // 初始化空棋盘
+            for(let i = 0; i < gameState.rows; i++) {
+                gameState.board[i] = new Array(gameState.cols).fill(0);
+            }
+
+            renderBoard();
+        }
+
+        function placeMines(excludeRow, excludeCol) {
+            gameState.board = [];
+            gameState.mines.clear();
+            
+            // 初始化棋盘
+            for(let i = 0; i < gameState.rows; i++) {
+                gameState.board[i] = new Array(gameState.cols).fill(0);
+            }
+
+            // 随机放置地雷，避开首次点击位置及其周围
+            while(gameState.mines.size < gameState.totalMines) {
+                const row = Math.floor(Math.random() * gameState.rows);
+                const col = Math.floor(Math.random() * gameState.cols);
+                const key = `${row},${col}`;
+                
+                // 检查是否在首次点击的安全区域内
+                if (Math.abs(row - excludeRow) <= 1 && Math.abs(col - excludeCol) <= 1) {
+                    continue;
+                }
+
+                if (!gameState.mines.has(key)) {
+                    gameState.mines.add(key);
+                    // 更新周围数字
+                    for(let i = -1; i <= 1; i++) {
+                        for(let j = -1; j <= 1; j++) {
+                            if(row + i >= 0 && row + i < gameState.rows && 
+                               col + j >= 0 && col + j < gameState.cols) {
+                                if(!gameState.mines.has(`${row+i},${col+j}`)) {
+                                    gameState.board[row+i][col+j]++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function renderBoard() {
+            const table = document.getElementById('minefield');
+            table.innerHTML = '';
+            for(let i = 0; i < gameState.rows; i++) {
+                const row = table.insertRow();
+                for(let j = 0; j < gameState.cols; j++) {
+                    const cell = row.insertCell();
+                    cell.className = 'cell';
+                    const key = `${i},${j}`;
+                    if(gameState.revealed.has(key)) {
+                        cell.classList.add('revealed');
+                        if(gameState.mines.has(key)) {
+                            cell.classList.add('mine');
+                            cell.textContent = '💣';
+                        } else if(gameState.board[i][j] > 0) {
+                            cell.textContent = gameState.board[i][j];
+                            cell.classList.add(`number-${gameState.board[i][j]}`);
+                        }
+                    } else if(gameState.flags.has(key)) {
+                        cell.classList.add('flag');
+                        cell.textContent = '🚩';
+                    }
+                    
+                    cell.addEventListener('click', () => revealCell(i, j));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleFlag(i, j);
+                    });
+                }
+            }
+        }
+
+        function revealCell(row, col) {
+            const key = `${row},${col}`;
+            if(gameState.flags.has(key)) return;
+            if(gameState.revealed.has(key)) return;
+
+            // 处理首次点击
+            if(gameState.isFirstClick) {
+                placeMines(row, col);
+                gameState.isFirstClick = false;
+            }
+
+            gameState.revealed.add(key);
+            if(gameState.mines.has(key)) {
+                gameState.lives--;
+                document.getElementById('lives').textContent = gameState.lives;
+                if(gameState.lives <= 0) {
+                    alert('游戏结束！');
+                    revealAllMines();
+                    return;  // 只有生命值为0时才终止游戏
+                }
+            } else if(gameState.board[row][col] === 0) {
+                // 如果是空白格，递归展开周围的格子
+                for(let i = -1; i <= 1; i++) {
+                    for(let j = -1; j <= 1; j++) {
+                        if(row + i >= 0 && row + i < gameState.rows && 
+                           col + j >= 0 && col + j < gameState.cols) {
+                            revealCell(row + i, col + j);
+                        }
+                    }
+                }
+            }
+            renderBoard();
+            checkWin();
+        }
+
+        function toggleFlag(row, col) {
+            const key = `${row},${col}`;
+            if(gameState.revealed.has(key)) return;
+
+            if(gameState.flags.has(key)) {
+                gameState.flags.delete(key);
+            } else {
+                gameState.flags.add(key);
+            }
+            document.getElementById('remaining-mines').textContent = 
+                gameState.totalMines - gameState.flags.size;
+            renderBoard();
+            checkWin();
+        }
+
+        function showVictoryAnimation() {
+            const animation = document.getElementById('victory-animation');
+            animation.classList.add('celebrating');
+            setTimeout(() => {
+                animation.classList.remove('celebrating');
+            }, 3000); // 3秒后停止动画
+        }
+
+        function checkWin() {
+            // 检查方式1：所有雷都被正确标记
+            let correctFlags = 0;
+            for(let flag of gameState.flags) {
+                if(gameState.mines.has(flag)) correctFlags++;
+            }
+            if(correctFlags === gameState.totalMines && 
+               gameState.flags.size === gameState.totalMines) {
+                showVictoryAnimation();
+                alert('恭喜你赢了！');
+                revealAllMines();
+                return;
+            }
+
+            // 检查方式2：所有非雷格都被揭开
+            const totalCells = gameState.rows * gameState.cols;
+            const revealedNonMines = Array.from(gameState.revealed)
+                .filter(key => !gameState.mines.has(key)).length;
+            const nonMineCount = totalCells - gameState.totalMines;
+            
+            if(revealedNonMines === nonMineCount) {
+                showVictoryAnimation();
+                alert('恭喜你赢了！');
+                revealAllMines();
+            }
+        }
+
+        function revealAllMines() {
+            for(let mine of gameState.mines) {
+                gameState.revealed.add(mine);
+            }
+            renderBoard();
+        }
+    </script>
+</body>
+</html>
