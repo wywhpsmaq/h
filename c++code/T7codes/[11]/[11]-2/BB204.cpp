@@ -25,6 +25,7 @@ void dfs(int x, int n) {
             dfs(x + 1, n);
         }
     }
+    return;
 }
 int main() {
     int n;
@@ -35,7 +36,7 @@ int main() {
     for (int i = 0; i < min(3, (int)p.size()); i++) {
         for (int j = 0; j < n; j++) {
             cout << p[i][j] + 1;
-            if (j < n-1) cout << " ";
+            if (j < n - 1) cout << " ";
         }
         cout << endl;
     }

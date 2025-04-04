@@ -59,6 +59,14 @@
             display: flex;
             justify-content: space-around;
         }
+        
+        #timer {
+            font-family: monospace;
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
         #minefield {
             border-collapse: collapse;
             margin-top: 15px;
@@ -129,7 +137,7 @@
         <div id="controls">
             <select id="difficulty">
                 <option value="normal">普通 (10x10, 10雷)</option>
-                <option value="expert">高级 (30x30, 75雷)</option>
+                <option value="expert">高级 (30x30, 90雷)</option>
                 <option value="custom">自定义</option>
             </select>
             <div id="custom-settings" style="display: none;">
@@ -142,6 +150,7 @@
         <div id="info">
             <span>剩余生命: <span id="lives">2</span></span>
             <span>剩余雷数: <span id="remaining-mines">10</span></span>
+            <span>用时: <span id="timer">00:00</span></span>
         </div>
         <table id="minefield"></table>
     </div>
@@ -159,7 +168,9 @@
             rows: 10,
             cols: 10,
             isAuthenticated: false,  // 添加验证状态标记
-            isFirstClick: true  // 添加首次点击标记
+            isFirstClick: true,  // 添加首次点击标记
+            timer: null,
+            startTime: null
         };
 
         function checkPassword() {
@@ -203,7 +214,7 @@
                 case 'expert':
                     gameState.rows = 30;
                     gameState.cols = 30;
-                    gameState.totalMines = 75;
+                    gameState.totalMines = 90;
                     gameState.lives = 4;
                     break;
                 case 'custom':
@@ -230,12 +241,35 @@
             document.getElementById('lives').textContent = gameState.lives;
             document.getElementById('remaining-mines').textContent = gameState.totalMines;
 
+            // 重置计时器
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+            gameState.startTime = null;
+            document.getElementById('timer').textContent = '00:00';
+
             // 初始化空棋盘
             for(let i = 0; i < gameState.rows; i++) {
                 gameState.board[i] = new Array(gameState.cols).fill(0);
             }
 
             renderBoard();
+        }
+
+        function startTimer() {
+            if (!gameState.startTime) {
+                gameState.startTime = Date.now();
+                gameState.timer = setInterval(updateTimer, 1000);
+            }
+        }
+
+        function updateTimer() {
+            const elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         function placeMines(excludeRow, excludeCol) {
@@ -316,6 +350,7 @@
             if(gameState.isFirstClick) {
                 placeMines(row, col);
                 gameState.isFirstClick = false;
+                startTimer(); // 开始计时
             }
 
             gameState.revealed.add(key);
@@ -373,6 +408,10 @@
             }
             if(correctFlags === gameState.totalMines && 
                gameState.flags.size === gameState.totalMines) {
+                if (gameState.timer) {
+                    clearInterval(gameState.timer);
+                    gameState.timer = null;
+                }
                 showVictoryAnimation();
                 alert('恭喜你赢了！');
                 revealAllMines();
@@ -386,6 +425,10 @@
             const nonMineCount = totalCells - gameState.totalMines;
             
             if(revealedNonMines === nonMineCount) {
+                if (gameState.timer) {
+                    clearInterval(gameState.timer);
+                    gameState.timer = null;
+                }
                 showVictoryAnimation();
                 alert('恭喜你赢了！');
                 revealAllMines();
