@@ -5,93 +5,150 @@
     <title>David的扫雷游戏</title>
     <style>
         body {
-            background-color: #f0f2f5;
+            background-color: #e9ecef;
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            font-weight: 500;
         }
         #game-container {
-            display: none;  /* 初始隐藏游戏容器 */
+            display: none;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 95vw;
+            transition: all 0.3s ease;
         }
         #password-screen {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         h1 {
             color: #2c3e50;
             margin-bottom: 25px;
             text-align: center;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-weight: 700;
+        }
+        h5 {
+            color: #6c757d;
+            text-align: center;
+            margin-top: -20px;
+            margin-bottom: 30px;
+            font-weight: 600;
         }
         #controls {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
         }
         select, button, input {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
             margin: 5px;
             font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        select {
+            background-color: white;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        select:hover {
+            border-color: #3498db;
         }
         button {
             background-color: #3498db;
             color: white;
             border: none;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-weight: bold;
+            min-width: 100px;
         }
         button:hover {
             background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         #info {
-            margin: 15px 0;
-            padding: 10px;
+            margin: 20px 0;
+            padding: 15px;
             background-color: #f8f9fa;
-            border-radius: 5px;
+            border-radius: 10px;
             display: flex;
             justify-content: space-around;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 600;
         }
-        
         #timer {
-            font-family: monospace;
-            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
             color: #2c3e50;
             font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-
         #minefield {
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
         .cell {
-            width: 35px;
-            height: 35px;
-            border: 1px solid #ddd;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #dee2e6;
             text-align: center;
-            background-color: #e8eaed;
+            background-color: #f8f9fa;
             cursor: pointer;
-            transition: background-color 0.2s;
-            font-weight: bold;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            font-weight: 600;
         }
         .cell:hover {
-            background-color: #d4d6d9;
+            background-color: #e9ecef;
+            transform: scale(1.05);
+            z-index: 1;
         }
         .revealed {
             background-color: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
         .mine {
-            background-color: red;
+            background-color: #dc3545;
+            animation: explode 0.5s ease;
+        }
+        @keyframes explode {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
         .flag {
-            background-color: yellow;
+            background-color: #ffd700;
+            animation: flag 0.3s ease;
+        }
+        @keyframes flag {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         .number-1 { color: green; }
         .number-2 { color: blue; }
@@ -123,6 +180,44 @@
             display: block !important;
             animation: celebration 1s ease-in-out infinite;
         }
+
+        /* 添加规则模态框样式 */
+        #rules-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            animation: modalSlide 0.3s ease;
+            font-weight: 500;
+        }
+        @keyframes modalSlide {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-button {
+            float: right;
+            cursor: pointer;
+            font-size: 28px;
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+        .close-button:hover {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -134,6 +229,7 @@
 
     <div id="game-container">
         <h1>David的扫雷游戏</h1>
+        <h5>Copilot×Wywhpsmaq</h5>
         <div id="controls">
             <select id="difficulty">
                 <option value="normal">普通 (10x10, 10雷)</option>
@@ -146,6 +242,7 @@
                 雷数: <input type="number" id="custom-mines" min="1">
             </div>
             <button onclick="startGame()">开始游戏</button>
+            <button onclick="showRules()">游戏规则</button>
         </div>
         <div id="info">
             <span>剩余生命: <span id="lives">2</span></span>
@@ -157,6 +254,28 @@
 
     <div id="victory-animation">🏆 胜利！🎉</div>
 
+    <!-- 添加规则模态框 -->
+    <div id="rules-modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="hideRules()">&times;</span>
+            <h2>游戏规则说明</h2>
+            <p>本游戏由  Copilot & Wywhpsmaq  提供支持，因此可能会存在错误。请在游玩前仔细查看源代码内容。</p>
+            <ul>
+                <li>左键点击：揭开方块</li>
+                <li>右键点击：标记地雷</li>
+                <li>数字表示周围8个格子中的地雷数量</li>
+                <li>普通模式：有2条生命，踩到地雷不会立即结束</li>
+                <li>高级模式：有4条生命，但地雷数量更多</li>
+                <li>自定义模式：可以自己设置地图大小和地雷数量</li>
+                <li>胜利条件：</li>
+                <ul>
+                    <li>正确标记所有地雷</li>
+                    <li>或者揭开所有非地雷方块</li>
+                </ul>
+            </ul>
+        </div>
+    </div>
+
     <script>
         let gameState = {
             board: [],
@@ -167,15 +286,15 @@
             totalMines: 10,
             rows: 10,
             cols: 10,
-            isAuthenticated: false,  // 添加验证状态标记
-            isFirstClick: true,  // 添加首次点击标记
+            isAuthenticated: false,
+            isFirstClick: true,
             timer: null,
             startTime: null
         };
 
         function checkPassword() {
             const password = document.getElementById('password-input').value;
-            if (password === '123456') {
+            if (password === 'david') {
                 document.getElementById('password-screen').style.display = 'none';
                 document.getElementById('game-container').style.display = 'block';
                 gameState.isAuthenticated = true;
@@ -200,7 +319,7 @@
 
         function startGame() {
             if (!gameState.isAuthenticated) {  // 添加验证检查
-                alert('请先输入正确的密码！');
+                alert('请输入正确的密码！');
                 return;
             }
             const difficulty = document.getElementById('difficulty').value;
@@ -233,6 +352,7 @@
         }
 
         function initializeGame() {
+            alert('本游戏由  Copilot & Wywhpsmaq  提供支持，因此可能会存在错误。请在游玩前仔细查看源代码内容。');
             gameState.board = [];
             gameState.mines.clear();
             gameState.revealed.clear();
@@ -281,28 +401,35 @@
                 gameState.board[i] = new Array(gameState.cols).fill(0);
             }
 
-            // 随机放置地雷，避开首次点击位置及其周围
-            while(gameState.mines.size < gameState.totalMines) {
-                const row = Math.floor(Math.random() * gameState.rows);
-                const col = Math.floor(Math.random() * gameState.cols);
-                const key = `${row},${col}`;
-                
-                // 检查是否在首次点击的安全区域内
-                if (Math.abs(row - excludeRow) <= 1 && Math.abs(col - excludeCol) <= 1) {
-                    continue;
+            // 创建所有可能的位置
+            const positions = [];
+            for(let i = 0; i < gameState.rows; i++) {
+                for(let j = 0; j < gameState.cols; j++) {
+                    if(Math.abs(i - excludeRow) > 1 || Math.abs(j - excludeCol) > 1) {
+                        positions.push([i, j]);
+                    }
                 }
+            }
 
-                if (!gameState.mines.has(key)) {
-                    gameState.mines.add(key);
-                    // 更新周围数字
-                    for(let i = -1; i <= 1; i++) {
-                        for(let j = -1; j <= 1; j++) {
-                            if(row + i >= 0 && row + i < gameState.rows && 
-                               col + j >= 0 && col + j < gameState.cols) {
-                                if(!gameState.mines.has(`${row+i},${col+j}`)) {
-                                    gameState.board[row+i][col+j]++;
-                                }
-                            }
+            // Fisher-Yates洗牌算法
+            for(let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+
+            // 放置地雷
+            for(let i = 0; i < gameState.totalMines; i++) {
+                const [row, col] = positions[i];
+                const key = `${row},${col}`;
+                gameState.mines.add(key);
+                // 更新周围数字
+                for(let dx = -1; dx <= 1; dx++) {
+                    for(let dy = -1; dy <= 1; dy++) {
+                        const newRow = row + dx;
+                        const newCol = col + dy;
+                        if(newRow >= 0 && newRow < gameState.rows && 
+                           newCol >= 0 && newCol < gameState.cols) {
+                            gameState.board[newRow][newCol]++;
                         }
                     }
                 }
@@ -343,36 +470,49 @@
 
         function revealCell(row, col) {
             const key = `${row},${col}`;
-            if(gameState.flags.has(key)) return;
-            if(gameState.revealed.has(key)) return;
+            if(gameState.flags.has(key) || gameState.revealed.has(key)) return;
 
-            // 处理首次点击
             if(gameState.isFirstClick) {
                 placeMines(row, col);
                 gameState.isFirstClick = false;
-                startTimer(); // 开始计时
+                startTimer();
             }
 
-            gameState.revealed.add(key);
-            if(gameState.mines.has(key)) {
-                gameState.lives--;
-                document.getElementById('lives').textContent = gameState.lives;
-                if(gameState.lives <= 0) {
-                    alert('游戏结束！');
-                    revealAllMines();
-                    return;  // 只有生命值为0时才终止游戏
+            // 使用队列进行迭代展开
+            const queue = [[row, col]];
+            while(queue.length > 0) {
+                const [currentRow, currentCol] = queue.shift();
+                const currentKey = `${currentRow},${currentCol}`;
+                
+                if(gameState.revealed.has(currentKey)) continue;
+                gameState.revealed.add(currentKey);
+
+                if(gameState.mines.has(currentKey)) {
+                    gameState.lives--;
+                    document.getElementById('lives').textContent = gameState.lives;
+                    if(gameState.lives <= 0) {
+                        alert('游戏结束！');
+                        revealAllMines();
+                        return;
+                    }
+                    continue;
                 }
-            } else if(gameState.board[row][col] === 0) {
-                // 如果是空白格，递归展开周围的格子
-                for(let i = -1; i <= 1; i++) {
-                    for(let j = -1; j <= 1; j++) {
-                        if(row + i >= 0 && row + i < gameState.rows && 
-                           col + j >= 0 && col + j < gameState.cols) {
-                            revealCell(row + i, col + j);
+
+                if(gameState.board[currentRow][currentCol] === 0) {
+                    for(let i = -1; i <= 1; i++) {
+                        for(let j = -1; j <= 1; j++) {
+                            const newRow = currentRow + i;
+                            const newCol = currentCol + j;
+                            if(newRow >= 0 && newRow < gameState.rows && 
+                               newCol >= 0 && newCol < gameState.cols && 
+                               !gameState.revealed.has(`${newRow},${newCol}`)) {
+                                queue.push([newRow, newCol]);
+                            }
                         }
                     }
                 }
             }
+
             renderBoard();
             checkWin();
         }
@@ -401,13 +541,13 @@
         }
 
         function checkWin() {
-            // 检查方式1：所有雷都被正确标记
-            let correctFlags = 0;
-            for(let flag of gameState.flags) {
-                if(gameState.mines.has(flag)) correctFlags++;
-            }
-            if(correctFlags === gameState.totalMines && 
-               gameState.flags.size === gameState.totalMines) {
+            // 优化胜利检查逻辑
+            const totalCells = gameState.rows * gameState.cols;
+            const revealedCount = gameState.revealed.size;
+            const remainingCells = totalCells - revealedCount;
+            
+            if(remainingCells === gameState.totalMines) {
+                // 所有非雷格子都被揭开
                 if (gameState.timer) {
                     clearInterval(gameState.timer);
                     gameState.timer = null;
@@ -418,20 +558,18 @@
                 return;
             }
 
-            // 检查方式2：所有非雷格都被揭开
-            const totalCells = gameState.rows * gameState.cols;
-            const revealedNonMines = Array.from(gameState.revealed)
-                .filter(key => !gameState.mines.has(key)).length;
-            const nonMineCount = totalCells - gameState.totalMines;
-            
-            if(revealedNonMines === nonMineCount) {
-                if (gameState.timer) {
-                    clearInterval(gameState.timer);
-                    gameState.timer = null;
+            // 检查标记的雷是否全部正确
+            if(gameState.flags.size === gameState.totalMines) {
+                const allCorrect = Array.from(gameState.flags).every(flag => gameState.mines.has(flag));
+                if(allCorrect) {
+                    if (gameState.timer) {
+                        clearInterval(gameState.timer);
+                        gameState.timer = null;
+                    }
+                    showVictoryAnimation();
+                    alert('恭喜你赢了！');
+                    revealAllMines();
                 }
-                showVictoryAnimation();
-                alert('恭喜你赢了！');
-                revealAllMines();
             }
         }
 
@@ -440,6 +578,24 @@
                 gameState.revealed.add(mine);
             }
             renderBoard();
+        }
+
+        // 添加显示规则函数
+        function showRules() {
+            document.getElementById('rules-modal').style.display = 'block';
+        }
+
+        // 添加隐藏规则函数
+        function hideRules() {
+            document.getElementById('rules-modal').style.display = 'none';
+        }
+
+        // 点击模态框外部时关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('rules-modal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
         }
     </script>
 </body>

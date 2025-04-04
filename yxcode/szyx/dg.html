@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数字消除游戏</title>
+    <style>
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .difficulty {
+            margin: 20px;
+        }
+        #game-container {
+            display: grid;
+            gap: 5px;
+            margin: 20px auto;
+            max-width: 600px;
+            position: relative;
+        } 
+        .cell {
+            border: 1px solid #000;
+            padding: 20px;
+            cursor: pointer;
+            background-color: #fff;
+            transition: background-color 0.3s;
+            position: relative;
+            z-index: 1; 
+        }
+        .cell.eliminated {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .cell.selected {
+            background-color: #a0d8ef;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+        }
+        .line {
+            position: absolute;
+            height: 4px;
+            background: #2196F3;
+            transform-origin: left;
+            z-index: 2;
+            border-radius: 2px;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+        }
+        .line::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid #2196F3;
+            transform: translateY(-50%);
+        }
+        .rules-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .rules-content {
+            position: relative;
+            background: white;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 10px;
+            line-height: 1.6;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .rules-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .difficulty {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #00b4d8, #0077b6);
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 180, 216, 0.3);
+        }
+        #game-container {
+            position: relative; 
+            display: grid;
+            gap: 8px;
+            margin: 2rem auto;
+            max-width: 800px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+        }
+        .cell {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1.5rem;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 700;
+            color: #1a1a2e;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+        }
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 180, 216, 0.2);
+        }
+        .cell.eliminated {
+            background: rgba(204, 204, 204, 0.5);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .cell.selected {
+            background: #90e0ef;
+            box-shadow: 0 0 15px rgba(144, 224, 239, 0.5);
+        }
+        .line {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(90deg, #00b4d8, #90e0ef);
+            z-index: 2;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
+        }
+        .line::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 10px solid #90e0ef;
+            transform: translateY(-50%);
+        }
+        .rules-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            backdrop-filter: blur(3px);
+        }
+        .rules-content {
+            position: relative;
+            background: rgba(26, 26, 46, 0.9);
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 15px;
+            line-height: 1.8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #90e0ef;
+            transition: transform 0.3s ease;
+        }
+        .close-btn:hover {
+            transform: rotate(90deg);
+        }
+        .rules-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(45deg, #00b4d8, #0077b6);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 116, 182, 0.3);
+        }
+        h2 {
+            color: #90e0ef;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        h3 {
+            color: #00b4d8;
+            margin: 1.5rem 0 1rem;
+            font-size: 1.3rem;
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .hint-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ff6f61, #ff3b2f);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 111, 97, 0.3);
+            transition: all 0.3s ease;
+        }
+        .hint-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 59, 47, 0.4);
+        }
+        .hint-highlight {
+            animation: hintBlink 1s infinite;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+        @keyframes hintBlink {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .smart-hint {
+            background: linear-gradient(45deg, #32CD32, #228B22) !important;
+            animation: smartHint 1.5s ease-in-out infinite;
+        }
+        @keyframes smartHint {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .step-counter {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: #1a1a2e;
+        }
+        .hint-btn.disabled-permanent {
+            background: linear-gradient(45deg, #666, #444) !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #hintCounter {
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .hint-btn:disabled {
+            background: linear-gradient(45deg, #555, #333)!important;
+            color: #888!important;
+        }
+        .hint-btn:disabled {
+            background: linear-gradient(45deg, #555, #333) !important;
+            color: #888 !important;
+        }
+        .hint-btn.disabled-permanent {
+            background: linear-gradient(45deg, #666, #444) !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #hintCounter {
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .hint-btn:disabled {
+            background: linear-gradient(45deg, #555, #333) !important;
+            color: #888 !important;
+        }
+        .eliminate-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #9c27b0, #673ab7);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .eliminate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        }
+        .eliminate-btn:disabled {
+            background: linear-gradient(45deg, #555, #333) !important;
+            color: #888 !important;
+            cursor: not-allowed;
+        }
+        .eliminate-mode .cell:not(.eliminated):hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #ff4081;
+        }
+    </style>
+</head>
+<body>
+    <button class="eliminate-btn" onclick="startEliminateMode()" id="eliminateButton">
+        ✨ 超级消除 
+        <span id="eliminateCounter" style="font-size:0.8em;margin-left:5px">2/2</span>
+        <span id="eliminateCooldown" style="font-size:0.7em"></span>
+    </button>
+    <button class="hint-btn" onclick="showHint()" id="hintButton">
+        💡 智能提示 
+        <span id="hintCounter" style="font-size:0.8em;margin-left:5px">8/8</span>
+        <span id="cooldownTimer" style="font-size:0.7em"></span>
+    </button>
+    <button class="rules-btn" onclick="showRules()">游戏规则</button>
+    <div class="container">
+        <div class="difficulty">
+            <button onclick="startGame(4)">4x4</button>
+            <button onclick="startGame(6)">6x6</button>
+            <button onclick="startGame(10)">10x10</button>
+        </div>
+        <div id="game-container"></div>
+    </div>
+    <div id="rulesModal" class="rules-modal">
+        <div class="rules-content">
+            <span class="close-btn" onclick="hideRules()">&times;</span>
+            <h2>📖 数字消除游戏规则</h2>
+            
+            <h3>🎯 游戏目标</h3>
+            <p>消除所有数字！如果最后剩下无法消除的数字则失败。</p>
+
+            <h3>⚙️ 操作规则</h3>
+            <ul>
+                <li>选择难度：4x4 / 6x6 / 10x10</li>
+                <li>点击<strong>两个数字</strong>，它们会除以最大公约数（GCD）</li>
+                <li>如果结果为1则消除，否则更新为新的数值</li>
+            </ul>
+
+            <h3>🌟 胜利条件</h3>
+            <p>清空所有数字即获胜！</p>
+
+            <h3>💡 策略提示</h3>
+            <div style="background: #000000; padding: 15px; border-radius: 5px;">
+                <p>1. 优先消除大数字（可能有更多组合）</p>
+                <p>2. 保留小质数（2, 3, 5等）</p>
+                <p>3. 注意数字间的倍数关系</p>
+                <p>4. 记得顾全大局</p>
+            </div>
+
+            <h3>✨ 功能提示</h3>
+            <div style="background: #000000; padding: 15px; border-radius: 5px;">
+                <p>1. 智能提示，可以提示当前最优解</p>
+                <p>2. 超级消除，可以直接消除一个数字</p>
+            </div>
+
+            <h3>📝 示例</h3>
+            <p>选中数字 <strong>12</strong> 和 <strong>18</strong>：</p>
+            <pre>
+最大公约数 = 6
+12 → 12 ÷ 6 = 2
+18 → 18 ÷ 6 = 3
+            </pre>
+        </div>
+    </div>
+    <script>
+        //alert('作者：李明天');
+        const MAX_ELIMINATE = 2;// 超级消除次数
+        const MAX_HINTS = 8;// 智能提示次数
+        let eliminateUsageCount = 0;
+        let lastEliminateTime = 0;
+        let isEliminateMode = false;
+        let lastHintTime = 0;
+        let hintUsageCount = 0; 
+        let solutionPath = [];
+        let currentStep = 0;
+        let memoization = new Map();
+        alert('第一次游玩请查看规则（在右上角）！');
+        function startEliminateMode() {
+            // 次数检查
+            if (eliminateUsageCount >= MAX_ELIMINATE) {
+               alert('超级消除次数已用尽！');
+                return;
+            }
+            // 冷却检查
+            const cooldownRemain = 3000 - (Date.now() - lastEliminateTime);
+            if (cooldownRemain > 0) {
+                alert(`请等待 ${Math.ceil(cooldownRemain/1000)} 秒后再使用`);
+                return;
+            }
+
+            // 进入消除模式
+            isEliminateMode = true;
+            document.body.classList.add('eliminate-mode');
+            alert('请点击要消除的数字！');
+        }
+        function showHint() {
+            // 次数检查
+            if (hintUsageCount >= MAX_HINTS) {
+                alert('本局提示次数已用尽！');
+                return;
+            }
+
+            // 冷却检查
+            const cooldownRemain = 3000 - (Date.now() - lastHintTime);
+            if (cooldownRemain > 0) {
+                alert(`请等待 ${Math.ceil(cooldownRemain/1000)} 秒后再使用提示`);
+                return;
+            }
+
+            const pairs = findValidPairs();
+            if (pairs.length > 0) {
+                // 更新使用次数
+                hintUsageCount++;
+                updateHintCounter();
+                
+                lastHintTime = Date.now();
+                const [cell1, cell2] = pairs[0];
+                highlightCells(cell1, cell2);
+
+                // 冷却控制
+                const hintButton = document.getElementById('hintButton');
+                let cooldown = 3;
+                
+                const timerInterval = setInterval(() => {
+                    const timerElement = document.getElementById('cooldownTimer');
+                    timerElement.textContent = hintUsageCount < MAX_HINTS 
+                        ? `(${cooldown}s)`
+                        : '(已用完)';
+                    
+                    if (cooldown <= 0) {
+                        clearInterval(timerInterval);
+                        hintButton.disabled = hintUsageCount >= MAX_HINTS;
+                        timerElement.textContent = hintUsageCount < MAX_HINTS 
+                            ? '' 
+                            : '(0/8)';
+                    }
+                    cooldown--;
+                }, 1000);
+            } else {
+                alert('没有可用的提示！');
+            }
+        }
+        function updateHintCounter() {
+            const counter = document.getElementById('hintCounter');
+            const remaining = MAX_HINTS - hintUsageCount;
+            counter.textContent = `${remaining}/8`;
+            
+            // 动态颜色变化
+            counter.style.color = remaining <= 2 
+                ? '#ff4444' 
+                : remaining <= 5 
+                    ? '#ffd700' 
+                    : '#90e0ef';
+        }
+
+
+        // 查找所有可消除的数字对
+        function findValidPairs() {
+            const pairs = [];
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (!grid[i][j].eliminated) {
+                        for (let x = i; x < size; x++) {
+                            for (let y = (x === i ? j + 1 : 0); y < size; y++) {
+                                if (!grid[x][y].eliminated) {
+                                    const gcd = calculateGCD(grid[i][j].value, grid[x][y].value);
+                                    if (gcd > 1) {
+                                        // 计算优先级得分
+                                        const score = gcd * 10 + 
+                                            ((grid[i][j].value/gcd === 1 ? 1 : 0) + 
+                                             (grid[x][y].value/gcd === 1 ? 1 : 0)) * 5;
+                                        pairs.push({
+                                            cells: [
+                                                document.querySelector(`[data-row="${i}"][data-col="${j}"]`),
+                                                document.querySelector(`[data-row="${x}"][data-col="${y}"]`)
+                                            ],
+                                            score: score
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // 按优先级降序排列
+            return pairs.sort((a, b) => b.score - a.score).map(p => p.cells);
+        }
+
+        // 高亮提示的数字对
+        function highlightCells(cell1, cell2) {
+            // 清除之前的高亮
+            document.querySelectorAll('.hint-highlight').forEach(cell => {
+                cell.classList.remove('hint-highlight');
+            });
+
+            // 添加新的高亮
+            cell1.classList.add('hint-highlight');
+            cell2.classList.add('hint-highlight');
+
+            // 3秒后自动移除高亮
+            setTimeout(() => {
+                cell1.classList.remove('hint-highlight');
+                cell2.classList.remove('hint-highlight');
+            }, 1500);
+        }
+
+        let grid = [];
+        let size = 4;
+        let firstSelected = null;
+        function showRules() {
+            document.getElementById('rulesModal').style.display = 'block';
+        }
+        function hideRules() {
+            document.getElementById('rulesModal').style.display = 'none';
+        }
+
+        // 点击外部关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('rulesModal');
+            if (event.target == modal) {
+                hideRules();
+            }
+        }
+        // 修改后的startGame函数
+        function startGame(newSize) {
+            size = newSize;
+            grid = generateGrid();
+            hintUsageCount = 0; // 重置计数器
+            updateHintCounter();
+            document.getElementById('hintButton').disabled = false;
+            firstSelected = null;
+            createGrid();
+            updateStepCounter();
+        }
+        function createSolvableGrid() {
+            const grid = [];
+            const totalCells = size * size;
+            
+            // 初始化全1的已解决状态
+            for (let i = 0; i < size; i++) {
+                grid.push(Array(size).fill({ value: 1, eliminated: true }));
+            }
+
+            // 计算需要的逆向操作次数（覆盖所有单元格）
+            const steps = Math.ceil(totalCells / 2) + 2; // 保证充足的操作次数
+
+            // 记录已修改的位置
+            const modifiedPositions = new Set();
+
+            // 逆向添加操作
+            for (let step = 0; step < steps; step++) {
+                let attempts = 0;
+                let pos1, pos2;
+
+                // 确保选择新位置
+                do {
+                    const positions = getUniquePositions(size);
+                    pos1 = positions[0];
+                    pos2 = positions[1];
+                    attempts++;
+                } while (
+                    (modifiedPositions.has(`${pos1.i},${pos1.j}`) || 
+                     modifiedPositions.has(`${pos2.i},${pos2.j}`)) &&
+                    attempts < 100
+                );
+
+                const factor = getRandomEven(2, 10);
+                const value1 = factor * (Math.floor(Math.random()*10) + 2); // 最小值4
+                const value2 = factor * (Math.floor(Math.random()*10) + 2);
+
+                // 更新网格并记录位置
+                grid[pos1.i][pos1.j] = { value: value1, eliminated: false };
+                grid[pos2.i][pos2.j] = { value: value2, eliminated: false };
+
+                modifiedPositions.add(`${pos1.i},${pos1.j}`);
+                modifiedPositions.add(`${pos2.i},${pos2.j}`);
+
+                // 如果已覆盖所有单元格则提前退出
+                if (modifiedPositions.size >= totalCells) break;
+            }
+
+            // 填充剩余未修改的单元格
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (grid[i][j].value === 1) {
+                        grid[i][j] = {
+                            value: getRandomEven(2, 10) * (Math.floor(Math.random()*10)+2),
+                            eliminated: false
+                        };
+                    }
+                }
+            }
+
+            return grid;
+        }
+
+
+        // 实现A*搜索算法
+        function findOptimalSolution(initialGrid) {
+            const openSet = new PriorityQueue();
+            const cameFrom = new Map();
+            const gScore = new Map();
+            const fScore = new Map();
+
+            const startState = serializeGrid(initialGrid);
+            gScore.set(startState, 0);
+            fScore.set(startState, heuristic(initialGrid));
+            openSet.enqueue(startState, fScore.get(startState));
+
+            while (!openSet.isEmpty()) {
+                const current = openSet.dequeue();
+                const currentGrid = deserializeGrid(current);
+
+                if (isSolved(currentGrid)) {
+                    return reconstructPath(cameFrom, current);
+                }
+
+                const moves = generateValidMoves(currentGrid);
+                for (const move of moves) {
+                    const nextGrid = applyMove(currentGrid, move);
+                    const nextState = serializeGrid(nextGrid);
+                    const tentativeGScore = gScore.get(current) + 1;
+
+                    if (tentativeGScore < (gScore.get(nextState) || Infinity)) {
+                        cameFrom.set(nextState, { prev: current, move });
+                        gScore.set(nextState, tentativeGScore);
+                        fScore.set(nextState, tentativeGScore + heuristic(nextGrid));
+                
+                        if (!openSet.contains(nextState)) {
+                           openSet.enqueue(nextState, fScore.get(nextState));
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        // 新增辅助函数
+        function serializeGrid(grid) {
+            return grid.map(row => 
+                row.map(cell => `${cell.value}:${cell.eliminated ? 1 : 0}`).join(',')
+            ).join(';');
+        }
+
+        function heuristic(grid) {
+            // 剩余数字数量 + 可消除对数
+            let remaining = 0;
+            let pairs = 0;
+            for (const row of grid) {
+                for (const cell of row) {
+                    if (!cell.eliminated) remaining++;
+                }
+            }
+            return remaining * 0.7 + pairs * 0.3;
+        }
+
+        function showNextStep() {
+            if (currentStep < solutionPath.length) {
+                const [x1, y1, x2, y2] = solutionPath[currentStep];
+                const cell1 = document.querySelector(`[data-row="${x1}"][data-col="${y1}"]`);
+                const cell2 = document.querySelector(`[data-row="${x2}"][data-col="${y2}"]`);
+                highlightOptimalStep(cell1, cell2);
+                currentStep++;
+                updateStepCounter();
+            } else {
+                alert("已到达最后一步！");
+            }
+        }
+
+        function highlightOptimalStep(cell1, cell2) {
+            document.querySelectorAll('.smart-hint').forEach(c => c.classList.remove('smart-hint'));
+            cell1.classList.add('smart-hint');
+            cell2.classList.add('smart-hint');
+            setTimeout(() => {
+                cell1.classList.remove('smart-hint');
+                cell2.classList.remove('smart-hint');
+            }, 2000);
+        }
+
+        function updateStepCounter() {
+            document.getElementById('remainingSteps').textContent = solutionPath.length - currentStep;
+            document.getElementById('currentStep').textContent = currentStep + 1;
+        }
+
+        function generateGrid() {
+            const newGrid = createSolvableGrid();
+            return newGrid;
+        }
+
+        // 获取两个不重复的位置
+        function getUniquePositions(size) {
+            const allPositions = [];
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    allPositions.push({i, j});
+                }
+            }
+
+            // 随机打乱所有位置
+            for (let i = allPositions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allPositions[i], allPositions[j]] = [allPositions[j], allPositions[i]];
+            }
+
+            return [allPositions[0], allPositions[1]];
+        }
+
+        // 生成指定范围的随机偶数
+        function getRandomEven(min, max) {
+            const num = Math.floor(Math.random() * (max - min + 1)) + min;
+            return num % 2 === 0 ? num : num + 1;
+        }
+
+        // 移除原有的ensureValidPair函数
+        function startGame(newSize) {
+            size = newSize;
+            grid = generateGrid(); // 直接使用新的生成方法
+            firstSelected = null;
+            createGrid();
+            eliminateUsageCount = 0;
+            updateEliminateCounter();
+            document.getElementById('eliminateButton').disabled = false;
+        }
+
+        function getEvenNumber() {
+            let num;
+            do {
+                num = Math.floor(Math.random() * 98) + 3;
+            } while (num % 2 !== 0);
+            return num;
+        }
+
+        function createGrid() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell' + (grid[i][j].eliminated ? ' eliminated' : '');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.textContent = grid[i][j].eliminated ? '' : grid[i][j].value;
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    container.appendChild(cell);
+                }
+            }
+        }
+        // 更新计数器函数
+        function updateEliminateCounter() {
+            const counter = document.getElementById('eliminateCounter');
+            const remaining = MAX_ELIMINATE - eliminateUsageCount;
+            counter.textContent = `${remaining}/2`;
+            counter.style.color = remaining === 0 ? '#ff4444' : '#fff';
+        }
+        function eliminateNumber(i, j) {
+            // 执行消除
+            grid[i][j].eliminated = true;
+            updateGridDisplay();
+
+            // 更新使用次数
+            eliminateUsageCount++;
+            updateEliminateCounter();
+
+            // 退出消除模式
+            isEliminateMode = false;
+            document.body.classList.remove('eliminate-mode');
+
+            // 启动冷却
+            lastEliminateTime = Date.now();
+            const button = document.getElementById('eliminateButton');
+            button.disabled = true;
+
+            let cooldown = 3;
+            const timerInterval = setInterval(() => {
+                const timerElement = document.getElementById('eliminateCooldown');
+                timerElement.textContent = `(${cooldown}s)`;
+        
+                if (cooldown <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.textContent = '';
+                    button.disabled = eliminateUsageCount >= MAX_ELIMINATE;
+                }
+                cooldown--;
+            }, 1000);
+    
+            checkGameStatus();
+        }
+        function handleCellClick(i, j) {
+            if (grid[i][j].eliminated) return;
+
+            // 消除模式处理
+            if (isEliminateMode) {
+                eliminateNumber(i, j);
+                return;
+            }
+            if (grid[i][j].eliminated) return;
+
+            if (!firstSelected) {
+                firstSelected = { i, j };
+                updateSelectedStyle();
+            } else {
+                if (firstSelected.i === i && firstSelected.j === j) {
+                    firstSelected = null;
+                    updateSelectedStyle();
+                    return;
+                }
+                
+                const a = grid[firstSelected.i][firstSelected.j].value;
+                const b = grid[i][j].value;
+                const gcd = calculateGCD(a, b);
+
+                if (gcd === 1) {
+                    alert('这两个数没有公约数！');
+                    firstSelected = null;
+                    updateSelectedStyle();
+                    return;
+                }
+
+                // 绘制连线
+                drawLine(firstSelected.i, firstSelected.j, i, j);
+
+                // 更新第一个数字
+                const newA = a / gcd;
+                grid[firstSelected.i][firstSelected.j].value = newA;
+                grid[firstSelected.i][firstSelected.j].eliminated = newA === 1;
+
+                // 更新第二个数字
+                const newB = b / gcd;
+                grid[i][j].value = newB;
+                grid[i][j].eliminated = newB === 1;
+
+                // 延迟更新网格显示，等待动画完成
+                setTimeout(() => {
+                    updateGridDisplay();
+                    checkGameStatus();
+                    firstSelected = null;
+                    updateSelectedStyle();
+                    if (!compareWithSolution(firstSelected, {i, j})) {
+                        solutionPath = findOptimalSolution(grid);
+                        currentStep = 0;
+                        updateStepCounter();
+                    }
+                }, 400); // 保持与连线相同的持续时间
+            }
+        }
+        function compareWithSolution(step1, step2) {
+            const expected = solutionPath[currentStep];
+            return expected && 
+                   expected[0] === step1.i && 
+                   expected[1] === step1.j && 
+                   expected[2] === step2.i && 
+                   expected[3] === step2.j;
+        }
+
+        // 优先队列实现（省略具体实现）
+        class PriorityQueue {
+            constructor() {
+                this.elements = [];
+            }
+            enqueue(element, priority) {
+                this.elements.push({element, priority});
+                this.sort();
+            }
+            dequeue() {
+                return this.elements.shift().element;
+            }
+            isEmpty() {
+                return this.elements.length === 0;
+            }
+            sort() {
+                this.elements.sort((a, b) => a.priority - b.priority);
+            }
+            contains(element) {
+                return this.elements.some(e => e.element === element);
+            }
+        }
+        function drawLine(i1, j1, i2, j2) {
+            const container = document.getElementById('game-container');
+            const cell1 = document.querySelector(`[data-row="${i1}"][data-col="${j1}"]`);
+            const cell2 = document.querySelector(`[data-row="${i2}"][data-col="${j2}"]`);
+
+            // 计算坐标
+            const rect1 = cell1.getBoundingClientRect();
+            const rect2 = cell2.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const x1 = rect1.left + rect1.width/2 - containerRect.left;
+            const y1 = rect1.top + rect1.height/2 - containerRect.top;
+            const x2 = rect2.left + rect2.width/2 - containerRect.left;
+            const y2 = rect2.top + rect2.height/2 - containerRect.top;
+
+            const deltaX = x2 - x1;
+            const deltaY = y2 - y1;
+            const length = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+            const angle = Math.atan2(deltaY, deltaX);
+
+            // 直接创建完整连线
+            const line = document.createElement('div');
+            line.className = 'line';
+            line.style.width = `${length}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1}px`;
+            line.style.transform = `rotate(${angle}rad)`;
+            container.appendChild(line);
+
+            // 0.6秒后移除
+            setTimeout(() => {
+                line.remove();
+            }, 400);
+        }
+
+        function calculateGCD(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function updateSelectedStyle() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('selected');
+            });
+            if (firstSelected) {
+                const selectedCell = document.querySelector(
+                    `[data-row="${firstSelected.i}"][data-col="${firstSelected.j}"]`
+                );
+                if (selectedCell) selectedCell.classList.add('selected');
+            }
+        }
+
+        function updateGridDisplay() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                const i = parseInt(cell.dataset.row);
+                const j = parseInt(cell.dataset.col);
+                const cellData = grid[i][j];
+                cell.textContent = cellData.eliminated ? '' : cellData.value;
+                cell.classList.toggle('eliminated', cellData.eliminated);
+            });
+        }
+
+        function checkGameStatus() {
+            // 检查胜利条件
+            let allEliminated = true;
+            for (let row of grid) {
+                for (let cell of row) {
+                    if (!cell.eliminated) {
+                        allEliminated = false;
+                        break;
+                    }
+                }
+                if (!allEliminated) break;
+            }
+            if (allEliminated) {
+                alert('恭喜！游戏成功！可提高难度！');
+                return;
+            }
+
+            // 检查失败条件
+            if (!hasValidPair()) {
+                alert('游戏失败！没有可操作的对数了。');
+            }
+        }
+
+        function hasValidPair() {
+            const activeNumbers = [];
+            for (let row of grid) {
+                for (let cell of row) {
+                    if (!cell.eliminated) activeNumbers.push(cell.value);
+                }
+            }
+            
+            for (let i = 0; i < activeNumbers.length; i++) {
+                for (let j = i + 1; j < activeNumbers.length; j++) {
+                    if (calculateGCD(activeNumbers[i], activeNumbers[j]) > 1) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // 初始化游戏
+        startGame(4);
+    </script>
+</body>
+</html>
