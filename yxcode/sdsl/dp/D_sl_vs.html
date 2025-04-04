@@ -360,7 +360,6 @@
             gameState.isFirstClick = true;
             document.getElementById('lives').textContent = gameState.lives;
             document.getElementById('remaining-mines').textContent = gameState.totalMines;
-
             // 重置计时器
             if (gameState.timer) {
                 clearInterval(gameState.timer);
@@ -368,7 +367,6 @@
             }
             gameState.startTime = null;
             document.getElementById('timer').textContent = '00:00';
-
             // 初始化空棋盘
             for(let i = 0; i < gameState.rows; i++) {
                 gameState.board[i] = new Array(gameState.cols).fill(0);
@@ -376,7 +374,6 @@
 
             renderBoard();
         }
-
         function startTimer() {
             if (!gameState.startTime) {
                 gameState.startTime = Date.now();
@@ -391,7 +388,6 @@
             document.getElementById('timer').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
-
         function placeMines(excludeRow, excludeCol) {
             gameState.board = [];
             gameState.mines.clear();
