@@ -5,8 +5,8 @@ vector<int> v, v1;
 bool vz[9999];
 void dfs(int n) {
     if (n == a) {
-        for (int i = 0; i < (int)v.size(); i++) {
-            cout << v[i] << " ";
+        for (int i = 0; i < v.size(); i++) {
+            cout << v[i]<<" ";
         }
         cout << '\n';
         return;

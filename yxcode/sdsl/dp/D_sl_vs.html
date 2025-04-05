@@ -4,8 +4,41 @@
     <meta charset="UTF-8">
     <title>David的扫雷游戏</title>
     <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --container-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --border-color: #c0c6cc;
+            --cell-bg: #f0f2f5;
+            --cell-hover: #e5e9ed;
+            --info-bg: #f0f2f5;
+            --modal-overlay: rgba(0, 0, 0, 0.6);
+            --shadow-color: rgba(0, 0, 0, 0.15);
+            --number-shadow: rgba(0, 0, 0, 0.1);
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --container-gradient: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            --button-gradient: linear-gradient(to right, #3498db, #2980b9);
+            --danger-gradient: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --border-color: #454545;
+            --cell-bg: #2a2a2a;
+            --cell-hover: #353535;
+            --info-bg: #2a2a2a;
+            --modal-overlay: rgba(0, 0, 0, 0.8);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --number-shadow: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            --container-gradient: linear-gradient(to bottom, rgba(30, 30, 30, 0.95), rgba(30, 30, 30, 0.85));
+        }
+
         body {
-            background-color: #e9ecef;
+            background: var(--bg-gradient);
+            color: var(--text-color);
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             display: flex;
             flex-direction: column;
@@ -14,34 +47,29 @@
             min-height: 100vh;
             margin: 0;
             font-weight: 500;
+            backdrop-filter: blur(10px);
         }
-        #game-container {
+        #game-container, #password-screen {
             display: none;
-            background: white;
+            background: var(--container-gradient);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 95vw;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color),
+                       0 0 0 1px rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
-        }
-        #password-screen {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            animation: fadeIn 0.5s ease;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         h1 {
-            color: #2c3e50;
+            color: var(--text-color);
             margin-bottom: 25px;
             text-align: center;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 4px var(--shadow-color);
             font-weight: 700;
         }
         h5 {
@@ -61,22 +89,47 @@
         }
         select, button, input {
             padding: 12px 20px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--bg-color);
             border-radius: 8px;
             margin: 5px;
             font-size: 14px;
             transition: all 0.3s ease;
         }
         select {
-            background-color: white;
-            color: #2c3e50;
+            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 12px 25px;
+            color: var(--text-color);
             cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
+
+        select option {
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        /* 为深色模式添加特殊样式 */
+        [data-theme="dark"] select option {
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
         select:hover {
             border-color: #3498db;
         }
         button {
-            background-color: #3498db;
+            background: var(--button-gradient);
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
             border: none;
             cursor: pointer;
@@ -84,53 +137,85 @@
             min-width: 100px;
         }
         button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+        }
+        #clear-records {
+            background: var(--danger-gradient);
         }
         #info {
             margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             display: flex;
             justify-content: space-around;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
             font-weight: 600;
+        }
+        #info span {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
         }
         #timer {
             font-family: 'Courier New', monospace;
             font-size: 1.3em;
-            color: #2c3e50;
+            color: var(--text-color);
             font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 1px 1px 2px var(--shadow-color);
+        }
+        #best-time {
+            color: #ffd700;
+            text-shadow: 1px 1px 2px var(--shadow-color);
         }
         #minefield {
             border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 8px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
             overflow: hidden;
+        }
+        #game-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
         }
         .cell {
             width: 40px;
             height: 40px;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--border-color);
             text-align: center;
-            background-color: #f8f9fa;
+            background-color: var(--cell-bg);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 16px;
             font-weight: 600;
+            color: var(--text-color);
+            text-shadow: 1px 1px 1px var(--number-shadow);
+            border-radius: 6px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
         .cell:hover {
-            background-color: #e9ecef;
-            transform: scale(1.05);
-            z-index: 1;
+            background-color: var(--cell-hover);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            z-index: 2;
         }
         .revealed {
-            background-color: white;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            background-color: var(--container-bg);
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+            transition: all 0.3s ease;
         }
         .mine {
             background-color: #dc3545;
@@ -150,18 +235,28 @@
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        .number-1 { color: green; }
-        .number-2 { color: blue; }
-        .number-3 { color: red; }
-        .number-4 { color: #8B4513; }
-        .number-5 { color: purple; }
-        .number-6 { color: #FFD700; }
-        .number-7 { color: #FFA500; }
-        .number-8 { color: black; }
+        .number-1 { color: #2ecc71; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-2 { color: #3498db; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-3 { color: #e74c3c; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-4 { color: #9b59b6; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-5 { color: #f1c40f; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-6 { color: #1abc9c; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-7 { color: #e67e22; text-shadow: 0 0 1px var(--number-shadow); }
+        .number-8 { color: #34495e; text-shadow: 0 0 1px var(--number-shadow); }
+
+        [data-theme="dark"] .number-1 { color: #2ecc71; }
+        [data-theme="dark"] .number-2 { color: #3498db; }
+        [data-theme="dark"] .number-3 { color: #ff6b6b; }
+        [data-theme="dark"] .number-4 { color: #a88beb; }
+        [data-theme="dark"] .number-5 { color: #ffd93d; }
+        [data-theme="dark"] .number-6 { color: #4ecdc4; }
+        [data-theme="dark"] .number-7 { color: #ff9f43; }
+        [data-theme="dark"] .number-8 { color: #a4b0be; }
+
         @keyframes celebration {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
         }
         
         #victory-animation {
@@ -170,9 +265,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 48px;
+            font-size: 72px;
             color: #FFD700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
             z-index: 1000;
         }
         
@@ -180,7 +275,6 @@
             display: block !important;
             animation: celebration 1s ease-in-out infinite;
         }
-
         /* 添加规则模态框样式 */
         #rules-modal {
             display: none;
@@ -189,20 +283,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: var(--modal-overlay);
             z-index: 1001;
         }
 
         .modal-content {
-            background-color: white;
+            background-color: var(--container-bg);
             margin: 10% auto;
             padding: 30px;
             width: 80%;
             max-width: 600px;
             border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px var(--shadow-color);
             animation: modalSlide 0.3s ease;
             font-weight: 500;
+            color: var(--text-color);
         }
         @keyframes modalSlide {
             from { transform: translateY(-100px); opacity: 0; }
@@ -218,9 +313,44 @@
         .close-button:hover {
             color: #dc3545;
         }
+
+        /* 主题切换按钮样式 */
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* 添加清空记录按钮样式 */
+        #clear-records {
+            margin-left: 10px;
+            background-color: #e74c3c;
+        }
+        #clear-records:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>
+    <!-- 添加主题切换按钮 -->
+    <button id="theme-toggle" onclick="toggleTheme()">🌓</button>
+
     <div id="password-screen">
         <h2>请输入密码：</h2>
         <input type="password" id="password-input">
@@ -229,7 +359,7 @@
 
     <div id="game-container">
         <h1>David的扫雷游戏</h1>
-        <h5>Copilot×Wywhpsmaq</h5>
+        <h5>David×Wywhpsmaq</h5>
         <div id="controls">
             <select id="difficulty">
                 <option value="normal">普通 (10x10, 10雷)</option>
@@ -243,13 +373,17 @@
             </div>
             <button onclick="startGame()">开始游戏</button>
             <button onclick="showRules()">游戏规则</button>
+            <button id="clear-records" onclick="confirmClearRecords()">清空记录</button>
         </div>
         <div id="info">
             <span>剩余生命: <span id="lives">2</span></span>
             <span>剩余雷数: <span id="remaining-mines">10</span></span>
             <span>用时: <span id="timer">00:00</span></span>
+            <span>最佳时间: <span id="best-time">--:--</span></span>
         </div>
-        <table id="minefield"></table>
+        <div id="game-board">
+            <table id="minefield"></table>
+        </div>
     </div>
 
     <div id="victory-animation">🏆 胜利！🎉</div>
@@ -289,7 +423,13 @@
             isAuthenticated: false,
             isFirstClick: true,
             timer: null,
-            startTime: null
+            startTime: null,
+            difficulty: 'normal',
+            bestTimes: {
+                normal: localStorage.getItem('bestTime_normal') || Infinity,
+                expert: localStorage.getItem('bestTime_expert') || Infinity,
+                custom: localStorage.getItem('bestTime_custom') || Infinity
+            }
         };
 
         function checkPassword() {
@@ -310,6 +450,16 @@
                 document.getElementById('game-container').style.display = 'none';
                 document.getElementById('password-screen').style.display = 'block';
             }
+            initTheme();
+            
+            // 加载保存的最佳时间
+            ['normal', 'expert', 'custom'].forEach(diff => {
+                const savedTime = localStorage.getItem(`bestTime_${diff}`);
+                if (savedTime) {
+                    gameState.bestTimes[diff] = parseFloat(savedTime);
+                }
+            });
+            updateBestTimeDisplay();
         }
 
         document.getElementById('difficulty').addEventListener('change', function(e) {
@@ -323,6 +473,8 @@
                 return;
             }
             const difficulty = document.getElementById('difficulty').value;
+            gameState.difficulty = difficulty;
+            updateBestTimeDisplay();
             switch(difficulty) {
                 case 'normal':
                     gameState.rows = 10;
@@ -533,39 +685,44 @@
             animation.classList.add('celebrating');
             setTimeout(() => {
                 animation.classList.remove('celebrating');
-            }, 3000); // 3秒后停止动画
+            }, 4000); // 3秒后停止动画
         }
 
         function checkWin() {
-            // 优化胜利检查逻辑
             const totalCells = gameState.rows * gameState.cols;
             const revealedCount = gameState.revealed.size;
             const remainingCells = totalCells - revealedCount;
             
+            let isWin = false;
+            
             if(remainingCells === gameState.totalMines) {
-                // 所有非雷格子都被揭开
+                isWin = true;
+            } else if(gameState.flags.size === gameState.totalMines) {
+                const allCorrect = Array.from(gameState.flags).every(flag => gameState.mines.has(flag));
+                if(allCorrect) {
+                    isWin = true;
+                }
+            }
+
+            if(isWin) {
                 if (gameState.timer) {
                     clearInterval(gameState.timer);
                     gameState.timer = null;
+
+                    // 更新最佳时间
+                    const currentTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                    const currentBest = parseFloat(gameState.bestTimes[gameState.difficulty]);
+                    
+                    if (currentTime < currentBest) {
+                        gameState.bestTimes[gameState.difficulty] = currentTime;
+                        localStorage.setItem(`bestTime_${gameState.difficulty}`, currentTime);
+                        updateBestTimeDisplay();
+                        alert(`新纪录！用时: ${Math.floor(currentTime / 60)}:${(currentTime % 60).toString().padStart(2, '0')}`);
+                    }
                 }
                 showVictoryAnimation();
                 alert('恭喜你赢了！');
                 revealAllMines();
-                return;
-            }
-
-            // 检查标记的雷是否全部正确
-            if(gameState.flags.size === gameState.totalMines) {
-                const allCorrect = Array.from(gameState.flags).every(flag => gameState.mines.has(flag));
-                if(allCorrect) {
-                    if (gameState.timer) {
-                        clearInterval(gameState.timer);
-                        gameState.timer = null;
-                    }
-                    showVictoryAnimation();
-                    alert('恭喜你赢了！');
-                    revealAllMines();
-                }
             }
         }
 
@@ -574,6 +731,19 @@
                 gameState.revealed.add(mine);
             }
             renderBoard();
+        }
+
+        function updateBestTimeDisplay() {
+            const bestTime = gameState.bestTimes[gameState.difficulty];
+            const bestTimeElement = document.getElementById('best-time');
+            if (bestTime === Infinity || bestTime === 'Infinity') {
+                bestTimeElement.textContent = '--:--';
+            } else {
+                const minutes = Math.floor(bestTime / 60);
+                const seconds = bestTime % 60;
+                bestTimeElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
         }
 
         // 添加显示规则函数
@@ -592,6 +762,48 @@
             if (event.target == modal) {
                 modal.style.display = 'none';
             }
+        }
+
+        // 添加主题切换相关代码
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // 更新按钮图标
+            const themeButton = document.getElementById('theme-toggle');
+            themeButton.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // 初始化主题
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeButton = document.getElementById('theme-toggle');
+            themeButton.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // 添加清空记录相关函数
+        function confirmClearRecords() {
+            const password = prompt('请输入管理员密码以清空记录：');
+            if (password === 'wywhpsmaq') {
+                clearAllRecords();
+                alert('所有记录已清空！');
+            } else {
+                alert('不是哥们，只有管理员才可以清空记录！');
+            }
+        }
+
+        function clearAllRecords() {
+            // 清空所有最佳时间
+            ['normal', 'expert', 'custom'].forEach(diff => {
+                localStorage.removeItem(`bestTime_${diff}`);
+                gameState.bestTimes[diff] = Infinity;
+            });
+            updateBestTimeDisplay();
         }
     </script>
 </body>
