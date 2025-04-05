@@ -11,10 +11,14 @@
             "id": "356b8a20c4c00a2f",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "总结/2025-03-22周中介.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "2025-03-22周中介"
             }
           }
         ]
@@ -137,12 +141,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "总结/2025-03-22周中介.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "大纲"
+              "title": "2025-03-22周中介 的大纲"
             }
           }
         ],
@@ -162,8 +167,9 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "364d50d911ad616a",
+  "active": "356b8a20c4c00a2f",
   "lastOpenFiles": [
+    "总结/2025-04-05周中介.md",
     "未命名",
     "总结/2025-03-22周中介.md",
     "总结/2025-04-04周中介.md",

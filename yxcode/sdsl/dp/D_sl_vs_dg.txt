@@ -59,13 +59,7 @@
             box-shadow: 0 10px 30px var(--shadow-color),
                        0 0 0 1px rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
-            transform: perspective(1000px) rotateX(5deg);
         }
-
-        #game-container:hover {
-            transform: perspective(1000px) rotateX(0deg);
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -77,19 +71,7 @@
             font-size: 2.5em;
             text-shadow: 2px 2px 4px var(--shadow-color);
             font-weight: 700;
-            background: linear-gradient(120deg, #2980b9, #3498db, #2980b9);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: gradient 8s linear infinite;
         }
-
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         h5 {
             color: #6c757d;
             text-align: center;
@@ -152,32 +134,7 @@
             cursor: pointer;
             font-weight: bold;
             min-width: 100px;
-            position: relative;
-            overflow: hidden;
         }
-
-        button::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            transform: rotate(45deg);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
         button:hover {
             transform: translateY(-2px) scale(1.02);
             box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
@@ -247,13 +204,11 @@
             text-shadow: 1px 1px 1px var(--number-shadow);
             border-radius: 6px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-            backdrop-filter: blur(2px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
         }
         .cell:hover {
             background-color: var(--cell-hover);
             transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+            box-shadow: 0 4px 12px var(--shadow-color);
             z-index: 2;
         }
         .revealed {
@@ -298,9 +253,9 @@
         [data-theme="dark"] .number-8 { color: #a4b0be; }
 
         @keyframes celebration {
-            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); opacity: 0.8; }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
         }
         
         #victory-animation {
@@ -418,12 +373,6 @@
             backdrop-filter: blur(5px);
             z-index: 1000;
             cursor: pointer;
-            animation: blurIn 0.3s ease;
-        }
-
-        @keyframes blurIn {
-            from { backdrop-filter: blur(0px); }
-            to { backdrop-filter: blur(5px); }
         }
 
         #pause-text {
@@ -442,11 +391,6 @@
             top: 20px;
             left: 20px;
             z-index: 100;
-        }
-
-        /* 删除光晕效果相关样式 */
-        .glow {
-            display: none;
         }
     </style>
 </head>
@@ -467,7 +411,6 @@
     <div id="game-container">
         <h1>David的扫雷游戏</h1>
         <h5>David×Wywhpsmaq</h5>
-        <h5>LG1公测备LcgIcp:Wywhpsmaq_lcg1036</h5>
         <div id="controls">
             <select id="difficulty">
                 <option value="normal">普通 (10x10, 10雷)</option>
@@ -501,7 +444,6 @@
             <span class="close-button" onclick="hideRules()">&times;</span>
             <h2>游戏规则说明</h2>
             <p>本游戏由  Copilot & Wywhpsmaq  提供支持，因此可能会存在错误。请在游玩前仔细查看源代码内容。</p>
-            <p>LG1公测备LcgIcp:Wywhpsmaq_lcg1036</p>
             <ul>
                 <li>左键点击：揭开方块</li>
                 <li>右键点击：标记地雷</li>
@@ -666,23 +608,17 @@
                 if (!gameState.startTime) {
                     gameState.startTime = Date.now();
                 }
-                requestAnimationFrame(updateTimer);
                 gameState.timer = setInterval(updateTimer, 1000);
             }
         }
 
-        let lastUpdate = 0;
         function updateTimer() {
-            const now = Date.now();
-            if (now - lastUpdate < 100) return; // 限制更新频率
-            
-            const elapsedTime = Math.floor((now - gameState.startTime - gameState.totalPauseTime) / 1000);
+            const currentTime = Date.now();
+            const elapsedTime = Math.floor((currentTime - gameState.startTime - gameState.totalPauseTime) / 1000);
             const minutes = Math.floor(elapsedTime / 60);
             const seconds = elapsedTime % 60;
             document.getElementById('timer').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            lastUpdate = now;
         }
 
         function stopTimer() {
@@ -738,15 +674,13 @@
 
         function renderBoard() {
             const table = document.getElementById('minefield');
-            const fragment = document.createDocumentFragment();
-            
+            table.innerHTML = '';
             for(let i = 0; i < gameState.rows; i++) {
-                const row = document.createElement('tr');
+                const row = table.insertRow();
                 for(let j = 0; j < gameState.cols; j++) {
-                    const cell = document.createElement('td');
+                    const cell = row.insertCell();
                     cell.className = 'cell';
                     const key = `${i},${j}`;
-                    
                     if(gameState.revealed.has(key)) {
                         cell.classList.add('revealed');
                         if(gameState.mines.has(key)) {
@@ -761,27 +695,13 @@
                         cell.textContent = '🚩';
                     }
                     
-                    // 使用闭包来避免循环中的事件绑定问题
-                    cell.onclick = (() => {
-                        const r = i, c = j;
-                        return () => revealCell(r, c);
-                    })();
-                    
-                    cell.oncontextmenu = ((e) => {
-                        const r = i, c = j;
-                        return (e) => {
-                            e.preventDefault();
-                            toggleFlag(r, c);
-                        };
-                    })();
-                    
-                    row.appendChild(cell);
+                    cell.addEventListener('click', () => revealCell(i, j));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleFlag(i, j);
+                    });
                 }
-                fragment.appendChild(row);
             }
-            
-            table.innerHTML = '';
-            table.appendChild(fragment);
         }
 
         function revealCell(row, col) {
@@ -1012,8 +932,7 @@
         }
 
         function togglePause() {
-            // 只有在游戏开始后且未结束时才能暂停
-            if (gameState.isGameOver || gameState.isFirstClick || !gameState.startTime) return;
+            if (gameState.isGameOver || gameState.isFirstClick) return;
             
             gameState.isPaused = !gameState.isPaused;
             const overlay = document.getElementById('pause-overlay');
@@ -1027,9 +946,7 @@
             } else {
                 overlay.style.display = 'none';
                 pauseButton.textContent = '⏸️';
-                if (gameState.pauseTime) {
-                    gameState.totalPauseTime += Date.now() - gameState.pauseTime;
-                }
+                gameState.totalPauseTime += Date.now() - gameState.pauseTime;
                 startTimer();
             }
         }
@@ -1042,20 +959,6 @@
                 }
             }
         });
-
-        const style = document.createElement('style');
-        style.textContent = `
-            .cell {
-                will-change: transform;
-                transform: translateZ(0);
-                transition: all 0.2s ease;
-            }
-            .cell:hover {
-                transform: scale(1.05);
-                z-index: 2;
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
