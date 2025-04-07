@@ -5,5 +5,5 @@ git remote add origin https://github.com/wywhpsmaq/h.git
 _______________________________________________________
 
 git config --global --unset http.proxy;git config --global --unset https.proxy;git push origin main
-git add .;git commit -m "添加新功能模块";git push origin main
+git init;git add .;git commit -m "添加新功能模块";git push origin main
 git push origin main
