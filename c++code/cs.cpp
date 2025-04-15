@@ -1,44 +1,53 @@
 #include<bits/stdc++.h>
 using namespace std;
-struct mg {
-    int x, y, a;
-    mg(int _x, int _y, int _a) : x(_x), y(_y), a(_a) {}
-};
-int dfs(int r, int c, const vector<string>& v) {
-    vector<pair<int, int>> yp = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-    vector<vector<bool>> gm(r, vector<bool>(c, false));
-    queue<mg> q;
-    q.push(mg(0, 0, 1));
-    gm[0][0] = true;
 
-    while (!q.empty()) {
-        mg b = q.front();
-        q.pop();
-        if (b.x == r - 1 && b.y == c - 1) {
-            return b.a;
-        }
-        for (const auto& dir : yp) {
-            int nx = b.x + dir.first;
-            int ny = b.y + dir.second;
-            if (nx >= 0 && nx < r && ny >= 0 && ny < c &&
-                !gm[nx][ny] && v[nx][ny] == '.') {
-                gm[nx][ny] = true;
-                q.push(mg(nx, ny, b.a + 1));
+bool canGet24(const vector<int>& nums) {
+    char ops[] = {'+', '-', '*'};
+    
+    for (char op1 : ops) {
+        for (char op2 : ops) {
+            for (char op3 : ops) {
+                int result = nums[0];
+                
+                // 第一个运算符
+                if (op1 == '+') result += nums[1];
+                else if (op1 == '-') result -= nums[1];
+                else result *= nums[1];
+                
+                // 第二个运算符
+                if (op2 == '+') result += nums[2];
+                else if (op2 == '-') result -= nums[2];
+                else result *= nums[2];
+                
+                // 第三个运算符
+                if (op3 == '+') result += nums[3];
+                else if (op3 == '-') result -= nums[3];
+                else result *= nums[3];
+                
+                if (result == 24) {
+                    return true;
+                }
             }
         }
     }
-
-    return -1;
+    return false;
 }
+
 int main() {
-    int r, c;
-    cin >> r >> c;
-
-    vector<string> v(r);
-    for (int i = 0; i < r; ++i) {
-        cin >> v[i];
+    int n;
+    cin >> n;
+    int count = 0;
+    
+    for (int i = 0; i < n; ++i) {
+        vector<int> nums(4);
+        for (int j = 0; j < 4; ++j) {
+            cin >> nums[j];
+        }
+        if (canGet24(nums)) {
+            count++;
+        }
     }
-    cout << dfs(r, c, v) << endl;
-
+    
+    cout << count << endl;
     return 0;
 }
