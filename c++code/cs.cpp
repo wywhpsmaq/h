@@ -1,53 +1,40 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
-
-bool canGet24(const vector<int>& nums) {
-    char ops[] = {'+', '-', '*'};
-    
-    for (char op1 : ops) {
-        for (char op2 : ops) {
-            for (char op3 : ops) {
-                int result = nums[0];
-                
-                // 第一个运算符
-                if (op1 == '+') result += nums[1];
-                else if (op1 == '-') result -= nums[1];
-                else result *= nums[1];
-                
-                // 第二个运算符
-                if (op2 == '+') result += nums[2];
-                else if (op2 == '-') result -= nums[2];
-                else result *= nums[2];
-                
-                // 第三个运算符
-                if (op3 == '+') result += nums[3];
-                else if (op3 == '-') result -= nums[3];
-                else result *= nums[3];
-                
-                if (result == 24) {
-                    return true;
-                }
-            }
+vector<vector<pair<int, int>>> g;
+vector<pair<int, int>> ans;
+int dx[4] = {2,1,-1,-2};
+int dy[4] = {1,2,2,1};
+bool vz[9999][9999];
+int a, b;
+int dfs(int x, int y) {
+    if (x == a && y == b) {
+        g.push_back(ans);
+        return 0;
+    }
+    for (int i = 0; i < 4; i++) {
+        int nx = x + dx[i], ny = y + dy[i];
+        if (nx >= 0 && nx <= a && ny >= 0 && ny <= b && !vz[nx][ny]) {
+            vz[nx][ny] = 1;
+            ans.push_back({nx, ny});
+            dfs(nx, ny);
+            ans.pop_back();
+            vz[nx][ny] = 0;
         }
     }
-    return false;
+    return 0;
 }
-
 int main() {
-    int n;
-    cin >> n;
-    int count = 0;
-    
-    for (int i = 0; i < n; ++i) {
-        vector<int> nums(4);
-        for (int j = 0; j < 4; ++j) {
-            cin >> nums[j];
+    a = 4, b = 8;
+    ans.push_back({0, 0});
+    vz[0][0] = 1;
+    dfs(0, 0);
+    for (int i = 0; i < g.size(); i++) {
+        cout << i + 1 << ": ";
+        for (int j = 0; j < g[i].size(); j++) {
+            if (j > 0) cout << "->";
+            cout << g[i][j].first << "," << g[i][j].second;
         }
-        if (canGet24(nums)) {
-            count++;
-        }
+        cout << endl;
     }
-    
-    cout << count << endl;
     return 0;
 }
