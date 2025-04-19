@@ -9,12 +9,10 @@ inline T read() {
     char ch = getchar();
     while (!isdigit(ch)) {
         if (ch == '-') f = -1;
-        ch = getchar();
-    }
+        ch = getchar();}
     while (isdigit(ch)) {
         x = (x << 3) + (x << 1) + (ch ^ 48);
-        ch = getchar();
-    }
+        ch = getchar();}
     return x * f;
 }
 //超级快读
@@ -37,8 +35,7 @@ template<typename T>
 inline void write(T x) {
     if (x < 0) {
         putchar('-');
-        x = -x;
-    }
+        x = -x;}
     if (x > 9) write(x / 10);
     putchar(x % 10 + '0');
 }
@@ -63,8 +60,7 @@ struct INT {
             s.push_back(num % BASE);
             num /= BASE;
         } while (num);
-        return *this;
-    }
+        return *this;}
     INT operator= (const string& str) {
         s.clear();
         sign = (str[0] == '-') ? -1 : 1;
@@ -73,17 +69,14 @@ struct INT {
         for (int i = 0; i < len; i++) {
             int end = str.length() - i * WIDTH;
             int start = max(0, end - WIDTH);
-            s.push_back(stoi(str.substr(start, end - start)));
-        }
-        return *this;
-    }
+            s.push_back(stoi(str.substr(start, end - start)));}
+        return *this;}
     bool operator< (const INT& b) const {
         if (sign != b.sign) return sign < b.sign;
         if (s.size() != b.s.size()) return s.size() * sign < b.s.size() * b.sign;
         for (int i = s.size() - 1; i >= 0; i--)
             if (s[i] != b.s[i]) return s[i] * sign < b.s[i] * b.sign;
-        return false;
-    }
+        return false;}
     bool operator> (const INT& b) const { return b < *this; }
     bool operator<= (const INT& b) const { return !(b < *this); }
     bool operator>= (const INT& b) const { return !(*this < b); }
@@ -98,11 +91,9 @@ struct INT {
         for (size_t i = 0; i < c.s.size(); i++) {
             carry += (i < s.size() ? s[i] : 0) + (i < b.s.size() ? b.s[i] : 0);
             c.s[i] = carry % BASE;
-            carry /= BASE;
-        }
+            carry /= BASE;}
         if (carry) c.s.push_back(carry);
-        return c;
-    }
+        return c;}
     INT operator- (const INT& b) const {
         if (sign != b.sign) return *this + (-b);
         if ((*this).abs() < b.abs()) return -(b - *this);
@@ -113,11 +104,9 @@ struct INT {
         for (size_t i = 0; i < s.size(); i++) {
             carry = s[i] - (i < b.s.size() ? b.s[i] : 0) - carry;
             c.s[i] = carry < 0 ? carry + BASE : carry;
-            carry = carry < 0;
-        }
+            carry = carry < 0;}
         while (c.s.size() > 1 && c.s.back() == 0) c.s.pop_back();
-        return c;
-    }
+        return c;}
     INT operator* (const INT& b) const {
         INT c;
         c.sign = sign * b.sign;
@@ -130,12 +119,9 @@ struct INT {
                     mul += c.s[k];
                     c.s[k] = mul % BASE;
                     mul /= BASE;
-                    k++;
-                }
-            }
+                    k++;}}
         while (c.s.size() > 1 && c.s.back() == 0) c.s.pop_back();
-        return c;
-    }
+        return c;}
     INT operator/ (const INT& b) const {
         if (b.s.size() == 1 && b.s[0] == 0)
             throw runtime_error("Division by zero");
@@ -143,7 +129,6 @@ struct INT {
             return INT(0);
         if (this->abs() < b.abs())
             return INT(0);
-
         INT c;
         c.sign = sign * b.sign;
         INT temp = this->abs();
@@ -155,56 +140,44 @@ struct INT {
             INT trial = divisor;
             for (int i = 0; i < current_width; i++)
                 trial.s.insert(trial.s.begin(), 0);
-
             int q = 0;
             while (temp >= trial) {
                 temp -= trial;
-                q++;
-            }
+                q++;}
             result.push_back(q);
             while (temp.s.size() > 1 && temp.s.back() == 0)
-                temp.s.pop_back();
-        }
+                temp.s.pop_back();}
         reverse(result.begin(), result.end());
         c.s = result;
         if (c.s.empty())
             c.s.push_back(0);
-
-        return c;
-    }
+        return c;}
     INT operator% (const INT& b) const {
         INT c = *this - *this / b * b;
         c.sign = 1;
-        return c;
-    }
+        return c;}
     INT operator- () const {
         INT c = *this;
         c.sign = -sign;
-        return c;
-    }
+        return c;}
     INT abs() const {
         INT c = *this;
         c.sign = 1;
-        return c;
-    }
+        return c;}
     INT operator<< (const int n) const {
         if (n == 0) return *this;
         if (n < 0) return *this >> (-n);
         INT result = *this;
         for (int i = 0; i < n; i++) {
-            result *= 2;
-        }
-        return result;
-    }
+            result *= 2;}
+        return result;}
     INT operator>> (const int n) const {
         if (n == 0) return *this;
         if (n < 0) return *this << (-n);
         INT result = *this;
         for (int i = 0; i < n; i++) {
-            result /= 2;
-        }
-        return result;
-    }
+            result /= 2;}
+        return result;}
     INT operator& (const INT& b) const {
         INT result;
         result.sign = sign & b.sign;
@@ -215,10 +188,8 @@ struct INT {
         bin2 = string(maxLen - bin2.length(), '0') + bin2;
         string resultBin;
         for (int i = 0; i < maxLen; i++) {
-            resultBin += ((bin1[i] - '0') & (bin2[i] - '0')) + '0';
-        }
-        return INT(binaryToDecimal(resultBin));
-    }
+            resultBin += ((bin1[i] - '0') & (bin2[i] - '0')) + '0';}
+        return INT(binaryToDecimal(resultBin));}
     INT operator| (const INT& b) const {
         INT result;
         result.sign = sign | b.sign;
@@ -229,10 +200,8 @@ struct INT {
         bin2 = string(maxLen - bin2.length(), '0') + bin2;
         string resultBin;
         for (int i = 0; i < maxLen; i++) {
-            resultBin += ((bin1[i] - '0') | (bin2[i] - '0')) + '0';
-        }
-        return INT(binaryToDecimal(resultBin));
-    }
+            resultBin += ((bin1[i] - '0') | (bin2[i] - '0')) + '0';}
+        return INT(binaryToDecimal(resultBin));}
     INT operator^ (const INT& b) const {
         INT result;
         result.sign = sign ^ b.sign;
@@ -243,10 +212,8 @@ struct INT {
         bin2 = string(maxLen - bin2.length(), '0') + bin2;
         string resultBin;
         for (int i = 0; i < maxLen; i++) {
-            resultBin += ((bin1[i] - '0') ^ (bin2[i] - '0')) + '0';
-        }
-        return INT(binaryToDecimal(resultBin));
-    }
+            resultBin += ((bin1[i] - '0') ^ (bin2[i] - '0')) + '0';}
+        return INT(binaryToDecimal(resultBin));}
 private:
     string toBinary() const {
         INT num = this->abs();
@@ -254,39 +221,31 @@ private:
         string result;
         while (num > INT(0)) {
             result = (char)((num % INT(2)).s[0] + '0') + result;
-            num /= 2;
-        }
-        return result;
-    }
+            num /= 2;}
+        return result;}
     static string binaryToDecimal(const string& binary) {
         INT result = 0;
         INT power = 1;
         for (int i = binary.length() - 1; i >= 0; i--) {
             if (binary[i] == '1') {
-                result += power;
-            }
-            power *= 2;
-        }
-        return result.toString();
-    }
+                result += power;}
+            power *= 2;}
+        return result.toString();}
 public:
     string toString() const {
         stringstream ss;
         ss << *this;
-        return ss.str();
-    }
+        return ss.str();}
     friend istream& operator>> (istream& in, INT& x) {
         string s;
         in >> s;
         x = s;
-        return in;
-    }
+        return in;}
     friend ostream& operator<< (ostream& out, const INT& x) {
         if (x.sign == -1)out << '-';
         out << (x.s.empty() ? 0 : x.s.back());
         for (int i = x.s.size() - 2; i >= 0; i--)out << setw(WIDTH) << setfill('0') << x.s[i];
-        return out;
-    }
+        return out;}
     INT operator++ () { return *this = *this + 1; }
     INT operator++ (int) { INT old = *this; ++ (*this); return old; }
     INT operator-- () { return *this = *this - 1; }
@@ -302,13 +261,10 @@ template<typename T>
 int partition(T arr[], int low, int high) {
     T pivot = arr[high];
     int i = low - 1;
-
     for (int j = low; j < high; j++) {
         if (arr[j] <= pivot) {
             i++;
-            std::swap(arr[i], arr[j]);
-        }
-    }
+            std::swap(arr[i], arr[j]);}}
     std::swap(arr[i + 1], arr[high]);
     return i + 1;
 }
@@ -317,20 +273,17 @@ void fastsort(T arr[], int low, int high) {
     if (low < high) {
         int pi = partition(arr, low, high);
         fastsort(arr, low, pi - 1);
-        fastsort(arr, pi + 1, high);
-    }
+        fastsort(arr, pi + 1, high);}
 }
 //快速幂,求a^b%m
 ll fast_pow(ll a, ll b, ll m) {
     ll result = 1;
     a %= m;
     while (b > 0) {
-        if (b & 1) {  // 如果b的当前位为1
-            result = (result * a) % m;
-        }
-        a = (a * a) % m;  // 平方
-        b >>= 1;  // b右移一位
-    }
+        if (b & 1) {
+            result = (result * a) % m;}
+        a = (a * a) % m;
+        b >>= 1;}
     return result;
 }
 //归并排序
@@ -352,20 +305,16 @@ void merge(int arr[], int left, int mid, int right) {
             i++;
         } else {
             arr[k] = rightArr[j];
-            j++;
-        }
-        k++;
-    }
+            j++;}
+        k++;}
     while (i < n1) {
         arr[k] = leftArr[i];
         i++;
-        k++;
-    }
+        k++;}
     while (j < n2) {
         arr[k] = rightArr[j];
         j++;
-        k++;
-    }
+        k++;}
     delete[] leftArr;
     delete[] rightArr;
 }
@@ -374,8 +323,7 @@ void mergesort(int arr[], int left, int right) {
         int mid = left + (right - left) / 2;
         mergesort(arr, left, mid);
         mergesort(arr, mid + 1, right);
-        merge(arr, left, mid, right);
-    }
+        merge(arr, left, mid, right);}
 }
 //二分查找
 int erfen(int arr[], int left, int right, int target) {
@@ -383,8 +331,7 @@ int erfen(int arr[], int left, int right, int target) {
         int mid = left + (right - left) / 2;
         if (arr[mid] == target) return mid;
         if (arr[mid] < target) left = mid + 1;
-        else right = mid - 1;
-    }
+        else right = mid - 1;}
     return -1;
 }
 //Miller-Rabin素数测试
@@ -396,8 +343,7 @@ bool zs(int n) {
     int r = 0;
     while (d % 2 == 0) {
         d /= 2;
-        r++;
-    }
+        r++;}
     ll bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
     for (ll a : bases) {
         if (a >= n) break;
@@ -408,11 +354,8 @@ bool zs(int n) {
             x = (x * x) % n;
             if (x == n - 1) {
                 composite = false;
-                break;
-            }
-        }
-        if (composite) return false;
-    }
+                break;}}
+        if (composite) return false;}
     return true;
 }
 int main() {

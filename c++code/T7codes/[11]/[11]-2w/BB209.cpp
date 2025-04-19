@@ -36,7 +36,7 @@ bool check(int x, int y) {
 void dfs(int now, int num) {
     // 边界条件：处理完所有格子
     if (now > n * n) {
-        ans[num]++; // 统计放置num个车的方案数
+        ans[num]++;
         return;
     }
 
@@ -48,7 +48,7 @@ void dfs(int now, int num) {
     dfs(now + 1, num);
 
     // 选择2：在当前位置放置车
-    if (p[x][y] == 1 && check(x, y)) { // 该位置不是洞且不会攻击到其他车
+    if (p[x][y] == 1 && check(x, y)) {
         v[x][y] = true; // 标记放置
         dfs(now + 1, num + 1); // 继续递归
         v[x][y] = false; // 回溯，取消标记
@@ -63,11 +63,10 @@ int main() {
         }
     }
     
-    ans.resize(n * n + 1, 0); // 初始化方案数数组
+    ans.resize(n * n + 1, 0);
     dfs(1, 0);
     
-    // 输出所有非零方案数
-    for (int i = 0; i <= n * n; i++) {
+    for (int i = 1; i <= n * n; i++) {
         if (ans[i] > 0) {
             cout << ans[i] << '\n';
         }
