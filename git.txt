@@ -1,0 +1,19 @@
+
+git init
+git remote add origin https://github.com/wywhpsmaq/h.git
+
+_______________________________________________________
+
+git config --global --unset http.proxy;git config --global --unset https.proxy;git push origin main
+git config --global --unset http.proxy;git config --global --unset https.proxy;git init;git add .;git commit -m "tj1";git push origin main
+git push origin main
+git push origin main --force
+
+
+echo "# h" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/wywhpsmaq/h.git
+git push -u origin main

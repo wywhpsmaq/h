@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数字消除游戏</title>
+    <style>
+        /* 新增规则弹窗样式 */
+        .rules-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: 999;
+        }
+        .rules-content {
+            position: relative;
+            background: white;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 10px;
+            line-height: 1.6;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .rules-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .difficulty {
+            margin: 20px;
+        }
+        #game-container {
+            display: grid;
+            gap: 5px;
+            margin: 20px auto;
+            max-width: 600px;
+            position: relative;
+        }
+        .cell {
+            border: 1px solid #000;
+            padding: 20px;
+            cursor: pointer;
+            background-color: #fff;
+            transition: background-color 0.3s;
+            position: relative;
+            z-index: 1; /* 数字的 z-index */
+        }
+        .cell.eliminated {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .cell.selected {
+            background-color: #a0d8ef;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+        }
+        /* 连线动画 */
+         .line {
+            position: absolute;
+            height: 4px;
+            background: #2196F3;
+            transform-origin: left;
+            z-index: 2;
+            border-radius: 2px;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+            /* 移除动画相关属性 */
+        }
+
+        .line::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid #2196F3;
+            transform: translateY(-50%);
+        }
+
+        @keyframes drawLine {
+            from {
+                transform: scaleX(0);
+            }
+            to {
+                transform: scaleX(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    </style>
+</head>
+<body>
+    <button class="rules-btn" onclick="showRules()">游戏规则</button>
+    <div id="rulesModal" class="rules-modal">
+        <div class="rules-content">
+            <span class="close-btn" onclick="hideRules()">&times;</span>
+            <h2>📖 数字消除游戏规则</h2>
+            
+            <h3>🎯 游戏目标</h3>
+            <p>消除所有数字！如果最后剩下无法消除的数字则失败。</p>
+
+            <h3>⚙️ 操作规则</h3>
+            <ul>
+                <li>选择难度：4x4 / 6x6 / 10x10</li>
+                <li>点击<strong>两个数字</strong>，它们会除以最大公约数（GCD）</li>
+                <li>如果结果为1则消除，否则更新为新的数值</li>
+            </ul>
+
+            <h3>🌟 胜利条件</h3>
+            <p>清空所有数字即获胜！</p>
+
+            <h3>💡 策略提示</h3>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+                <p>➊ 优先消除大数字（可能有更多组合）</p>
+                <p>➋ 保留小质数（2, 3, 5等）</p>
+                <p>➌ 注意数字间的倍数关系</p>
+            </div>
+
+            <h3>📝 示例</h3>
+            <p>选中数字 <strong>12</strong> 和 <strong>18</strong>：</p>
+            <pre>
+最大公约数 = 6
+12 → 12 ÷ 6 = 2
+18 → 18 ÷ 6 = 3
+
+这里食用感更加:https://www.luogu.com.cn/paste/ypj48kth;
+            </pre>
+        </div>
+    </div>
+    <div class="container">
+        <div class="difficulty">
+            <button onclick="startGame(4)">4x4</button>
+            <button onclick="startGame(6)">6x6</button>
+            <button onclick="startGame(10)">10x10</button>
+        </div>
+        <div id="game-container"></div>
+    </div>
+
+    <script>
+        // 新增规则弹窗控制函数
+        function showRules() {
+            document.getElementById('rulesModal').style.display = 'block';
+        }
+        function hideRules() {
+            document.getElementById('rulesModal').style.display = 'none';
+        }
+
+        // 点击外部关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('rulesModal');
+            if (event.target == modal) {
+                hideRules();
+            }
+        }
+        let grid = [];
+        let size = 4;
+        let firstSelected = null;
+
+        function startGame(newSize) {
+            size = newSize;
+            grid = generateGrid();
+            firstSelected = null;
+            createGrid();
+        }
+
+        function generateGrid() {
+            let newGrid = [];
+            // 生成初始随机数（3-100）
+            for (let i = 0; i < size; i++) {
+                let row = [];
+                for (let j = 0; j < size; j++) {
+                    let num = Math.floor(Math.random() * 98) + 3;
+                    row.push({ value: num, eliminated: false });
+                }
+                newGrid.push(row);
+            }
+            // 确保至少有一个有效数对
+            ensureValidPair(newGrid);
+            return newGrid;
+        }
+
+        function ensureValidPair(grid) {
+            // 随机选择两个位置设置为偶数
+            let i1 = Math.floor(Math.random() * size);
+            let j1 = Math.floor(Math.random() * size);
+            let i2 = Math.floor(Math.random() * size);
+            let j2 = Math.floor(Math.random() * size);
+            while (i1 === i2 && j1 === j2) {
+                i2 = Math.floor(Math.random() * size);
+                j2 = Math.floor(Math.random() * size);
+            }
+            grid[i1][j1].value = getEvenNumber();
+            grid[i2][j2].value = getEvenNumber();
+        }
+
+        function getEvenNumber() {
+            let num;
+            do {
+                num = Math.floor(Math.random() * 98) + 3;
+            } while (num % 2 !== 0);
+            return num;
+        }
+
+        function createGrid() {
+            const container = document.getElementById('game-container');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell' + (grid[i][j].eliminated ? ' eliminated' : '');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.textContent = grid[i][j].eliminated ? '' : grid[i][j].value;
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(i, j) {
+            if (grid[i][j].eliminated) return;
+
+            if (!firstSelected) {
+                firstSelected = { i, j };
+                updateSelectedStyle();
+            } else {
+                if (firstSelected.i === i && firstSelected.j === j) {
+                    firstSelected = null;
+                    updateSelectedStyle();
+                    return;
+                }
+                
+                const a = grid[firstSelected.i][firstSelected.j].value;
+                const b = grid[i][j].value;
+                const gcd = calculateGCD(a, b);
+
+                if (gcd === 1) {
+                    alert('这两个数没有公约数！');
+                    firstSelected = null;
+                    updateSelectedStyle();
+                    return;
+                }
+
+                // 绘制连线
+                drawLine(firstSelected.i, firstSelected.j, i, j);
+
+                // 更新第一个数字
+                const newA = a / gcd;
+                grid[firstSelected.i][firstSelected.j].value = newA;
+                grid[firstSelected.i][firstSelected.j].eliminated = newA === 1;
+
+                // 更新第二个数字
+                const newB = b / gcd;
+                grid[i][j].value = newB;
+                grid[i][j].eliminated = newB === 1;
+
+                // 延迟更新网格显示，等待动画完成
+                setTimeout(() => {
+                    updateGridDisplay();
+                    checkGameStatus();
+                    firstSelected = null;
+                    updateSelectedStyle();
+                }, 600); // 改为0.6秒
+            }
+        }
+
+        function drawLine(i1, j1, i2, j2) {
+            const container = document.getElementById('game-container');
+            const cell1 = document.querySelector(`[data-row="${i1}"][data-col="${j1}"]`);
+            const cell2 = document.querySelector(`[data-row="${i2}"][data-col="${j2}"]`);
+
+            // 计算坐标
+            const rect1 = cell1.getBoundingClientRect();
+            const rect2 = cell2.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const x1 = rect1.left + rect1.width/2 - containerRect.left;
+            const y1 = rect1.top + rect1.height/2 - containerRect.top;
+            const x2 = rect2.left + rect2.width/2 - containerRect.left;
+            const y2 = rect2.top + rect2.height/2 - containerRect.top;
+
+            const deltaX = x2 - x1;
+            const deltaY = y2 - y1;
+            const length = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+            const angle = Math.atan2(deltaY, deltaX);
+
+            // 直接创建完整连线
+            const line = document.createElement('div');
+            line.className = 'line';
+            line.style.width = `${length}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1}px`;
+            line.style.transform = `rotate(${angle}rad)`;
+            container.appendChild(line);
+
+            // 0.6秒后移除
+            setTimeout(() => {
+                line.remove();
+            }, 600);
+        }
+
+        function calculateGCD(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function updateSelectedStyle() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('selected');
+            });
+            if (firstSelected) {
+                const selectedCell = document.querySelector(
+                    `[data-row="${firstSelected.i}"][data-col="${firstSelected.j}"]`
+                );
+                if (selectedCell) selectedCell.classList.add('selected');
+            }
+        }
+
+        function updateGridDisplay() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                const i = parseInt(cell.dataset.row);
+                const j = parseInt(cell.dataset.col);
+                const cellData = grid[i][j];
+                cell.textContent = cellData.eliminated ? '' : cellData.value;
+                cell.classList.toggle('eliminated', cellData.eliminated);
+            });
+        }
+
+        function checkGameStatus() {
+            // 检查胜利条件
+            let allEliminated = true;
+            for (let row of grid) {
+                for (let cell of row) {
+                    if (!cell.eliminated) {
+                        allEliminated = false;
+                        break;
+                    }
+                }
+                if (!allEliminated) break;
+            }
+            if (allEliminated) {
+                alert('恭喜！游戏成功！');
+                return;
+            }
+
+            // 检查失败条件
+            if (!hasValidPair()) {
+                alert('游戏失败！没有可操作的对数了。');
+            }
+        }
+
+        function hasValidPair() {
+            const activeNumbers = [];
+            for (let row of grid) {
+                for (let cell of row) {
+                    if (!cell.eliminated) activeNumbers.push(cell.value);
+                }
+            }
+            
+            for (let i = 0; i < activeNumbers.length; i++) {
+                for (let j = i + 1; j < activeNumbers.length; j++) {
+                    if (calculateGCD(activeNumbers[i], activeNumbers[j]) > 1) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // 初始化游戏
+        startGame(4);
+    </script>
+</body>
+</html>

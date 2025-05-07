@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>David的扫雷游戏</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --container-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --border-color: #c0c6cc;
+            --cell-bg: #f0f2f5;
+            --cell-hover: #e5e9ed;
+            --info-bg: #f0f2f5;
+            --modal-overlay: rgba(0, 0, 0, 0.6);
+            --shadow-color: rgba(0, 0, 0, 0.15);
+            --number-shadow: rgba(0, 0, 0, 0.1);
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --container-gradient: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            --button-gradient: linear-gradient(to right, #3498db, #2980b9);
+            --danger-gradient: linear-gradient(to right, #e74c3c, #c0392b);
+            --success-gradient: linear-gradient(120deg, #2ecc71, #27ae60);
+            --info-gradient: linear-gradient(120deg, #3498db, #2980b9);
+            --warning-gradient: linear-gradient(120deg, #f1c40f, #f39c12);
+            --mine-gradient: linear-gradient(120deg, #e74c3c, #c0392b);
+            --bg-animated: linear-gradient(
+                -45deg,
+                #f5f7fa,
+                #c3cfe2,
+                #e0eafc,
+                #cfdef3
+            );
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --border-color: #454545;
+            --cell-bg: #2a2a2a;
+            --cell-hover: #353535;
+            --info-bg: #2a2a2a;
+            --modal-overlay: rgba(0, 0, 0, 0.8);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --number-shadow: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            --container-gradient: linear-gradient(to bottom, rgba(30, 30, 30, 0.95), rgba(30, 30, 30, 0.85));
+            --bg-animated: linear-gradient(
+                -45deg,
+                #1a1a1a,
+                #2d2d2d,
+                #232526,
+                #414345
+            );
+        }
+
+        body {
+            background: var(--bg-animated);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        #game-container, #password-screen {
+            display: none;
+            background: var(--container-gradient);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color),
+                       0 0 0 1px rgba(255, 255, 255, 0.1),
+                       inset 0 0 20px rgba(255, 255, 255, 0.05);
+            margin: 20px;
+            transition: all 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px var(--shadow-color);
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #3498db, #2ecc71, #3498db);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shine 10s linear infinite;
+        }
+        @keyframes shine {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        h5 {
+            color: #6c757d;
+            text-align: center;
+            margin-top: -20px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        #controls {
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        select, button, input {
+            padding: 12px 20px;
+            border: 2px solid var(--bg-color);
+            border-radius: 8px;
+            margin: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        select {
+            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 12px 25px;
+            color: var(--text-color);
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        select option {
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] select option {
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+
+        select:hover {
+            border-color: #3498db;
+        }
+        button {
+            background: var(--button-gradient);
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 100px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+        }
+        #clear-records {
+            background: var(--danger-gradient);
+        }
+        #info {
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+            font-weight: 600;
+        }
+        #info span {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #timer {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            color: var(--text-color);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px var(--shadow-color);
+        }
+        #best-time {
+            color: #ffd700;
+            text-shadow: 1px 1px 2px var(--shadow-color);
+        }
+        #minefield {
+            border-collapse: collapse;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            overflow: hidden;
+        }
+        #game-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            background-color: var(--cell-bg);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            text-shadow: 1px 1px 1px var(--number-shadow);
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            letter-spacing: -1px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+        .cell:hover {
+            background-color: var(--cell-hover);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            z-index: 2;
+        }
+        .revealed {
+            background-color: var(--container-bg);
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+        .mine {
+            background-color: #dc3545;
+            animation: explode 0.5s ease;
+        }
+        @keyframes explode {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .flag {
+            background-color: #ffd700;
+            animation: flag 0.3s ease;
+        }
+        @keyframes flag {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .number-1 { color: #2ecc71; }
+        .number-2 { color: #3498db; }
+        .number-3 { color: #e74c3c; }
+        .number-4 { color: #9b59b6; }
+        .number-5 { color: #f1c40f; }
+        .number-6 { color: #1abc9c; }
+        .number-7 { color: #e67e22; }
+        .number-8 { color: #34495e; }
+
+        [data-theme="dark"] .number-1 { color: #2ecc71; }
+        [data-theme="dark"] .number-2 { color: #3498db; }
+        [data-theme="dark"] .number-3 { color: #ff6b6b; }
+        [data-theme="dark"] .number-4 { color: #a88beb; }
+        [data-theme="dark"] .number-5 { color: #ffd93d; }
+        [data-theme="dark"] .number-6 { color: #4ecdc4; }
+        [data-theme="dark"] .number-7 { color: #ff9f43; }
+        [data-theme="dark"] .number-8 { color: #a4b0be; }
+
+        @keyframes celebration {
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+        
+        #victory-animation {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .celebrating {
+            display: block !important;
+            animation: celebration 1s ease-in-out infinite;
+        }
+        #rules-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+            z-index: 1001;
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            margin: 10% auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px var(--shadow-color);
+            animation: modalSlide 0.3s ease;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        @keyframes modalSlide {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-button {
+            float: right;
+            cursor: pointer;
+            font-size: 28px;
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+        .close-button:hover {
+            color: #dc3545;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--container-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        #clear-records {
+            margin-left: 10px;
+            background-color: #e74c3c;
+        }
+        #clear-records:hover {
+            background-color: #c0392b;
+        }
+
+        /* 游戏结束动画 */
+        @keyframes gameOverAnimation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(2); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            color: #dc3545;
+            text-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
+            z-index: 1000;
+            animation: gameOverAnimation 2s ease-in-out;
+        }
+
+        /* 暂停遮罩 */
+        #pause-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8));
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        #pause-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 48px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* 暂停按钮 */
+        #pause-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <button id="pause-button" onclick="togglePause()">⏸️</button>
+
+    <div id="pause-overlay" onclick="togglePause()">
+        <div id="pause-text">游戏已暂停<br>点击继续</div>
+    </div>
+
+    <div id="password-screen">
+        <h2>请输入密码：</h2>
+        <input type="password" id="password-input">
+        <button onclick="checkPassword()">确认</button>
+    </div>
+
+    <div id="game-container">
+        <h1>David的扫雷游戏</h1>
+        <h5>David×Wywhpsmaq</h5>
+        <h5>LG1公测备份号移至游戏规则</h5>
+        <div id="controls">
+            <select id="difficulty">
+                <option value="normal">普通 (10x10, 10雷)</option>
+                <option value="expert">高级 (30x30, 90雷)</option>
+                <option value="custom">自定义</option>
+            </select>
+            <div id="custom-settings" style="display: none;">
+                行数: <input type="number" id="custom-rows" min="1">
+                列数: <input type="number" id="custom-cols" min="1">
+                雷数: <input type="number" id="custom-mines" min="1">
+            </div>
+            <button onclick="startGame()">开始游戏</button>
+            <button onclick="showRules()">游戏规则</button>
+            <button id="clear-records" onclick="confirmClearRecords()">清空记录</button>
+        </div>
+        <div id="info">
+            <span>剩余生命: <span id="lives">2</span></span>
+            <span>剩余雷数: <span id="remaining-mines">10</span></span>
+            <span>用时: <span id="timer">00:00</span></span>
+            <span>最佳时间: <span id="best-time">--:--</span></span>
+        </div>
+        <div id="game-board">
+            <table id="minefield"></table>
+        </div>
+    </div>
+
+    <div id="victory-animation">🏆 胜利！🎉</div>
+
+    <div id="rules-modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="hideRules()">&times;</span>
+            <h2>游戏规则说明</h2>
+            <p>本游戏由  Copilot & Wywhpsmaq  提供支持，因此可能会存在错误。请在游玩前仔细查看源代码内容。</p>
+            <p>LG1公测备LcgIcp:Wywhpsmaq_lcg1036</p>
+            <p>本游戏有Wywhpsmaq开发，如有问题请至 https://www.luogu.com.cn/chat 私信wxhhpsmaq__</p>
+            <ul>
+                <li>左键点击：揭开方块</li>
+                <li>右键点击：标记地雷</li>
+                <li>数字表示周围8个格子中的地雷数量</li>
+                <li>普通模式：有2条生命，踩到地雷不会立即结束</li>
+                <li>高级模式：有4条生命，但地雷数量更多</li>
+                <li>自定义模式：可以自己设置地图大小和地雷数量</li>
+                <li>胜利条件：</li>
+                <ul>
+                    <li>正确标记所有地雷</li>
+                    <li>或者揭开所有非地雷方块</li>
+                </ul>
+            </ul>
+            <h2>大事祭</h2>
+            <ul>
+                <li>2025年4月3日：开始开发游戏</li>
+                <li>2025年4月3日：完成基本功能</li>
+                <li>2025年4月3日：添加了密码验证系统</li>
+                <li>2025年4月3日：添加了生命系统</li>
+                <li>2025年4月4日：添加了计时器</li>
+                <li>2025年4月5日：添加了最佳时间记录</li>
+                <li>2025年4月5日：添加了游戏规则说明</li>
+                <li>2025年4月5日：美化了游戏界面，添加了深色IU</li>
+                <li>2025年4月5日：添加了记录重置功能</li>
+                <li>2025年4月5日：进入LG1进行公测</li>
+	            <li>2025年4月6日：添加了暂停功能和游戏结束时的庆祝动画</li>
+	            <li>2025年4月7日：结束LG1公测</li>
+                <li>2025年4月7日：修复了亿些bug</li>
+                <li>2025年4月7日：提交定稿至Github</li>
+                <li>2025年4月7日：修改游戏界面</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        alert('本游戏由  Copilot & Wywhpsmaq  提供支持，因此可能会存在错误。请在游玩前仔细查看源代码内容。');
+        let gameState = {
+            board: [],
+            mines: new Set(),
+            revealed: new Set(),
+            flags: new Set(),
+            lives: 2,
+            totalMines: 10,
+            rows: 10,
+            cols: 10,
+            isAuthenticated: false,
+            isFirstClick: true,
+            timer: null,
+            startTime: null,
+            difficulty: 'normal',
+            bestTimes: {
+                normal: localStorage.getItem('bestTime_normal') || Infinity,
+                expert: localStorage.getItem('bestTime_expert') || Infinity,
+                custom: localStorage.getItem('bestTime_custom') || Infinity
+            },
+            isGameOver: false,
+            isPaused: false,
+            pauseTime: 0,
+            totalPauseTime: 0
+        };
+
+        function checkPassword() {
+            const password = document.getElementById('password-input').value;
+            if (password === 'david'|| password === 'wywhpsmaq') {
+                document.getElementById('password-screen').style.display = 'none';
+                document.getElementById('game-container').style.display = 'block';
+                gameState.isAuthenticated = true;
+            } else {
+                alert('不是哥们，你配玩扫雷吗？');
+                window.close();  // 直接关闭窗口
+            }
+        }
+
+        // 防止通过开发者工具直接显示游戏界面
+        window.onload = function() {
+            if (!gameState.isAuthenticated) {
+                document.getElementById('game-container').style.display = 'none';
+                document.getElementById('password-screen').style.display = 'block';
+            }
+            initTheme();
+            
+            ['normal', 'expert', 'custom'].forEach(diff => {
+                const savedTime = localStorage.getItem(`bestTime_${diff}`);
+                if (savedTime) {
+                    gameState.bestTimes[diff] = parseFloat(savedTime);
+                }
+            });
+            updateBestTimeDisplay();
+        }
+
+        document.getElementById('difficulty').addEventListener('change', function(e) {
+            document.getElementById('custom-settings').style.display = 
+                e.target.value === 'custom' ? 'block' : 'none';
+        });
+
+        function startGame() {
+            if (!gameState.isAuthenticated) {  // 添加验证检查
+                alert('请输入正确的密码！');
+                return;
+            }
+            const difficulty = document.getElementById('difficulty').value;
+            gameState.difficulty = difficulty;
+            updateBestTimeDisplay();
+            switch(difficulty) {
+                case 'normal':
+                    gameState.rows = 10;
+                    gameState.cols = 10;
+                    gameState.totalMines = 10;
+                    gameState.lives = 2;
+                    break;
+                case 'expert':
+                    gameState.rows = 30;
+                    gameState.cols = 30;
+                    gameState.totalMines = 90;
+                    gameState.lives = 4;
+                    break;
+                case 'custom':
+                    gameState.rows = parseInt(document.getElementById('custom-rows').value);
+                    gameState.cols = parseInt(document.getElementById('custom-cols').value);
+                    gameState.totalMines = parseInt(document.getElementById('custom-mines').value);
+                    if (gameState.totalMines >= gameState.rows * gameState.cols) {
+                        alert('雷数不能超过格子数！');
+                        return;
+                    }
+                    gameState.lives = Math.min(gameState.totalMines, 
+                        parseInt(prompt('请输入生命数（不能超过雷数）：')));
+                    break;
+            }
+            gameState.isGameOver = false;
+            gameState.isPaused = false;
+            gameState.pauseTime = 0;
+            gameState.totalPauseTime = 0;
+            document.getElementById('pause-overlay').style.display = 'none';
+            document.getElementById('pause-button').textContent = '⏸️';
+            initializeGame();
+        }
+
+        function initializeGame() {
+            gameState.board = [];
+            gameState.mines.clear();
+            gameState.revealed.clear();
+            gameState.flags.clear();
+            gameState.isFirstClick = true;
+            document.getElementById('lives').textContent = gameState.lives;
+            document.getElementById('remaining-mines').textContent = gameState.totalMines;
+            // 重置计时器
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+            gameState.startTime = null;
+            document.getElementById('timer').textContent = '00:00';
+            // 初始化空棋盘
+            for(let i = 0; i < gameState.rows; i++) {
+                gameState.board[i] = new Array(gameState.cols).fill(0);
+            }
+
+            renderBoard();
+        }
+
+        function startTimer() {
+            if (!gameState.timer) {
+                if (!gameState.startTime) {
+                    gameState.startTime = Date.now();
+                }
+                gameState.timer = setInterval(updateTimer, 1000);
+            }
+        }
+
+        function updateTimer() {
+            const currentTime = Date.now();
+            const elapsedTime = Math.floor((currentTime - gameState.startTime - gameState.totalPauseTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function stopTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+        }
+
+        function placeMines(excludeRow, excludeCol) {
+            gameState.board = [];
+            gameState.mines.clear();
+            
+            // 初始化棋盘
+            for(let i = 0; i < gameState.rows; i++) {
+                gameState.board[i] = new Array(gameState.cols).fill(0);
+            }
+
+            // 创建所有可能的位置
+            const positions = [];
+            for(let i = 0; i < gameState.rows; i++) {
+                for(let j = 0; j < gameState.cols; j++) {
+                    if(Math.abs(i - excludeRow) > 1 || Math.abs(j - excludeCol) > 1) {
+                        positions.push([i, j]);
+                    }
+                }
+            }
+
+            // Fisher-Yates洗牌算法-dl.cpp
+            for(let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+
+            // 放置地雷
+            for(let i = 0; i < gameState.totalMines; i++) {
+                const [row, col] = positions[i];
+                const key = `${row},${col}`;
+                gameState.mines.add(key);
+                // 更新周围数字
+                for(let dx = -1; dx <= 1; dx++) {
+                    for(let dy = -1; dy <= 1; dy++) {
+                        const newRow = row + dx;
+                        const newCol = col + dy;
+                        if(newRow >= 0 && newRow < gameState.rows && 
+                           newCol >= 0 && newCol < gameState.cols) {
+                            gameState.board[newRow][newCol]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        function renderBoard() {
+            const table = document.getElementById('minefield');
+            table.innerHTML = '';
+            for(let i = 0; i < gameState.rows; i++) {
+                const row = table.insertRow();
+                for(let j = 0; j < gameState.cols; j++) {
+                    const cell = row.insertCell();
+                    cell.className = 'cell';
+                    const key = `${i},${j}`;
+                    if(gameState.revealed.has(key)) {
+                        cell.classList.add('revealed');
+                        if(gameState.mines.has(key)) {
+                            cell.classList.add('mine');
+                            cell.textContent = '💣';
+                        } else if(gameState.board[i][j] > 0) {
+                            cell.textContent = gameState.board[i][j];
+                            cell.classList.add(`number-${gameState.board[i][j]}`);
+                        }
+                    } else if(gameState.flags.has(key)) {
+                        cell.classList.add('flag');
+                        cell.textContent = '🚩';
+                    }
+                    
+                    cell.addEventListener('click', () => revealCell(i, j));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleFlag(i, j);
+                    });
+                }
+            }
+        }
+
+        function revealCell(row, col) {
+            if(gameState.isGameOver || gameState.isPaused) return;
+            const key = `${row},${col}`;
+            if(gameState.flags.has(key) || gameState.revealed.has(key)) return;
+
+            if(gameState.isFirstClick) {
+                placeMines(row, col);
+                gameState.isFirstClick = false;
+                startTimer();
+                if(gameState.board[row][col] === 0) {
+                    expandEmptyCells(row, col);
+                }
+            }
+
+            const queue = [[row, col]];
+            while(queue.length > 0) {
+                const [currentRow, currentCol] = queue.shift();
+                const currentKey = `${currentRow},${currentCol}`;
+                
+                if(gameState.revealed.has(currentKey)) continue;
+                gameState.revealed.add(currentKey);
+
+                if(gameState.mines.has(currentKey)) {
+                    gameState.lives--;
+                    document.getElementById('lives').textContent = gameState.lives;
+                    if(gameState.lives <= 0) {
+                        gameState.isGameOver = true;
+                        stopTimer();
+                        showGameOverAnimation();
+                        setTimeout(() => {
+                            alert('游戏结束！请点击"开始游戏"重新开始');
+                            revealAllMines();
+                        }, 2000);
+                        return;
+                    }
+                    continue;
+                }
+
+                if(gameState.board[currentRow][currentCol] === 0) {
+                    for(let i = -1; i <= 1; i++) {
+                        for(let j = -1; j <= 1; j++) {
+                            const newRow = currentRow + i;
+                            const newCol = currentCol + j;
+                            if(newRow >= 0 && newRow < gameState.rows && 
+                               newCol >= 0 && newCol < gameState.cols && 
+                               !gameState.revealed.has(`${newRow},${newCol}`)) {
+                                queue.push([newRow, newCol]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            renderBoard();
+            checkWin();
+        }
+
+        function expandEmptyCells(row, col) {
+            const queue = [[row, col]];
+            const visited = new Set();
+
+            while(queue.length > 0) {
+                const [currentRow, currentCol] = queue.shift();
+                const key = `${currentRow},${currentCol}`;
+                
+                if(visited.has(key)) continue;
+                visited.add(key);
+                gameState.revealed.add(key);
+
+                if(gameState.board[currentRow][currentCol] === 0) {
+                    for(let dx = -1; dx <= 1; dx++) {
+                        for(let dy = -1; dy <= 1; dy++) {
+                            const newRow = currentRow + dx;
+                            const newCol = currentCol + dy;
+                            if(newRow >= 0 && newRow < gameState.rows && 
+                               newCol >= 0 && newCol < gameState.cols) {
+                                queue.push([newRow, newCol]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function toggleFlag(row, col) {
+            if(gameState.isGameOver) return;
+            const key = `${row},${col}`;
+            if(gameState.revealed.has(key)) return;
+
+            if(gameState.flags.has(key)) {
+                gameState.flags.delete(key);
+            } else {
+                gameState.flags.add(key);
+            }
+            document.getElementById('remaining-mines').textContent = 
+                gameState.totalMines - gameState.flags.size;
+            renderBoard();
+            checkWin();
+        }
+
+        function showVictoryAnimation() {
+            const animation = document.getElementById('victory-animation');
+            animation.classList.add('celebrating');
+            setTimeout(() => {
+                animation.classList.remove('celebrating');
+            }, 3000);
+        }
+
+        function showGameOverAnimation() {
+            const gameOver = document.createElement('div');
+            gameOver.textContent = '💥 游戏结束！';
+            gameOver.className = 'game-over';
+            document.body.appendChild(gameOver);
+            
+            setTimeout(() => {
+                document.body.removeChild(gameOver);
+            }, 2000);
+        }
+
+        function checkWin() {
+            const totalCells = gameState.rows * gameState.cols;
+            const revealedCount = gameState.revealed.size;
+            const remainingCells = totalCells - revealedCount;
+            
+            let isWin = false;
+            
+            if(remainingCells === gameState.totalMines) {
+                isWin = true;
+            } else if(gameState.flags.size === gameState.totalMines) {
+                const allCorrect = Array.from(gameState.flags).every(flag => gameState.mines.has(flag));
+                if(allCorrect) {
+                    isWin = true;
+                }
+            }
+
+            if(isWin) {
+                gameState.isGameOver = true;
+                stopTimer();
+
+                const elapsedTime = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
+                const currentBest = parseFloat(gameState.bestTimes[gameState.difficulty]);
+                
+                if (elapsedTime < currentBest) {
+                    gameState.bestTimes[gameState.difficulty] = elapsedTime;
+                    localStorage.setItem(`bestTime_${gameState.difficulty}`, elapsedTime);
+                    updateBestTimeDisplay();
+                    alert(`新纪录！用时: ${Math.floor(elapsedTime / 60)}:${(elapsedTime % 60).toString().padStart(2, '0')}`);
+                }
+                
+                showVictoryAnimation();
+                alert('恭喜你赢了！');
+                revealAllMines();
+            }
+        }
+
+        function revealAllMines() {
+            for(let mine of gameState.mines) {
+                gameState.revealed.add(mine);
+            }
+            renderBoard();
+        }
+
+        function updateBestTimeDisplay() {
+            const bestTime = gameState.bestTimes[gameState.difficulty];
+            const bestTimeElement = document.getElementById('best-time');
+            if (bestTime === Infinity || bestTime === 'Infinity') {
+                bestTimeElement.textContent = '--:--';
+            } else {
+                const minutes = Math.floor(bestTime / 60);
+                const seconds = bestTime % 60;
+                bestTimeElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function showRules() {
+            document.getElementById('rules-modal').style.display = 'block';
+        }
+
+        function hideRules() {
+            document.getElementById('rules-modal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('rules-modal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeButton = document.getElementById('theme-toggle');
+            themeButton.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeButton = document.getElementById('theme-toggle');
+            themeButton.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        function confirmClearRecords() {
+            const password = prompt('请输入管理员密码以清空记录：');
+            if (password === 'wywhpsmaq') {
+                clearAllRecords();
+                alert('所有记录已清空！');
+            } else {
+                alert('不是哥们，只有管理员才可以清空记录！');
+            }
+        }
+
+        function clearAllRecords() {
+            ['normal', 'expert', 'custom'].forEach(diff => {
+                localStorage.removeItem(`bestTime_${diff}`);
+                gameState.bestTimes[diff] = Infinity;
+            });
+            updateBestTimeDisplay();
+        }
+
+        function togglePause() {
+            if (gameState.isGameOver || gameState.isFirstClick) return;
+            
+            gameState.isPaused = !gameState.isPaused;
+            const overlay = document.getElementById('pause-overlay');
+            const pauseButton = document.getElementById('pause-button');
+            
+            if (gameState.isPaused) {
+                overlay.style.display = 'block';
+                pauseButton.textContent = '▶️';
+                gameState.pauseTime = Date.now();
+                stopTimer();
+            } else {
+                overlay.style.display = 'none';
+                pauseButton.textContent = '⏸️';
+                gameState.totalPauseTime += Date.now() - gameState.pauseTime;
+                startTimer();
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.code === 'KeyP') {
+                e.preventDefault();
+                if (!gameState.isGameOver && gameState.timer) {
+                    togglePause();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

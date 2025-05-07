@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>数字消除游戏</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 30px;
+            background: #f7f7f7;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        p, ol {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #gameBoard {
+            margin: 20px auto;
+            display: grid;
+            gap: 5px;
+            max-width: 500px;
+            background: #ecf0f1;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border: 1px solid #ccc;
+            text-align: center;
+            line-height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .cell:hover {
+            background: #e0e0e0;
+        }
+        .selected {
+            background: #f1c40f !important;
+            color: #fff;
+        }
+        .empty {
+            background: #bdc3c7;
+            cursor: default;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .controls label, .controls select, .controls button {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        #message {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>数字消除游戏</h2>
+        <p>规则说明：</p>
+        <ol>
+            <li>可选择三种难度：4x4、6x6、10x10。</li>
+            <li>盘面随机填充数字，范围为3~100。</li>
+            <li>每次点击两个数，将这两个数分别除以它们的最大公约数。如果除以后结果为 1 则移除此数字，否则更新显示除后的数字。</li>
+            <li>当所有数字全部消除时游戏成功；如果没有有效移动时游戏失败。</li>
+        </ol>
+        <div class="controls">
+            <label for="difficulty">选择难度：</label>
+            <select id="difficulty">
+                <option value="4">4 x 4</option>
+                <option value="6">6 x 6</option>
+                <option value="10">10 x 10</option>
+            </select>
+            <button id="startBtn">开始游戏</button>
+        </div>
+        <div id="gameBoard"></div>
+        <p id="message"></p>
+    </div>
+    <script>
+        let board = [];
+        let boardSize = 4;
+        let firstSelected = null, secondSelected = null;
+
+        // 辗转相除法求最大公约数
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        // 初始化棋盘
+        function initBoard(size) {
+            boardSize = size;
+            board = [];
+            for(let i = 0; i < size; i++){
+                let row = [];
+                for(let j = 0; j < size; j++){
+                    // 数字随机范围3~100
+                    row.push(Math.floor(Math.random() * 98) + 3);
+                }
+                board.push(row);
+            }
+            renderBoard();
+            document.getElementById("message").innerText = "";
+        }
+
+        // 渲染界面棋盘
+        function renderBoard() {
+            const gameBoard = document.getElementById("gameBoard");
+            gameBoard.innerHTML = "";
+            gameBoard.style.gridTemplateColumns = `repeat(${boardSize}, 40px)`;
+            for(let i = 0; i < boardSize; i++){
+                for(let j = 0; j < boardSize; j++){
+                    const cellDiv = document.createElement("div");
+                    cellDiv.className = "cell";
+                    cellDiv.dataset.row = i;
+                    cellDiv.dataset.col = j;
+                    if(board[i][j] === null) {
+                        cellDiv.classList.add("empty");
+                        cellDiv.innerText = "";
+                    } else {
+                        cellDiv.innerText = board[i][j];
+                    }
+                    cellDiv.addEventListener("click", onCellClick);
+                    gameBoard.appendChild(cellDiv);
+                }
+            }
+        }
+
+        // 点击单元格事件处理
+        function onCellClick(e) {
+            const row = parseInt(e.target.dataset.row);
+            const col = parseInt(e.target.dataset.col);
+
+            if(board[row][col] === null) return;
+
+            if(!firstSelected) {
+                firstSelected = {row, col, element: e.target};
+                e.target.classList.add("selected");
+            } else if (!secondSelected && (row !== firstSelected.row || col !== firstSelected.col)) {
+                secondSelected = {row, col, element: e.target};
+                e.target.classList.add("selected");
+                processMove();
+            }
+        }
+
+        // 处理一次点击两个单元格的操作
+        function processMove(){
+            const { row: r1, col: c1 } = firstSelected;
+            const { row: r2, col: c2 } = secondSelected;
+            let val1 = board[r1][c1];
+            let val2 = board[r2][c2];
+
+            const d = gcd(val1, val2);
+            let newVal1 = val1 / d;
+            let newVal2 = val2 / d;
+
+            board[r1][c1] = (newVal1 === 1) ? null : newVal1;
+            board[r2][c2] = (newVal2 === 1) ? null : newVal2;
+
+            setTimeout(() => {
+                firstSelected.element.classList.remove("selected");
+                secondSelected.element.classList.remove("selected");
+                firstSelected = null;
+                secondSelected = null;
+                renderBoard();
+                checkGameStatus();
+            }, 200);
+        }
+
+        // 检查游戏状态：判断是否完成或无有效移动
+        function checkGameStatus(){
+            let allCleared = board.every(row => row.every(val => val === null));
+            if(allCleared) {
+                document.getElementById("message").innerText = "恭喜你，游戏成功！";
+                return;
+            }
+            let existsMove = false;
+            for(let i = 0; i < boardSize; i++){
+                for(let j = 0; j < boardSize; j++){
+                    if(board[i][j] === null) continue;
+                    for(let k = i; k < boardSize; k++){
+                        for(let l = (k === i ? j + 1 : 0); l < boardSize; l++){
+                            if(board[k][l] === null) continue;
+                            let a = board[i][j], b = board[k][l];
+                            const d = gcd(a, b);
+                            let na = a / d, nb = b / d;
+                            if(na === 1 || nb === 1) {
+                                existsMove = true;
+                                break;
+                            }
+                        }
+                        if(existsMove) break;
+                    }
+                    if(existsMove) break;
+                }
+                if(existsMove) break;
+            }
+            if(!existsMove) {
+                document.getElementById("message").innerText = "游戏失败，没有可操作的组合！";
+            }
+        }
+
+        document.getElementById("startBtn").addEventListener("click", function(){
+            const difficulty = document.getElementById("difficulty").value;
+            initBoard(parseInt(difficulty));
+        });
+    </script>
+</body>
+</html>

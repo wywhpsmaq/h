@@ -1,0 +1,17 @@
+{
+    "font_family": "Microsoft YaHei UI",
+    "font_size": 11,
+    "font_bold": true,
+    "font_entry_size": 11,
+    "header_bg": "#1976D2",
+    "header_fg": "white",
+    "row_bg1": "#e3f2fd",
+    "row_bg2": "white",
+    "button_bg": "#2196F3",
+    "button_fg": "white",
+    "button_active_bg": "#1976D2",
+    "button_active_fg": "white",
+    "main_bg": "white",
+    "top_bg": "#f5faff",
+    "top_border": "#90caf9"
+}

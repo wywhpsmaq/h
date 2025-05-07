@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字消除游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        #board {
+            display: grid;
+            grid-gap: 5px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>数字消除游戏</h1>
+    <p>选择难度:</p>
+    <button onclick="startGame(4)">4x4</button>
+    <button onclick="startGame(6)">6x6</button>
+    <button onclick="startGame(10)">10x10</button>
+    <div id="board"></div>
+    <div id="result"></div>
+
+    <script>
+        let board;
+        let selectedCells = [];
+
+        // 计算最大公约数
+        function gcd(a, b) {
+            while (b!== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        // 开始游戏
+        function startGame(size) {
+            board = [];
+            selectedCells = [];
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            boardElement.style.gridTemplateColumns = `repeat(${size}, 50px)`;
+
+            // 生成随机数字填充棋盘
+            for (let i = 0; i < size; i++) {
+                board[i] = [];
+                for (let j = 0; j < size; j++) {
+                    const num = Math.floor(Math.random() * 98) + 3;
+                    board[i][j] = num;
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.textContent = num;
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', () => handleCellClick(cell));
+                    boardElement.appendChild(cell);
+                }
+            }
+            document.getElementById('result').textContent = '';
+        }
+
+        // 处理单元格点击事件
+        function handleCellClick(cell) {
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            // 检查是否是同一个单元格
+            if (selectedCells.length === 1 && selectedCells[0].row === row && selectedCells[0].col === col) {
+                selectedCells[0].cell.style.backgroundColor = '#f0f0f0';
+                selectedCells = [];
+                return;
+            }
+
+            if (selectedCells.length < 2) {
+                selectedCells.push({ row, col, cell });
+                cell.style.backgroundColor = '#ccc';
+            }
+
+            if (selectedCells.length === 2) {
+                const [cell1, cell2] = selectedCells;
+                const num1 = board[cell1.row][cell1.col];
+                const num2 = board[cell2.row][cell2.col];
+                const divisor = gcd(num1, num2);
+
+                const newNum1 = num1 / divisor;
+                const newNum2 = num2 / divisor;
+
+                board[cell1.row][cell1.col] = newNum1;
+                board[cell2.row][cell2.col] = newNum2;
+
+                if (newNum1 === 1) {
+                    cell1.cell.textContent = '';
+                    cell1.cell.style.backgroundColor = '#f0f0f0';
+                    cell1.cell.style.cursor = 'default';
+                } else {
+                    cell1.cell.textContent = newNum1;
+                    cell1.cell.style.backgroundColor = '#f0f0f0';
+                }
+
+                if (newNum2 === 1) {
+                    cell2.cell.textContent = '';
+                    cell2.cell.style.backgroundColor = '#f0f0f0';
+                    cell2.cell.style.cursor = 'default';
+                } else {
+                    cell2.cell.textContent = newNum2;
+                    cell2.cell.style.backgroundColor = '#f0f0f0';
+                }
+
+                selectedCells = [];
+                checkGameOver();
+            }
+        }
+
+        // 检查游戏是否结束
+        function checkGameOver() {
+            const nonEliminatedCells = [];
+            for (let i = 0; i < board.length; i++) {
+                for (let j = 0; j < board[i].length; j++) {
+                    if (board[i][j]!== 1) {
+                        nonEliminatedCells.push({ row: i, col: j, num: board[i][j] });
+                    }
+                }
+            }
+
+            if (nonEliminatedCells.length === 0) {
+                document.getElementById('result').textContent = '游戏成功！';
+            } else {
+                let canEliminate = false;
+                for (let i = 0; i < nonEliminatedCells.length; i++) {
+                    for (let j = i + 1; j < nonEliminatedCells.length; j++) {
+                        const num1 = nonEliminatedCells[i].num;
+                        const num2 = nonEliminatedCells[j].num;
+                        const divisor = gcd(num1, num2);
+                        if (divisor > 1) {
+                            canEliminate = true;
+                            break;
+                        }
+                    }
+                    if (canEliminate) break;
+                }
+
+                if (!canEliminate) {
+                    document.getElementById('result').textContent = '游戏失败！';
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

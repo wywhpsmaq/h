@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 扫雷游戏</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+    <h1>3D 扫雷游戏</h1>
+    <div id="difficulty">
+        <h2>选择难度</h2>
+        <button onclick="startGame(5, 5, 5, 10)">5x5x5</button>
+        <button onclick="startGame(7, 7, 7, 20)">7x7x7</button>
+        <button onclick="startGame(10, 10, 10, 50)">10x10x10</button>
+        <h2>自定义设置</h2>
+        <label for="customWidth">宽度:</label>
+        <input type="number" id="customWidth" min="3" value="5">
+        <label for="customHeight">高度:</label>
+        <input type="number" id="customHeight" min="3" value="5">
+        <label for="customDepth">深度:</label>
+        <input type="number" id="customDepth" min="3" value="5">
+        <label for="customMines">雷数:</label>
+        <input type="number" id="customMines" min="1" value="10">
+        <button onclick="customStartGame()">开始自定义游戏</button>
+    </div>
+    <div id="game-container"></div>
+    <div id="three-container"></div>
+    <script src="script.js"></script>
+</body>
+
+</html>

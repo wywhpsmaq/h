@@ -1,0 +1,12 @@
+BasedOnStyle: Visual Studio
+IndentWidth: 4
+UseTab: Always
+ColumnLimit: 150
+BreakBeforeBraces: Attach
+SpaceBeforeParens: Always
+SpacesInParentheses: false
+AlignTrailingComments: true
+AllowShortForLoopsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse 
+AllowShortBlocksOnASingleLine: Always

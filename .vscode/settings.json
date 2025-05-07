@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "iosfwd": "cpp"
+    },
+    "cSpell.words": [
+        "erfen",
+        "MAXN",
+        "wxhhpsmaq",
+        "Wywhpsmaq"
+    ],
+    "C_Cpp.clang_format_style": "file"
+}

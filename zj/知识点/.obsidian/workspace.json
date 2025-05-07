@@ -1,0 +1,173 @@
+{
+  "main": {
+    "id": "fe263c9f9b1a78fc",
+    "type": "split",
+    "children": [
+      {
+        "id": "9ee11eff867ffb41",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fe4fc4a2c0cbc467",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6af68fe98232bc2d",
+    "type": "split",
+    "children": [
+      {
+        "id": "09b28875dd246d73",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "364d50d911ad616a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "02b5fd34e87aa03c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "3f0a8e6eafa5f80a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "cefbec829d8144aa",
+    "type": "split",
+    "children": [
+      {
+        "id": "89b748da9fba4bac",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "adcbd2f0953acf50",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "10 - 分治算法/01 - 分治思想与运用/05 - 南蛮图腾.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "05 - 南蛮图腾 的反向链接列表"
+            }
+          },
+          {
+            "id": "bf6af801ef99fccd",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "出链"
+            }
+          },
+          {
+            "id": "2c5b43c0a2cd0fb8",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "a72ec55d3744087c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "大纲"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "i18n:I18N": false
+    }
+  },
+  "active": "fe4fc4a2c0cbc467",
+  "lastOpenFiles": [
+    "test.md",
+    "10 - 分治算法/01 - 分治思想与运用/05 - 南蛮图腾.md",
+    "10 - 分治算法/01 - 分治思想与运用/03 - 黑白棋子的移动.md",
+    "10 - 分治算法/01 - 分治思想与运用/02 - 循环日程比赛表.md"
+  ]
+}

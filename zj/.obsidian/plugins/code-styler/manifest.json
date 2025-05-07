@@ -1,0 +1,11 @@
+{
+    "id": "code-styler",
+    "name": "Code Styler",
+    "version": "1.1.7",
+    "minAppVersion": "0.15.0",
+    "description": "在编辑模式和读取模式下对代码块和内联代码进行样式设置和自定义。",
+    "author": "Mayuran Visakan",
+    "authorUrl": "https://github.com/mayurankv",
+    "fundingUrl": "https://www.buymeacoffee.com/mayurankv2",
+    "isDesktopOnly": false
+}
