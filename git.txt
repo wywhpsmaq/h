@@ -9,7 +9,7 @@ git branch -M main
 git remote add origin https://github.com/wywhpsmaq/h.git
 git push -u origin main
 
-git config --global --unset http.proxy;git config --global --unset https.proxy
+git config --global --unset http.proxy;git config --global --unset https.proxy;
 
 git add .;git commit -m "In the code submitted 2025/5/7, some contents were added.";git push origin main
 
