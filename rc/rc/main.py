@@ -1,5 +1,3 @@
-# main.py
-# 信息查找软件主程序
 import os
 import sys
 import tkinter as tk
@@ -8,8 +6,6 @@ from tkinter import messagebox, filedialog
 from utils import encrypt, decrypt, check_password, load_data, save_data, get_person_info, save_passwords, load_passwords
 import subprocess
 import json
-
-# 常量
 if getattr(sys, 'frozen', False):
     BASE_DIR = os.path.dirname(sys.executable)
 else:
@@ -19,12 +15,9 @@ ICON_PATH = os.path.join(BASE_DIR, 'assets', '1.png')
 CARD_IMG_PATH = os.path.join(BASE_DIR, 'assets', '2.png')
 PASS_FILE = os.path.join(DATA_DIR, 'password.dat')
 ADMIN_PASS = 'wywhpsmaq17726428322'
-
-# 读取样式配置
 STYLE_PATH = os.path.join(BASE_DIR, 'style.json')
 with open(STYLE_PATH, 'r', encoding='utf-8') as f:
     STYLE = json.load(f)
-
 class LoginWindow(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -34,15 +27,12 @@ class LoginWindow(tk.Tk):
         self.icon_img = tk.PhotoImage(file=ICON_PATH)
         self.iconphoto(False, self.icon_img)
         self.step = 0
-        # 读取本地加密密码
         self.passwords = load_passwords()
         if not self.passwords:
-            # 首次运行，初始化默认密码
             self.passwords = ['114514', '123456789']
             save_passwords(self.passwords)
         self.input_pass = ''
         self.create_widgets()
-
     def create_widgets(self):
         tk.Label(self, text='欢迎访问', fg='blue', bg='white', font=('微软雅黑', 20)).pack(pady=20)
         self.pass_entry = tk.Entry(self, show='*', font=('微软雅黑', 16))
@@ -54,7 +44,6 @@ class LoginWindow(tk.Tk):
         self.forget_label = tk.Label(self, text='忘记密码', fg='gray', bg='white', cursor='hand2')
         self.forget_label.pack(side='bottom', pady=10)
         self.forget_label.bind('<Button-1>', lambda e: self.change_password())
-
     def check_pass(self):
         pwd = self.pass_entry.get()
         if pwd == self.passwords[self.step]:
@@ -69,9 +58,7 @@ class LoginWindow(tk.Tk):
         else:
             messagebox.showerror('错误', '密码错误')
             self.pass_entry.delete(0, 'end')
-
     def change_password(self):
-        # 管理员密码验证后允许修改
         def do_change():
             admin_pwd = admin_entry.get()
             if admin_pwd == ADMIN_PASS:
@@ -94,7 +81,6 @@ class LoginWindow(tk.Tk):
         new_entry = tk.Entry(win, show='*')
         new_entry.pack()
         tk.Button(win, text='确定', command=do_change).pack()
-
 class MainWindow(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -107,7 +93,6 @@ class MainWindow(tk.Tk):
         self.main_frame = tk.Frame(self, bg=STYLE['main_bg'], bd=2, relief='groove')
         self.main_frame.pack(fill='both', expand=True)
         self.create_widgets()
-
     def create_widgets(self):
         top_frame = tk.Frame(self.main_frame, bg=STYLE['top_bg'], bd=2, relief='ridge', highlightbackground=STYLE['top_border'], highlightthickness=2)
         top_frame.pack(fill='x', pady=12, padx=12, ipady=6)
@@ -151,7 +136,6 @@ class MainWindow(tk.Tk):
         scrollbar.pack(side='right', fill='y')
         list_frame_outer.pack_propagate(False)
         self.refresh_list(self.data)
-
     def refresh_list(self, data):
         for widget in self.list_frame.winfo_children():
             widget.destroy()
@@ -167,18 +151,14 @@ class MainWindow(tk.Tk):
                 l = tk.Label(self.list_frame, text=val, bg=row_bg, font=font_row, borderwidth=1, relief='ridge', padx=4, pady=2)
                 l.grid(row=idx+1, column=j, sticky='nsew')
                 l.bind('<Button-1>', lambda e, p=person: self.show_card(p))
-
     def search(self):
-        # 多条件筛选
         result = self.data
         for k, v in self.search_vars.items():
             val = v.get().strip()
             if val:
                 result = [p for p in result if str(p.get(k, '')).find(val) != -1]
         self.refresh_list(result)
-
     def resolve_conflict(self, new_person, exist_person):
-        # 弹窗选择冲突处理方式
         win = tk.Toplevel(self)
         win.title('数据冲突处理')
         tk.Label(win, text='检测到数据冲突（序号或身份证号重复）').pack(pady=5)
@@ -200,9 +180,7 @@ class MainWindow(tk.Tk):
         win.grab_set()
         self.wait_window(win)
         return result['action']
-
     def import_data(self):
-        # 只支持csv
         file_path = filedialog.askopenfilename(filetypes=[('CSV文件', '*.csv')])
         if not file_path:
             return
@@ -237,7 +215,6 @@ class MainWindow(tk.Tk):
                         if not person['序号']:
                             person['序号'] = str(idx)
                         idx += 1
-                        # 冲突检测
                         exist = next((p for p in self.data if p.get('序号') == person['序号'] or (person['身份证号'] and p.get('身份证号') == person['身份证号'])), None)
                         if exist:
                             action = self.resolve_conflict(person, exist)
@@ -263,9 +240,7 @@ class MainWindow(tk.Tk):
             except Exception as e:
                 last_error = e
         messagebox.showerror('导入失败', f'无法读取文件，错误信息：{last_error}')
-
     def add_data(self):
-        # 弹窗添加
         win = tk.Toplevel(self)
         win.title('添加数据')
         entries = {}
@@ -276,12 +251,10 @@ class MainWindow(tk.Tk):
             entries[field] = ent
         def do_add():
             person = {k: entries[k].get().strip() for k in entries}
-            # 通过身份证号识别出生日期、地点、年龄
             birth, loc, age = get_person_info(person['身份证号'])
             person['出生日期'] = birth
             person['地点'] = loc
             person['年龄'] = age
-            # 冲突检测
             exist = next((p for p in self.data if p.get('序号') == person['序号'] or (person['身份证号'] and p.get('身份证号') == person['身份证号'])), None)
             if exist:
                 action = self.resolve_conflict(person, exist)
@@ -304,7 +277,6 @@ class MainWindow(tk.Tk):
             self.refresh_list(self.data)
             win.destroy()
         tk.Button(win, text='确定', command=do_add).grid(row=5, column=0, columnspan=2)
-
     def delete_data(self):
         win = tk.Toplevel(self)
         win.title('删除数据')
@@ -335,7 +307,6 @@ class MainWindow(tk.Tk):
             win.destroy()
             messagebox.showinfo('删除完成', f'已删除{before - len(self.data)}条数据')
         tk.Button(win, text='确定', command=do_delete).grid(row=2, column=0)
-
     def show_card(self, person):
         win = tk.Toplevel(self)
         win.title('信息卡片')
@@ -377,7 +348,6 @@ class MainWindow(tk.Tk):
         for btn in [btn1, btn2, btn3]:
             btn.bind('<Enter>', lambda e, b=btn: b.config(bg='#1976D2'))
             btn.bind('<Leave>', lambda e, b=btn: b.config(bg='#2196F3'))
-
     def kh_action(self, person):
         info = f"姓名: {person.get('姓名', '')}\n性别: {person.get('性别', '')}\n身份证号: {person.get('身份证号', '')}\n出生日期: {person.get('出生日期', '')}\n地点: {person.get('地点', '')}\n年龄: {person.get('年龄', '')}"
         if tk.messagebox.askokcancel('信息确认', info):
@@ -387,7 +357,6 @@ class MainWindow(tk.Tk):
             kh_txt = os.path.join(output_dir, 'kh.txt')
             with open(kh_txt, 'a', encoding='utf-8') as f:
                 f.write(str(person.get('序号', '')) + '\n')
-
     def edit_person(self, parent_win, person):
         win = tk.Toplevel(parent_win)
         win.title('修改数据')
@@ -405,7 +374,6 @@ class MainWindow(tk.Tk):
             new_data['出生日期'] = birth
             new_data['地点'] = loc
             new_data['年龄'] = age
-            # 找到原数据并替换
             for idx, p in enumerate(self.data):
                 if p is person or (p.get('序号') == person.get('序号') and p.get('身份证号') == person.get('身份证号')):
                     self.data[idx] = new_data
@@ -417,7 +385,6 @@ class MainWindow(tk.Tk):
                 parent_win.destroy()
             tk.messagebox.showinfo('修改成功', '数据已修改')
         tk.Button(win, text='保存', command=do_save).grid(row=len(fields), column=0, columnspan=2)
-
     def delete_person(self, parent_win, person):
         if tk.messagebox.askyesno('确认删除', '确定要删除此条数据吗？'):
             self.data.remove(person)
@@ -425,7 +392,6 @@ class MainWindow(tk.Tk):
             self.refresh_list(self.data)
             parent_win.destroy()
             tk.messagebox.showinfo('删除成功', '数据已删除')
-
     def clean_data(self):
         for person in self.data:
             birth = person.get('出生日期', '').replace('/', '-').replace('.', '-')
@@ -438,7 +404,6 @@ class MainWindow(tk.Tk):
         save_data(self.data)
         self.refresh_list(self.data)
         tk.messagebox.showinfo('整理完成', '出生日期已整理完毕')
-
     def analyze_data(self):
         from collections import Counter
         win = tk.Toplevel(self)
@@ -449,7 +414,6 @@ class MainWindow(tk.Tk):
         if not self.data:
             text.insert('end', '暂无数据\n')
             return
-        # 性别分布
         sex_list = [p.get('性别', '') for p in self.data if p.get('性别', '')]
         sex_count = Counter(sex_list)
         total = len(self.data)
@@ -459,7 +423,6 @@ class MainWindow(tk.Tk):
             bar = '█' * int(percent // 2)
             text.insert('end', f'{k}: {v} ({percent:.1f}%) {bar}\n')
         text.insert('end', '\n')
-        # 地点分布（前10）
         loc_list = [p.get('地点', '') for p in self.data if p.get('地点', '')]
         loc_count = Counter(loc_list).most_common(10)
         text.insert('end', f'【地点分布（前10）】\n')
@@ -468,7 +431,6 @@ class MainWindow(tk.Tk):
             bar = '█' * int(percent // 2)
             text.insert('end', f'{k}: {v} ({percent:.1f}%) {bar}\n')
         text.insert('end', '\n')
-        # 年龄分布（分段）
         age_list = []
         for p in self.data:
             try:
@@ -491,9 +453,7 @@ class MainWindow(tk.Tk):
             text.insert('end', f'{k}: {v} ({percent:.1f}%) {bar}\n')
         text.insert('end', '\n')
         text.config(state='disabled')
-
 if __name__ == '__main__':
-    # 启动前调用fuq.exe并判断fuq.txt
     output_dir = os.path.join(BASE_DIR, 'output')
     fuq_exe = os.path.join(output_dir, 'fuq.exe')
     fuq_txt = os.path.join(output_dir, 'fuq.txt')
