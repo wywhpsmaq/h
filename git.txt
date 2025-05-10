@@ -3,7 +3,6 @@ git init;
 git remote add origin https://github.com/wywhpsmaq/h.git;
 git remote add origin git@github.com:wywhpsmaq/h.git;
 
-
 echo "# h" >> README.md
 git init
 git add README.md
@@ -12,16 +11,12 @@ git branch -M main
 git remote add origin https://github.com/wywhpsmaq/h.git
 git push -u origin main
 
-
 git config --global --unset http.proxy;git config --global --unset https.proxy;
 
-
 git add .;git commit -S -m "In the code submitted 2025/5/10, some contents were added.";git push origin main
-
 
 git push -u origin main
 git push origin main
 git push origin main --force
-
 
 git checkout -b dev
