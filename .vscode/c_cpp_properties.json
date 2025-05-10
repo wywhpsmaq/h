@@ -7,7 +7,7 @@
         "C:/mingw64/include/**" 
       ],
       "defines": [],
-      "compilerPath": "C:/mingw64/bin/g++.exe", //g++位置
+      "compilerPath": "C:/mingw64/bin/g++.exe",
       "cStandard": "c17",
       "cppStandard": "c++17",
       "intelliSenseMode": "windows-gcc-x64"

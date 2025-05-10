@@ -9,7 +9,7 @@
         "-g",
         "${file}",
         "-o",
-        "${fileDirname}\\output\\${fileBasenameNoExtension}.exe" // 指定输出到 output 文件夹
+        "${fileDirname}\\output\\${fileBasenameNoExtension}.exe"
       ],
       "options": {
         "cwd": "${fileDirname}"
