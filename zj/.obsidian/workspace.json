@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "4cf3631663b9e44f",
+        "id": "d1d694e5f0877630",
         "type": "tabs",
         "children": [
           {
-            "id": "9b4528e0bf86c0c8",
+            "id": "29a0e4b367f9c8d1",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "graph",
               "state": {},
-              "icon": "lucide-file",
-              "title": "新标签页"
+              "icon": "lucide-git-fork",
+              "title": "关系图谱"
             }
           }
         ]
@@ -162,24 +162,26 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "364d50d911ad616a",
+  "active": "29a0e4b367f9c8d1",
   "lastOpenFiles": [
-    "总结/2025-05-01周中介.md",
     "总结/2025-04-05周中介.md",
-    "总结/2025-05-02.md",
     "总结/2025-05-10周中介.md",
+    "比赛.md",
+    "总结/2025-05-02.md",
+    "总结/2025-05-01周中介.md",
     "总结/2025-03-22周中介.md",
+    "zy/zy-LG.md",
+    "zy/zy-BBC.md",
+    "666.md",
+    "知识点/倍增.md",
     "知识点/动态规划.md",
     "知识点/搜索及其优化技巧.md",
     "2025-04-25.md",
     "知识点/STL容器.md",
-    "zy/zy-LG.md",
-    "zy/zy-BBC.md",
     "zy-BBC.md",
     "zy-LG.md",
     "zy",
     "知识点/图网络结构.md",
-    "知识点/倍增.md",
     "2025-04-06.md",
     "知识点/二叉堆.md",
     "知识点/集合.md",
@@ -189,8 +191,6 @@
     "知识点/进制.md",
     "知识点/分治.md",
     "知识点/二分.md",
-    "知识点/递归与递推.md",
-    "总结/2025-04-04周中介.md",
     "题目"
   ]
 }
