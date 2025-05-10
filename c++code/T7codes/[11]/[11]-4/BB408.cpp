@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 using namespace std;
-
 int n, w, ans = 20;
 vector<int> v;
 vector<int> p;
@@ -21,7 +20,6 @@ void dfs(int x) {
     dfs(x + 1);
     p.pop_back();
 }
-
 int main() {
     cin >> n >> w;
     v.resize(n);

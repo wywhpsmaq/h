@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "fc15725844dcada6",
+        "id": "4cf3631663b9e44f",
         "type": "tabs",
         "children": [
           {
-            "id": "bb348d2cde4e5eba",
+            "id": "9b4528e0bf86c0c8",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -162,11 +162,12 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "bb348d2cde4e5eba",
+  "active": "364d50d911ad616a",
   "lastOpenFiles": [
-    "总结/2025-05-02.md",
     "总结/2025-05-01周中介.md",
     "总结/2025-04-05周中介.md",
+    "总结/2025-05-02.md",
+    "总结/2025-05-10周中介.md",
     "总结/2025-03-22周中介.md",
     "知识点/动态规划.md",
     "知识点/搜索及其优化技巧.md",
@@ -190,7 +191,6 @@
     "知识点/二分.md",
     "知识点/递归与递推.md",
     "总结/2025-04-04周中介.md",
-    "周中介模版.md",
     "题目"
   ]
 }
