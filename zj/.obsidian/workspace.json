@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "0118d0c198c54d20",
+        "id": "d9dac700aea8275c",
         "type": "tabs",
         "children": [
           {
-            "id": "9f9b88b5e7b13242",
+            "id": "528225c584334f15",
             "type": "leaf",
             "state": {
-              "type": "graph",
+              "type": "empty",
               "state": {},
-              "icon": "lucide-git-fork",
-              "title": "关系图谱"
+              "icon": "lucide-file",
+              "title": "新标签页"
             }
           }
         ]
@@ -49,7 +49,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#zj",
+                "query": "tag:#zy",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -90,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "10 - 分治算法/01 - 分治思想与运用/05 - 南蛮图腾.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,7 +99,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "05 - 南蛮图腾 的反向链接列表"
+              "title": "反向链接"
             }
           },
           {
@@ -162,8 +161,11 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "9f9b88b5e7b13242",
+  "active": "528225c584334f15",
   "lastOpenFiles": [
+    "2025-05-11.md",
+    "zy/zy-LG.md",
+    "666.md",
     "知识点/搜索及其优化技巧.md",
     "BB101.cpp.md",
     "总结/2025-04-05周中介.md",
@@ -172,9 +174,7 @@
     "总结/2025-05-02.md",
     "总结/2025-05-01周中介.md",
     "总结/2025-03-22周中介.md",
-    "zy/zy-LG.md",
     "zy/zy-BBC.md",
-    "666.md",
     "知识点/倍增.md",
     "知识点/动态规划.md",
     "2025-04-25.md",
@@ -190,7 +190,6 @@
     "知识点/贪心选择策略.md",
     "知识点/树形结构.md",
     "知识点/进制.md",
-    "知识点/分治.md",
     "题目"
   ]
 }
