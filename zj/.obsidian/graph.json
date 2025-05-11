@@ -1,9 +1,9 @@
 {
   "collapse-filter": true,
   "search": "",
-  "showTags": false,
-  "showAttachments": false,
-  "hideUnresolved": false,
+  "showTags": true,
+  "showAttachments": true,
+  "hideUnresolved": true,
   "showOrphans": true,
   "collapse-color-groups": true,
   "colorGroups": [
@@ -18,27 +18,27 @@
       "query": "tag:#zj  ",
       "color": {
         "a": 1,
-        "rgb": 14725458
+        "rgb": 262399
       }
     },
     {
       "query": "tag:#zy  ",
       "color": {
         "a": 1,
-        "rgb": 11657298
+        "rgb": 16756224
       }
     }
   ],
   "collapse-display": true,
   "showArrow": true,
   "textFadeMultiplier": 0,
-  "nodeSizeMultiplier": 1,
-  "lineSizeMultiplier": 1,
+  "nodeSizeMultiplier": 0.699739583333333,
+  "lineSizeMultiplier": 0.59765625,
   "collapse-forces": true,
-  "centerStrength": 0.502604166666667,
-  "repelStrength": 9.960824742268,
+  "centerStrength": 1,
+  "repelStrength": 20,
   "linkStrength": 1,
-  "linkDistance": 250,
-  "scale": 0.7983099209587632,
+  "linkDistance": 161,
+  "scale": 0.42787786490072205,
   "close": true
 }
