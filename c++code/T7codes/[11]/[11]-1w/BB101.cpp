@@ -23,7 +23,7 @@ bool dfs(int x, int y) {
         if (ch(nx, ny)) {
             if (dfs(nx, ny)) return true;
         }
-    }这篇代码会不会由AI生成或由AI生成生成后人工修改或者由AI生成主体思路
+    }
     return false;
 }
 

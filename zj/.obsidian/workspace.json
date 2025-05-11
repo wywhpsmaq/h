@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "d1d694e5f0877630",
+        "id": "0118d0c198c54d20",
         "type": "tabs",
         "children": [
           {
-            "id": "29a0e4b367f9c8d1",
+            "id": "9f9b88b5e7b13242",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -162,8 +162,10 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "29a0e4b367f9c8d1",
+  "active": "9f9b88b5e7b13242",
   "lastOpenFiles": [
+    "知识点/搜索及其优化技巧.md",
+    "BB101.cpp.md",
     "总结/2025-04-05周中介.md",
     "总结/2025-05-10周中介.md",
     "比赛.md",
@@ -175,7 +177,6 @@
     "666.md",
     "知识点/倍增.md",
     "知识点/动态规划.md",
-    "知识点/搜索及其优化技巧.md",
     "2025-04-25.md",
     "知识点/STL容器.md",
     "zy-BBC.md",
@@ -190,7 +191,6 @@
     "知识点/树形结构.md",
     "知识点/进制.md",
     "知识点/分治.md",
-    "知识点/二分.md",
     "题目"
   ]
 }
