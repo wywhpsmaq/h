@@ -52,7 +52,7 @@ int main() {
     }
     pa.push_back({s1, s2});
     reverse(pa.begin(), pa.end());
-    for (int i = 0; i < pa.size(); i++) {
+    for (size_t i = 0; i < pa.size(); i++) {
         cout << "(" << pa[i].x + 1 << "," << pa[i].y + 1 << ")";
         if (i != pa.size() - 1) cout << "->";
     }
