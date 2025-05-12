@@ -7,9 +7,13 @@
       "command": "g++",
       "args": [
         "-g",
+        "-O3",
+        "-Wall",
+        "-v",
         "${file}",
         "-o",
-        "${fileDirname}\\output\\${fileBasenameNoExtension}.exe"
+        "${fileDirname}\\output\\${fileBasenameNoExtension}.exe",
+        "-std=c++14"
       ],
       "options": {
         "cwd": "${fileDirname}"
