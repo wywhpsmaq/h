@@ -35,9 +35,11 @@ int bfs() {
 }
 int main() {
     cin >> n >> m;
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
             cin >> p[i][j];
+        }
+    }
     cin >> sx >> sy >> ex >> ey;
     sx--, sy--, ex--, ey--;
     memset(vis, 0x3f, sizeof(vis));
