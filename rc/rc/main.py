@@ -32,6 +32,7 @@ class LoginWindow(tk.Tk):
             self.passwords = ['114514', '123456789']
             save_passwords(self.passwords)
         self.input_pass = ''
+        self.is_admin = False
         self.create_widgets()
     def create_widgets(self):
         tk.Label(self, text='欢迎访问', fg='blue', bg='white', font=('微软雅黑', 20)).pack(pady=20)
@@ -41,6 +42,8 @@ class LoginWindow(tk.Tk):
         self.pass_entry.bind('<Return>', lambda e: self.check_pass())
         self.btn = tk.Button(self, text='下一步', command=self.check_pass, bg='#2196F3', fg='white', font=('微软雅黑', 12))
         self.btn.pack(pady=10)
+        self.admin_btn = tk.Button(self, text='以管理员身份登录', command=self.admin_login, bg='#1976D2', fg='white', font=('微软雅黑', 11))
+        self.admin_btn.pack(pady=5)
         self.forget_label = tk.Label(self, text='忘记密码', fg='gray', bg='white', cursor='hand2')
         self.forget_label.pack(side='bottom', pady=10)
         self.forget_label.bind('<Button-1>', lambda e: self.change_password())
@@ -51,13 +54,30 @@ class LoginWindow(tk.Tk):
             if self.step == 2:
                 messagebox.showinfo('提示', '算法结构来自Wywhpsmaq，数据来自David')
                 self.destroy()
-                MainWindow().mainloop()
+                MainWindow(is_admin=self.is_admin).mainloop()
             else:
                 self.pass_entry.delete(0, 'end')
                 messagebox.showinfo('提示', '请继续输入第二个密码')
         else:
             messagebox.showerror('错误', '密码错误')
             self.pass_entry.delete(0, 'end')
+    def admin_login(self):
+        def do_admin():
+            pwd = admin_entry.get()
+            if pwd == ADMIN_PASS:
+                self.is_admin = True
+                messagebox.showinfo('成功', '欢迎伟大的管理员！！！')
+                self.destroy()
+                MainWindow(is_admin=True).mainloop()
+            else:
+                messagebox.showerror('错误', '管理员密码错误')
+        win = tk.Toplevel(self)
+        win.title('管理员登录')
+        tk.Label(win, text='请输入管理员密码:').pack(pady=10)
+        admin_entry = tk.Entry(win, show='*', font=('微软雅黑', 12))
+        admin_entry.pack(pady=5)
+        admin_entry.focus()
+        tk.Button(win, text='确定', command=do_admin).pack(pady=10)
     def change_password(self):
         def do_change():
             admin_pwd = admin_entry.get()
@@ -82,7 +102,7 @@ class LoginWindow(tk.Tk):
         new_entry.pack()
         tk.Button(win, text='确定', command=do_change).pack()
 class MainWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, is_admin=False):
         super().__init__()
         self.title('信息查找软件')
         self.geometry('900x600')
@@ -90,6 +110,7 @@ class MainWindow(tk.Tk):
         self.icon_img = tk.PhotoImage(file=ICON_PATH)
         self.iconphoto(False, self.icon_img)
         self.data = load_data()
+        self.is_admin = is_admin
         self.main_frame = tk.Frame(self, bg=STYLE['main_bg'], bd=2, relief='groove')
         self.main_frame.pack(fill='both', expand=True)
         self.create_widgets()
@@ -115,6 +136,7 @@ class MainWindow(tk.Tk):
         btns.append(tk.Button(top_frame, text='删除数据', command=self.delete_data))
         btns.append(tk.Button(top_frame, text='整理数据', command=self.clean_data))
         btns.append(tk.Button(top_frame, text='数据分析', command=self.analyze_data))
+        btns.append(tk.Button(top_frame, text='导出数据', command=self.export_data))
         for idx, btn in enumerate(btns):
             style_btn(btn)
             btn.grid(row=0, column=14+idx*2, padx=6)
@@ -351,12 +373,80 @@ class MainWindow(tk.Tk):
     def kh_action(self, person):
         info = f"姓名: {person.get('姓名', '')}\n性别: {person.get('性别', '')}\n身份证号: {person.get('身份证号', '')}\n出生日期: {person.get('出生日期', '')}\n地点: {person.get('地点', '')}\n年龄: {person.get('年龄', '')}"
         if tk.messagebox.askokcancel('信息确认', info):
-            output_dir = os.path.join(BASE_DIR, 'output')
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            kh_txt = os.path.join(output_dir, 'kh.txt')
-            with open(kh_txt, 'a', encoding='utf-8') as f:
-                f.write(str(person.get('序号', '')) + '\n')
+            def do_kh_format():
+                win = tk.Toplevel(self)
+                win.title('kh格式')
+                win.geometry('350x220')
+                win.resizable(False, False)
+                tk.Label(win, text='请选择kh格式：', font=('微软雅黑', 13, 'bold')).pack(pady=10)
+                var = tk.StringVar(value='1')
+                frame = tk.Frame(win)
+                frame.pack(pady=5)
+                fmt1 = "1.基本信息\n2.kh来自David\n3.专有IP:225.225.225.225"
+                fmt2 = "1.基本信息"
+                rb1 = tk.Radiobutton(frame, text='格式一', variable=var, value='1', anchor='w', font=('微软雅黑', 11))
+                rb2 = tk.Radiobutton(frame, text='格式二', variable=var, value='2', anchor='w', font=('微软雅黑', 11))
+                rb1.grid(row=0, column=0, sticky='w')
+                rb2.grid(row=1, column=0, sticky='w')
+                tk.Label(frame, text=fmt1, justify='left', font=('微软雅黑', 10), fg='#1976D2').grid(row=0, column=1, sticky='w', padx=8)
+                tk.Label(frame, text=fmt2, justify='left', font=('微软雅黑', 10), fg='#1976D2').grid(row=1, column=1, sticky='w', padx=8)
+                btn_frame = tk.Frame(win)
+                btn_frame.pack(pady=15)
+                result = {'ok': False, 'fmt': None}
+                def on_ok():
+                    fmt = var.get()
+                    if fmt == '1':
+                        result['ok'] = True
+                        result['fmt'] = '1'
+                        win.destroy()
+                    else:
+                        # 格式二需要管理员密码
+                        if getattr(self, 'is_admin', False):
+                            tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入管理员密码')
+                            result['ok'] = True
+                            result['fmt'] = '2'
+                            win.destroy()
+                        else:
+                            def check_admin():
+                                pwd = pwd_entry.get()
+                                if pwd == ADMIN_PASS:
+                                    result['ok'] = True
+                                    result['fmt'] = '2'
+                                    admin_win.destroy()
+                                    win.destroy()
+                                else:
+                                    tk.messagebox.showerror('错误', '管理员密码错误', parent=admin_win)
+                            admin_win = tk.Toplevel(win)
+                            admin_win.title('管理员密码验证')
+                            admin_win.geometry('260x120')
+                            admin_win.resizable(False, False)
+                            tk.Label(admin_win, text='请输入管理员密码：', font=('微软雅黑', 11)).pack(pady=10)
+                            pwd_entry = tk.Entry(admin_win, show='*', font=('微软雅黑', 11))
+                            pwd_entry.pack(pady=5)
+                            pwd_entry.focus()
+                            btn = tk.Button(admin_win, text='确定', command=check_admin, font=('微软雅黑', 10))
+                            btn.pack(pady=5)
+                            def on_cancel_admin():
+                                admin_win.destroy()
+                            tk.Button(admin_win, text='取消', command=on_cancel_admin, font=('微软雅黑', 10)).pack()
+                            admin_win.transient(win)
+                            admin_win.grab_set()
+                def on_cancel():
+                    win.destroy()
+                tk.Button(btn_frame, text='确定', command=on_ok, width=8, font=('微软雅黑', 11)).pack(side='left', padx=10)
+                tk.Button(btn_frame, text='取消', command=on_cancel, width=8, font=('微软雅黑', 11)).pack(side='left', padx=10)
+                win.transient(self)
+                win.grab_set()
+                self.wait_window(win)
+                return result['ok'], result['fmt']
+            ok, fmt = do_kh_format()
+            if ok:
+                output_dir = os.path.join(BASE_DIR, 'output')
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+                kh_txt = os.path.join(output_dir, 'kh.txt')
+                with open(kh_txt, 'a', encoding='utf-8') as f:
+                    f.write(str(person.get('序号', '')) + '\n')
     def edit_person(self, parent_win, person):
         win = tk.Toplevel(parent_win)
         win.title('修改数据')
@@ -453,6 +543,21 @@ class MainWindow(tk.Tk):
             text.insert('end', f'{k}: {v} ({percent:.1f}%) {bar}\n')
         text.insert('end', '\n')
         text.config(state='disabled')
+    def export_data(self):
+        import csv
+        file_path = filedialog.asksaveasfilename(defaultextension='.csv', filetypes=[('CSV文件', '*.csv')], title='导出数据')
+        if not file_path:
+            return
+        headers = ['序号', '姓名', '性别', '身份证号', '出生日期', '地点', '年龄']
+        try:
+            with open(file_path, 'w', encoding='utf-8-sig', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=headers)
+                writer.writeheader()
+                for row in self.data:
+                    writer.writerow({h: row.get(h, '') for h in headers})
+            tk.messagebox.showinfo('导出成功', f'数据已导出到：{file_path}')
+        except Exception as e:
+            tk.messagebox.showerror('导出失败', f'导出数据时出错：{e}')
 if __name__ == '__main__':
     output_dir = os.path.join(BASE_DIR, 'output')
     fuq_exe = os.path.join(output_dir, 'fuq.exe')

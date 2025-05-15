@@ -4,15 +4,15 @@ where python >nul 2>nul
 if %errorlevel%==0 (
     python main.py
 ) else (
-    echo Î´¼ì²âµ½Python£¬ÕýÔÚÏÂÔØ×îÐÂ°æ°²×°°ü...
+    echo æœªæ£€æµ‹åˆ°Pythonï¼Œæ­£åœ¨ä¸‹è½½æœ€æ–°ç‰ˆå®‰è£…åŒ…...
     powershell -Command "Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.11.8/python-3.11.8-amd64.exe -OutFile python-installer.exe"
     if exist python-installer.exe (
-        echo ÏÂÔØÍê³É£¬ÕýÔÚÆô¶¯°²×°³ÌÐò...
+        echo ä¸‹è½½å®Œæˆï¼Œæ­£åœ¨å¯åŠ¨å®‰è£…ç¨‹åº...
         start python-installer.exe
-        echo ÇëÍê³ÉPython°²×°ºó£¬ÖØÐÂÔËÐÐ±¾³ÌÐò¡£
+        echo è¯·å®ŒæˆPythonå®‰è£…åŽï¼Œé‡æ–°è¿è¡Œæœ¬ç¨‹åºã€‚
         pause
     ) else (
-        echo ÏÂÔØÊ§°Ü£¬ÇëÊÖ¶¯·ÃÎÊ https://www.python.org/downloads/ ÏÂÔØ²¢°²×°¡£
+        echo ä¸‹è½½å¤±è´¥ï¼Œè¯·æ‰‹åŠ¨è®¿é—® https://www.python.org/downloads/ ä¸‹è½½å¹¶å®‰è£…ã€‚
         pause
     )
 )

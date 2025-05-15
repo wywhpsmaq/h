@@ -1,0 +1,17 @@
+{
+    "font_family": "Microsoft YaHei UI", // 字体名称，推荐圆润现代感
+    "font_size": 11,                     // 主字体大小
+    "font_bold": true,                   // 是否加粗
+    "font_entry_size": 11,               // 输入框字体大小
+    "header_bg": "#1976D2",              // 表头背景色
+    "header_fg": "white",                // 表头字体颜色
+    "row_bg1": "#e3f2fd",                // 奇数行背景色
+    "row_bg2": "white",                  // 偶数行背景色
+    "button_bg": "#2196F3",              // 按钮背景色
+    "button_fg": "white",                // 按钮字体颜色
+    "button_active_bg": "#1976D2",       // 按钮悬停/激活背景色
+    "button_active_fg": "white",         // 按钮悬停/激活字体颜色
+    "main_bg": "white",                  // 主界面背景色
+    "top_bg": "#f5faff",                 // 顶部查找栏背景色
+    "top_border": "#90caf9"              // 顶部查找栏边框色
+}

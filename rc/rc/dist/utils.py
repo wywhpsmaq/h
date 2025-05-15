@@ -34,8 +34,8 @@ def decrypt(data: bytes, key: bytes = AES_KEY, iv: bytes = AES_IV) -> bytes:
     unpadder = padding.PKCS7(128).unpadder()
     return unpadder.update(padded_data) + unpadder.finalize()
 
-# 密码校验
 PASS_HASH_FILE = os.path.join(BASE_DIR, 'data', 'password.dat')
+
 def check_password(input_pwd: str, idx: int = 0) -> bool:
     if not os.path.exists(PASS_HASH_FILE):
         return False
@@ -61,7 +61,6 @@ def load_passwords():
         except Exception:
             return []
 
-# 数据加载与保存
 def load_data():
     data_file = os.path.join(BASE_DIR, 'data', 'rcdata.dat')
     if not os.path.exists(data_file):
@@ -78,9 +77,34 @@ def save_data(data):
     with open(data_file, 'wb') as f:
         f.write(encrypt(pickle.dumps(data)))
 
-# 身份证号推算出生日期、地点、年龄（简化版）
+def load_location_map():
+    # 只加载一次
+    if hasattr(load_location_map, 'location_map'):
+        return load_location_map.location_map
+    location_map = {}
+    csv_path = os.path.join(os.path.dirname(BASE_DIR), '6699.csv')
+    if os.path.exists(csv_path):
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                parts = line.strip().split(',')
+                for i in range(0, len(parts)-1, 2):
+                    code = parts[i].strip()
+                    name = parts[i+1].strip()
+                    if code and name:
+                        location_map[code] = name
+    load_location_map.location_map = location_map
+    return location_map
+
+def get_location_name(code: str):
+    location_map = load_location_map()
+    for length in (6, 4, 2):
+        if len(code) >= length:
+            name = location_map.get(code[:length])
+            if name:
+                return name
+    return code
+
 def get_person_info(id_number: str):
-    # 18位身份证
     if len(id_number) == 18:
         birth = id_number[6:14]
         birth_date = f"{birth[:4]}-{birth[4:6]}-{birth[6:8]}"
@@ -88,7 +112,7 @@ def get_person_info(id_number: str):
             age = datetime.now().year - int(birth[:4])
         except:
             age = ''
-        # 地点可根据前6位查字典，这里简化
-        location = id_number[:6]
+        location_code = id_number[:6]
+        location = get_location_name(location_code)
         return birth_date, location, age
     return '', '', ''
