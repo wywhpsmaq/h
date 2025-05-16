@@ -78,7 +78,6 @@ def save_data(data):
         f.write(encrypt(pickle.dumps(data)))
 
 def load_location_map():
-    # 只加载一次
     if hasattr(load_location_map, 'location_map'):
         return load_location_map.location_map
     location_map = {}

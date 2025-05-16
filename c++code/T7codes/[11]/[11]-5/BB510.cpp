@@ -1,47 +1,49 @@
 #include <bits/stdc++.h>
 using namespace std;
+struct uu {
+    int x, y, t;
+};
+char mp[30][30];
+bool vs[30][30];
+int dx[] = {0, 0, 1, -1};
+int dy[] = {1, -1, 0, 0};
 int main() {
-    struct uu {
-        int x, y, t;
-    };
-    char mp[100][100];
-    int vis[100][100];
     int n, m;
-    int dx[4] = {0, 0, 1, -1};
-    int dy[4] = {1, -1, 0, 0};
-    int ans = -1;
-    queue<uu> q;
     cin >> n >> m;
+    memset(vs, 0, sizeof(vs));
     int sx = -1, sy = -1;
-    for (int i = 0; i < n; ++i) {
-        cin >> mp[i];
-        for (int j = 0; j < m; ++j) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            cin >> mp[i][j];
             if (mp[i][j] == 'S') {
                 sx = i;
                 sy = j;
             }
         }
     }
+    queue<uu> q;
     q.push({sx, sy, 0});
-    vis[sx][sy] = 1;
+    vs[sx][sy] = true;
+    int ans = -1;
     while (!q.empty()) {
-        uu a = q.front();
+        auto [x, y, t] = q.front();
         q.pop();
-        if (mp[a.x][a.y] == 'T') {
-            ans = a.t;
+        if (mp[x][y] == 'T') {
+            ans = t;
             break;
         }
-        for (int d = 0; d < 4; ++d) {
-            int nx = a.x + dx[d], ny = a.y + dy[d];
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d], ny = y + dy[d];
             if (nx < 0 || nx >= n || ny < 0 || ny >= m) continue;
-            if (vis[nx][ny]) continue;
-            if (mp[nx][ny] == 'K') continue;
-            vis[nx][ny] = 1;
+            if (vs[nx][ny] || mp[nx][ny] == 'K') continue;
+            int nt = t;
             if (mp[nx][ny] == '#') {
-                q.push({nx, ny, a.t + 2});
+                nt += 2;
             } else {
-                q.push({nx, ny, a.t + 1});
+                nt += 1;
             }
+            vs[nx][ny] = true;
+            q.push({nx, ny, nt});
         }
     }
     cout << ans;

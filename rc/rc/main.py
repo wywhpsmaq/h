@@ -131,12 +131,12 @@ class MainWindow(tk.Tk):
             btn.configure(bg=STYLE['button_bg'], fg=STYLE['button_fg'], activebackground=STYLE['button_active_bg'], activeforeground=STYLE['button_active_fg'], font=(STYLE['font_family'], STYLE['font_size'], 'bold'), bd=0, relief='ridge', cursor='hand2')
         btns = []
         btns.append(tk.Button(top_frame, text='查找', command=self.search))
+        btns.append(tk.Button(top_frame, text='导出数据', command=self.export_data))
         btns.append(tk.Button(top_frame, text='导入数据', command=self.import_data))
         btns.append(tk.Button(top_frame, text='添加数据', command=self.add_data))
         btns.append(tk.Button(top_frame, text='删除数据', command=self.delete_data))
         btns.append(tk.Button(top_frame, text='整理数据', command=self.clean_data))
         btns.append(tk.Button(top_frame, text='数据分析', command=self.analyze_data))
-        btns.append(tk.Button(top_frame, text='导出数据', command=self.export_data))
         for idx, btn in enumerate(btns):
             style_btn(btn)
             btn.grid(row=0, column=14+idx*2, padx=6)
@@ -328,7 +328,35 @@ class MainWindow(tk.Tk):
             self.refresh_list(self.data)
             win.destroy()
             messagebox.showinfo('删除完成', f'已删除{before - len(self.data)}条数据')
-        tk.Button(win, text='确定', command=do_delete).grid(row=2, column=0)
+        def check_pwd_and_delete():
+            if getattr(self, 'is_admin', False):
+                tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入密码')
+                do_delete()
+            else:
+                def check_pwd():
+                    pwd = pwd_entry.get()
+                    from utils import load_passwords
+                    pwds = load_passwords()
+                    if pwds and pwd == pwds[0]:
+                        pwd_win.destroy()
+                        do_delete()
+                    else:
+                        tk.messagebox.showerror('错误', '密码错误', parent=pwd_win)
+                pwd_win = tk.Toplevel(win)
+                pwd_win.title('密码验证')
+                pwd_win.geometry('260x120')
+                pwd_win.resizable(False, False)
+                tk.Label(pwd_win, text='请输入第一个登录密码：', font=('微软雅黑', 11)).pack(pady=10)
+                pwd_entry = tk.Entry(pwd_win, show='*', font=('微软雅黑', 11))
+                pwd_entry.pack(pady=5)
+                pwd_entry.focus()
+                tk.Button(pwd_win, text='确定', command=check_pwd, font=('微软雅黑', 10)).pack(pady=5)
+                def on_cancel_pwd():
+                    pwd_win.destroy()
+                tk.Button(pwd_win, text='取消', command=on_cancel_pwd, font=('微软雅黑', 10)).pack()
+                pwd_win.transient(win)
+                pwd_win.grab_set()
+        tk.Button(win, text='确定', command=check_pwd_and_delete).grid(row=2, column=0)
     def show_card(self, person):
         win = tk.Toplevel(self)
         win.title('信息卡片')
@@ -460,10 +488,6 @@ class MainWindow(tk.Tk):
             entries[field] = ent
         def do_save():
             new_data = {field: entries[field].get().strip() for field in fields}
-            birth, loc, age = get_person_info(new_data['身份证号'])
-            new_data['出生日期'] = birth
-            new_data['地点'] = loc
-            new_data['年龄'] = age
             for idx, p in enumerate(self.data):
                 if p is person or (p.get('序号') == person.get('序号') and p.get('身份证号') == person.get('身份证号')):
                     self.data[idx] = new_data
@@ -476,12 +500,42 @@ class MainWindow(tk.Tk):
             tk.messagebox.showinfo('修改成功', '数据已修改')
         tk.Button(win, text='保存', command=do_save).grid(row=len(fields), column=0, columnspan=2)
     def delete_person(self, parent_win, person):
-        if tk.messagebox.askyesno('确认删除', '确定要删除此条数据吗？'):
+        def do_delete():
             self.data.remove(person)
             save_data(self.data)
             self.refresh_list(self.data)
             parent_win.destroy()
             tk.messagebox.showinfo('删除成功', '数据已删除')
+        def check_pwd_and_delete():
+            if getattr(self, 'is_admin', False):
+                tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入密码')
+                do_delete()
+            else:
+                def check_pwd():
+                    pwd = pwd_entry.get()
+                    from utils import load_passwords
+                    pwds = load_passwords()
+                    if pwds and pwd == pwds[0]:
+                        pwd_win.destroy()
+                        do_delete()
+                    else:
+                        tk.messagebox.showerror('错误', '密码错误', parent=pwd_win)
+                pwd_win = tk.Toplevel(parent_win)
+                pwd_win.title('密码验证')
+                pwd_win.geometry('260x120')
+                pwd_win.resizable(False, False)
+                tk.Label(pwd_win, text='请输入第一个登录密码：', font=('微软雅黑', 11)).pack(pady=10)
+                pwd_entry = tk.Entry(pwd_win, show='*', font=('微软雅黑', 11))
+                pwd_entry.pack(pady=5)
+                pwd_entry.focus()
+                tk.Button(pwd_win, text='确定', command=check_pwd, font=('微软雅黑', 10)).pack(pady=5)
+                def on_cancel_pwd():
+                    pwd_win.destroy()
+                tk.Button(pwd_win, text='取消', command=on_cancel_pwd, font=('微软雅黑', 10)).pack()
+                pwd_win.transient(parent_win)
+                pwd_win.grab_set()
+        if tk.messagebox.askyesno('确认删除', '确定要删除此条数据吗？'):
+            check_pwd_and_delete()
     def clean_data(self):
         for person in self.data:
             birth = person.get('出生日期', '').replace('/', '-').replace('.', '-')
@@ -545,19 +599,46 @@ class MainWindow(tk.Tk):
         text.config(state='disabled')
     def export_data(self):
         import csv
-        file_path = filedialog.asksaveasfilename(defaultextension='.csv', filetypes=[('CSV文件', '*.csv')], title='导出数据')
-        if not file_path:
-            return
-        headers = ['序号', '姓名', '性别', '身份证号', '出生日期', '地点', '年龄']
-        try:
-            with open(file_path, 'w', encoding='utf-8-sig', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=headers)
-                writer.writeheader()
-                for row in self.data:
-                    writer.writerow({h: row.get(h, '') for h in headers})
-            tk.messagebox.showinfo('导出成功', f'数据已导出到：{file_path}')
-        except Exception as e:
-            tk.messagebox.showerror('导出失败', f'导出数据时出错：{e}')
+        def do_export():
+            file_path = filedialog.asksaveasfilename(defaultextension='.csv', filetypes=[('CSV文件', '*.csv')], title='导出数据')
+            if not file_path:
+                return
+            headers = ['序号', '姓名', '性别', '身份证号', '出生日期', '地点', '年龄']
+            try:
+                with open(file_path, 'w', encoding='utf-8-sig', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=headers)
+                    writer.writeheader()
+                    for row in self.data:
+                        writer.writerow({h: row.get(h, '') for h in headers})
+                tk.messagebox.showinfo('导出成功', f'数据已导出到：{file_path}')
+            except Exception as e:
+                tk.messagebox.showerror('导出失败', f'导出数据时出错：{e}')
+        if getattr(self, 'is_admin', False):
+            tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入管理员密码')
+            do_export()
+        else:
+            def check_admin():
+                pwd = pwd_entry.get()
+                if pwd == ADMIN_PASS:
+                    admin_win.destroy()
+                    do_export()
+                else:
+                    tk.messagebox.showerror('错误', '管理员密码错误', parent=admin_win)
+            admin_win = tk.Toplevel(self)
+            admin_win.title('管理员密码验证')
+            admin_win.geometry('260x120')
+            admin_win.resizable(False, False)
+            tk.Label(admin_win, text='请输入管理员密码：', font=('微软雅黑', 11)).pack(pady=10)
+            pwd_entry = tk.Entry(admin_win, show='*', font=('微软雅黑', 11))
+            pwd_entry.pack(pady=5)
+            pwd_entry.focus()
+            btn = tk.Button(admin_win, text='确定', command=check_admin, font=('微软雅黑', 10))
+            btn.pack(pady=5)
+            def on_cancel_admin():
+                admin_win.destroy()
+            tk.Button(admin_win, text='取消', command=on_cancel_admin, font=('微软雅黑', 10)).pack()
+            admin_win.transient(self)
+            admin_win.grab_set()
 if __name__ == '__main__':
     output_dir = os.path.join(BASE_DIR, 'output')
     fuq_exe = os.path.join(output_dir, 'fuq.exe')
