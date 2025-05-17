@@ -4,21 +4,41 @@
     "type": "split",
     "children": [
       {
-        "id": "d9dac700aea8275c",
+        "id": "e8fedbb1bb1861d9",
         "type": "tabs",
         "children": [
           {
-            "id": "528225c584334f15",
+            "id": "21d4057ee1ce3579",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "zy/zy-LG.md",
+                "file": "知识点/树形结构.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "zy-LG"
+              "title": "树形结构"
+            }
+          }
+        ]
+      },
+      {
+        "id": "934134f15b036b0d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f493d3221d2470ad",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "知识点/树形结构.md",
+                "mode": "preview",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "树形结构"
             }
           }
         ]
@@ -94,6 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "知识点/树形结构.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +124,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "反向链接"
+              "title": "树形结构 的反向链接列表"
             }
           },
           {
@@ -140,17 +161,16 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "zy/zy-LG.md",
+                "file": "知识点/树形结构.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "zy-LG 的大纲"
+              "title": "树形结构 的大纲"
             }
           }
-        ],
-        "currentTab": 3
+        ]
       }
     ],
     "direction": "horizontal",
@@ -166,10 +186,10 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "528225c584334f15",
+  "active": "adcbd2f0953acf50",
   "lastOpenFiles": [
-    "2025-05-11.md",
     "zy/zy-LG.md",
+    "2025-05-11.md",
     "666.md",
     "知识点/搜索及其优化技巧.md",
     "BB101.cpp.md",
