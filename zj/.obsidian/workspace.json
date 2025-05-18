@@ -4,41 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "e8fedbb1bb1861d9",
+        "id": "45d3b9913c50b93b",
         "type": "tabs",
         "children": [
           {
-            "id": "21d4057ee1ce3579",
+            "id": "7813b90a56f89e58",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "知识点/树形结构.md",
-                "mode": "source",
-                "source": true
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "树形结构"
-            }
-          }
-        ]
-      },
-      {
-        "id": "934134f15b036b0d",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "f493d3221d2470ad",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "知识点/树形结构.md",
-                "mode": "preview",
-                "source": true
-              },
-              "icon": "lucide-file",
-              "title": "树形结构"
+              "title": "新标签页"
             }
           }
         ]
@@ -114,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "知识点/树形结构.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +99,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "树形结构 的反向链接列表"
+              "title": "反向链接"
             }
           },
           {
@@ -186,8 +161,13 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "adcbd2f0953acf50",
+  "active": "7813b90a56f89e58",
   "lastOpenFiles": [
+    "模版/周总结.md",
+    "2025-05-18.md",
+    "总结/2025-05-18.md",
+    "模版",
+    "知识点/树形结构.md",
     "zy/zy-LG.md",
     "2025-05-11.md",
     "666.md",
@@ -211,10 +191,6 @@
     "2025-04-06.md",
     "知识点/二叉堆.md",
     "知识点/集合.md",
-    "知识点/前缀和、差分与离散化.md",
-    "知识点/贪心选择策略.md",
-    "知识点/树形结构.md",
-    "知识点/进制.md",
     "题目"
   ]
 }

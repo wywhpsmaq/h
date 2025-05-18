@@ -143,6 +143,10 @@ class MainWindow(tk.Tk):
         for btn in btns:
             btn.bind('<Enter>', lambda e, b=btn: b.config(bg=STYLE['button_active_bg']))
             btn.bind('<Leave>', lambda e, b=btn: b.config(bg=STYLE['button_bg']))
+        # 在按钮区最后加一个“公示”按钮，并与前面按钮有间隔
+        notice_btn = tk.Button(top_frame, text='公示', command=self.show_notice, bg='#1976D2', fg='white', font=('微软雅黑', 11, 'bold'), bd=0, relief='ridge', cursor='hand2')
+        style_btn(notice_btn)
+        notice_btn.grid(row=0, column=14+len(btns)*2, padx=(30, 0))  # 与前面按钮有较大间隔
         list_frame_outer = tk.Frame(self.main_frame, bg=STYLE['main_bg'])
         list_frame_outer.pack(fill='both', expand=True, padx=12, pady=8)
         canvas = tk.Canvas(list_frame_outer, bg=STYLE['main_bg'], highlightthickness=0)
@@ -454,9 +458,9 @@ class MainWindow(tk.Tk):
                             pwd_entry.focus()
                             btn = tk.Button(admin_win, text='确定', command=check_admin, font=('微软雅黑', 10))
                             btn.pack(pady=5)
-                            def on_cancel_admin():
+                            def on_cancel():
                                 admin_win.destroy()
-                            tk.Button(admin_win, text='取消', command=on_cancel_admin, font=('微软雅黑', 10)).pack()
+                            tk.Button(admin_win, text='取消', command=on_cancel, font=('微软雅黑', 10)).pack()
                             admin_win.transient(win)
                             admin_win.grab_set()
                 def on_cancel():
@@ -639,6 +643,54 @@ class MainWindow(tk.Tk):
             tk.Button(admin_win, text='取消', command=on_cancel_admin, font=('微软雅黑', 10)).pack()
             admin_win.transient(self)
             admin_win.grab_set()
+        # 右下角公示按钮（确保在主窗口布局后创建）
+        self.after(100, self.add_notice_button)
+
+    def add_notice_button(self):
+        # 将按钮放到主界面右上角
+        notice_btn = tk.Button(self, text='公示', command=self.show_notice, bg='#1976D2', fg='white', font=('微软雅黑', 11, 'bold'), bd=0, relief='ridge', cursor='hand2')
+        notice_btn.place(relx=1.0, rely=0.0, anchor='ne', x=-20, y=20)
+
+    def show_notice(self):
+        win = tk.Toplevel(self)
+        win.title('公示信息')
+        win.geometry('420x320')
+        win.resizable(False, False)
+        frame = tk.Frame(win, bg='white')
+        frame.pack(fill='both', expand=True, padx=16, pady=16)
+        # 公示内容持久化到 data/notice.txt
+        notice_file = os.path.join(DATA_DIR, 'notice.txt')
+        if not hasattr(self, '_notice_text'):
+            if os.path.exists(notice_file):
+                with open(notice_file, 'r', encoding='utf-8') as f:
+                    self._notice_text = f.read()
+            else:
+                self._notice_text = '暂无公示内容'
+        notice_text = self._notice_text
+        text_widget = tk.Text(frame, font=('微软雅黑', 12), height=10, wrap='word')
+        text_widget.insert('1.0', notice_text)
+        text_widget.config(state='disabled')
+        text_widget.pack(fill='both', expand=True)
+        if getattr(self, 'is_admin', False):
+            def enable_edit():
+                text_widget.config(state='normal')
+                edit_btn.config(state='disabled')
+                save_btn.config(state='normal')
+            def save_notice():
+                new_text = text_widget.get('1.0', 'end').strip()
+                self._notice_text = new_text
+                # 保存到文件
+                with open(notice_file, 'w', encoding='utf-8') as f:
+                    f.write(new_text)
+                text_widget.config(state='disabled')
+                save_btn.config(state='disabled')
+                edit_btn.config(state='normal')
+            btn_frame = tk.Frame(frame, bg='white')
+            btn_frame.pack(fill='x', pady=8)
+            edit_btn = tk.Button(btn_frame, text='编辑', command=enable_edit, bg='#2196F3', fg='white', font=('微软雅黑', 10, 'bold'), bd=0, relief='ridge', cursor='hand2')
+            save_btn = tk.Button(btn_frame, text='保存', command=save_notice, bg='#1976D2', fg='white', font=('微软雅黑', 10, 'bold'), bd=0, relief='ridge', cursor='hand2', state='disabled')
+            edit_btn.pack(side='left', padx=10)
+            save_btn.pack(side='left', padx=10)
 if __name__ == '__main__':
     output_dir = os.path.join(BASE_DIR, 'output')
     fuq_exe = os.path.join(output_dir, 'fuq.exe')
