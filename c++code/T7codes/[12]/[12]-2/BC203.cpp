@@ -1,11 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
-queue<vector<vector<pair<int,pair<int,int>>>>> o;
-vector<pair<int,pair<int, int>>> ans;
+queue<vector<vector<pair<int, pair<int, int>>>>> o;
+vector<pair<int, pair<int, int>>> ans;
 vector<vector<pair<int, int>>> p;
-vector<bool> vis;
 vector<bool> v;
-queue<pair<int, int>> q;
 int num, r;
 int n;
 int dfs(int a, int sum) {
@@ -35,19 +33,23 @@ int main() {
         p[a].push_back({b, c});
         p[b].push_back({a, c});
     }
-    vis.assign(n + 1, false);
     v.assign(n + 1, false);
-    num = 0,v[1] = true;
+    num = 0;
+    v[1] = true;
     dfs(1, 0);
     int g_r = r;
     v.assign(n + 1, false);
-    num = 0,v[g_r] = true;
+    num = 0;
+    v[g_r] = true;
     dfs(g_r, 0);
     int g_l = r;
     if (g_l > g_r) swap(g_l, g_r);
-    ans.assign(n + 1, {0,{0x3f3f3f3f, 0x3f3f3f3f}});
+    ans.assign(n + 1, {0, {0x3f3f3f3f, 0x3f3f3f3f}});
+    queue<pair<int, int>> q;
+    vector<bool> vis(n + 1, false);
     q.push({g_l, 0});
-    vis[g_l] = true,ans[g_l].first = 0;
+    vis[g_l] = true;
+    ans[g_l].first = 0;
     while (!q.empty()) {
         auto [x, y] = q.front();
         q.pop();
@@ -74,13 +76,12 @@ int main() {
             }
         }
     }
-    for(int i=1;i<=n;i++)
-    {
-        ans[i].first=i;
+    for (int i = 1; i <= n; i++) {
+        ans[i].first = i;
     }
     sort(ans.begin() + 1, ans.end(), [](pair<int, pair<int, int>> a, pair<int, pair<int, int>> b) {
-        return max(a.second.first,a.second.second) < max(b.second.first,b.second.second);
+        return max(a.second.first, a.second.second) < max(b.second.first, b.second.second);
     });
-    cout<<ans[1].first<<max(ans[1].second.first,ans[1].second.second);
+    cout << ans[1].first << " " << max(ans[1].second.first, ans[1].second.second);
     return 0;
 }
