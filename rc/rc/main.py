@@ -432,7 +432,6 @@ class MainWindow(tk.Tk):
                         result['fmt'] = '1'
                         win.destroy()
                     else:
-                        # 格式二需要管理员密码
                         if getattr(self, 'is_admin', False):
                             tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入管理员密码')
                             result['ok'] = True
@@ -643,11 +642,9 @@ class MainWindow(tk.Tk):
             tk.Button(admin_win, text='取消', command=on_cancel_admin, font=('微软雅黑', 10)).pack()
             admin_win.transient(self)
             admin_win.grab_set()
-        # 右下角公示按钮（确保在主窗口布局后创建）
         self.after(100, self.add_notice_button)
 
     def add_notice_button(self):
-        # 将按钮放到主界面右上角
         notice_btn = tk.Button(self, text='公示', command=self.show_notice, bg='#1976D2', fg='white', font=('微软雅黑', 11, 'bold'), bd=0, relief='ridge', cursor='hand2')
         notice_btn.place(relx=1.0, rely=0.0, anchor='ne', x=-20, y=20)
 

@@ -1,1 +1,0 @@
-{"name":"Local: BB408","url":"f:\\h\\c++code\\T7codes\\[11]\\[11]-4\\BB408.cpp","tests":[{"id":1746711690764,"input":"5 1996\n1\n2\n1994\n12\n29","output":"2"},{"id":1746713074870,"input":"8 10 \n3 3 3 3 2 2 2 2","output":"2"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"f:\\h\\c++code\\T7codes\\[11]\\[11]-4\\BB408.cpp","group":"local","local":true}

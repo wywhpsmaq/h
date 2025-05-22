@@ -1,1 +1,0 @@
-{"name":"Local: BB509","url":"f:\\h\\c++code\\T7codes\\[11]\\[11]-5\\BB509.cpp","tests":[{"id":1746939244380,"input":"5 5 100\n#####\n#S..#\n#...#\n#...E\n#####\n","output":"500"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"f:\\h\\c++code\\T7codes\\[11]\\[11]-5\\BB509.cpp","group":"local","local":true}

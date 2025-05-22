@@ -11,10 +11,14 @@
             "id": "7813b90a56f89e58",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "2025-05-22.md",
+                "mode": "preview",
+                "source": true
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "2025-05-22"
             }
           }
         ]
@@ -90,6 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "2025-05-22.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "反向链接"
+              "title": "2025-05-22 的反向链接列表"
             }
           },
           {
@@ -136,16 +141,17 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "知识点/树形结构.md",
+                "file": "2025-05-22.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "树形结构 的大纲"
+              "title": "2025-05-22 的大纲"
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
@@ -161,8 +167,12 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "7813b90a56f89e58",
+  "active": "a72ec55d3744087c",
   "lastOpenFiles": [
+    "结构.md",
+    "2025-05-22.md",
+    "结构.emmx",
+    "结构.emmx.mbZgtx",
     "模版/周总结.md",
     "2025-05-18.md",
     "总结/2025-05-18.md",
@@ -188,9 +198,6 @@
     "zy-LG.md",
     "zy",
     "知识点/图网络结构.md",
-    "2025-04-06.md",
-    "知识点/二叉堆.md",
-    "知识点/集合.md",
     "题目"
   ]
 }
