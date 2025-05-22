@@ -1,249 +1,566 @@
-以下是按照给定的树形结构和图网络结构知识点生成的 10 篇 C++ 信息竞赛学生的知识点总结：
+以下是更加详细的10篇C++信息竞赛知识点总结，补充了更多的代码实现、复杂度分析和例题应用：
 
-### 总结 1：树形结构 01 - 树的概念，存储及遍历
-#### 树的概念
-树是一种无向无环的连通图，由节点和边组成。有一个特殊的节点称为根节点，除根节点外，每个节点都有一个父节点。树的节点可以有零个或多个子节点。
+### 总结1：树形结构01 - 树的概念，存储及遍历
+#### 树的基础概念
+1. **定义**：N个节点，N-1条边的无向连通图
+2. **术语**：
+   - 根节点、叶子节点、父节点、子节点、兄弟节点
+   - 节点深度、高度、子树、森林
 
-#### 存储方式
-- **邻接表**：使用 `vector<int> adj[N]` 来存储树的边，其中 `adj[i]` 存储节点 `i` 的所有子节点。
+#### 存储方式对比
 ```cpp
-#include <vector>
-const int N = 100005;
+// 邻接表存储（动态数组）
 vector<int> adj[N];
 
-// 添加边
+// 添加边（无向树）
 void addEdge(int u, int v) {
     adj[u].push_back(v);
     adj[v].push_back(u);
 }
-```
-- **链式前向星**：通过数组模拟链表来存储边。
 
-#### 遍历方式
-- **深度优先搜索（DFS）**：递归地访问每个节点及其子节点。
+// 链式前向星（静态数组模拟链表）
+struct Edge {
+    int to, next;
+} edges[M];
+int head[N], cnt;
+
+void init() {
+    memset(head, -1, sizeof(head));
+    cnt = 0;
+}
+
+void addEdge(int u, int v) {
+    edges[cnt] = {v, head[u]};
+    head[u] = cnt++;
+}
+
+// 遍历所有邻接边
+for (int i = head[u]; i != -1; i = edges[i].next) {
+    int v = edges[i].to;
+    // 处理节点v
+}
+```
+
+#### 遍历算法详解
+1. **深度优先搜索（DFS）**
 ```cpp
-void dfs(int u, int parent) {
-    // 处理当前节点
+// 记录父节点和深度
+int parent[N], depth[N];
+
+void dfs(int u, int p, int d) {
+    parent[u] = p;
+    depth[u] = d;
     for (int v : adj[u]) {
-        if (v != parent) {
-            dfs(v, u);
+        if (v != p) {
+            dfs(v, u, d + 1);
         }
     }
 }
+
+// 调用方式
+dfs(root, -1, 0);
 ```
-- **广度优先搜索（BFS）**：使用队列按层遍历树。
+
+2. **广度优先搜索（BFS）**
 ```cpp
-#include <queue>
+// 层序遍历，计算每个节点的层次
+int level[N];
+
 void bfs(int root) {
+    memset(level, -1, sizeof(level));
     queue<int> q;
     q.push(root);
+    level[root] = 0;
+    
     while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-        // 处理当前节点
+        int u = q.front(); q.pop();
         for (int v : adj[u]) {
-            q.push(v);
-        }
-    }
-}
-```
-
-### 总结 2：树形结构 02 - 树的直径及其性质
-#### 树的直径定义
-树中任意两个节点之间的最长路径称为树的直径。
-
-#### 求树的直径的方法
-- **两次 DFS 法**：
-    1. 从任意节点 `u` 开始进行 DFS，找到距离 `u` 最远的节点 `v`。
-    2. 从节点 `v` 开始进行 DFS，找到距离 `v` 最远的节点 `w`。节点 `v` 到节点 `w` 的路径即为树的直径。
-```cpp
-int maxDist, farthestNode;
-void dfs(int u, int parent, int dist) {
-    if (dist > maxDist) {
-        maxDist = dist;
-        farthestNode = u;
-    }
-    for (int v : adj[u]) {
-        if (v != parent) {
-            dfs(v, u, dist + 1);
-        }
-    }
-}
-
-int getDiameter() {
-    maxDist = -1;
-    dfs(1, -1, 0);
-    int start = farthestNode;
-    maxDist = -1;
-    dfs(start, -1, 0);
-    return maxDist;
-}
-```
-
-#### 性质
-- 树的直径可能不唯一，但所有直径都有公共部分。
-- 树的中心位于树的直径上。
-
-### 总结 3：树形结构 03 - 树的重心及其性质
-#### 树的重心定义
-树的重心是指树中的一个节点，删除该节点后，剩余的各个连通分量中节点数的最大值最小。
-
-#### 求树的重心的方法
-通过 DFS 遍历树，计算每个节点删除后各个连通分量的节点数。
-```cpp
-int n;
-int sz[N], centroid;
-void dfs(int u, int parent) {
-    sz[u] = 1;
-    int maxSubtree = 0;
-    for (int v : adj[u]) {
-        if (v != parent) {
-            dfs(v, u);
-            sz[u] += sz[v];
-            maxSubtree = max(maxSubtree, sz[v]);
-        }
-    }
-    maxSubtree = max(maxSubtree, n - sz[u]);
-    if (maxSubtree < n / 2) {
-        centroid = u;
-    }
-}
-```
-
-#### 性质
-- 树的重心最多有两个。
-- 树的重心到所有节点的距离之和最小。
-
-### 总结 4：树形结构 04 - 树的集合性质与并查集
-#### 并查集的概念
-并查集是一种用于处理不相交集合的合并与查询问题的数据结构，支持两种操作：
-- **合并（Union）**：将两个集合合并为一个集合。
-- **查询（Find）**：查询两个元素是否属于同一个集合。
-
-#### 实现代码
-```cpp
-int parent[N];
-void init() {
-    for (int i = 1; i <= n; i++) {
-        parent[i] = i;
-    }
-}
-
-int find(int x) {
-    if (parent[x] != x) {
-        parent[x] = find(parent[x]);
-    }
-    return parent[x];
-}
-
-void unite(int x, int y) {
-    int px = find(x);
-    int py = find(y);
-    if (px != py) {
-        parent[px] = py;
-    }
-}
-```
-
-#### 在树中的应用
-可以使用并查集来判断树的连通性，以及处理树的合并问题。
-
-### 总结 5：树形结构 05 - 二叉树的存储遍历和转化
-#### 二叉树的存储
-- **数组存储**：使用数组 `tree[N]` 来存储二叉树，`tree[i]` 表示节点 `i` 的值，`tree[2 * i]` 和 `tree[2 * i + 1]` 分别表示节点 `i` 的左子节点和右子节点。
-- **指针存储**：使用结构体和指针来存储二叉树。
-```cpp
-struct TreeNode {
-    int val;
-    TreeNode *left;
-    TreeNode *right;
-    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
-};
-```
-
-#### 遍历方式
-- **前序遍历**：根节点 -> 左子树 -> 右子树
-```cpp
-void preOrder(TreeNode* root) {
-    if (root) {
-        cout << root->val << " ";
-        preOrder(root->left);
-        preOrder(root->right);
-    }
-}
-```
-- **中序遍历**：左子树 -> 根节点 -> 右子树
-- **后序遍历**：左子树 -> 右子树 -> 根节点
-
-#### 转化
-可以将二叉树转化为线索二叉树、哈夫曼树等。
-
-### 总结 6：图网络结构 01 - 图的概念及储存遍历
-#### 图的概念
-图是由节点和边组成的一种数据结构，分为有向图和无向图。
-
-#### 存储方式
-- **邻接矩阵**：使用二维数组 `graph[N][N]` 来存储图的边，`graph[i][j]` 表示节点 `i` 到节点 `j` 的边的权重。
-- **邻接表**：同树的邻接表存储方式。
-
-#### 遍历方式
-- **深度优先搜索（DFS）**：
-```cpp
-void dfs(int u) {
-    visited[u] = true;
-    // 处理当前节点
-    for (int v : adj[u]) {
-        if (!visited[v]) {
-            dfs(v);
-        }
-    }
-}
-```
-- **广度优先搜索（BFS）**：
-```cpp
-void bfs(int s) {
-    queue<int> q;
-    q.push(s);
-    visited[s] = true;
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-        // 处理当前节点
-        for (int v : adj[u]) {
-            if (!visited[v]) {
+            if (level[v] == -1) {
+                level[v] = level[u] + 1;
                 q.push(v);
-                visited[v] = true;
             }
         }
     }
 }
 ```
 
-### 总结 7：图网络结构 02 - 单源最短路问题
-#### 问题描述
-给定一个图和一个源节点，求源节点到图中所有其他节点的最短路径。
+3. **复杂度分析**
+   - 时间复杂度：O(N)
+   - 空间复杂度：邻接表O(N+M)，DFS递归栈O(N)
 
-#### 算法
-- **Dijkstra 算法**：适用于边权非负的图。
+#### 典型例题
+- [洛谷P3379 最近公共祖先](https://www.luogu.com.cn/problem/P3379)
+- [POJ1330 Nearest Common Ancestors](http://poj.org/problem?id=1330)
+
+
+### 总结2：树形结构02 - 树的直径及其性质
+#### 直径的严格定义
+- 树中所有最短路径的最大值
+- 数学表达式：max_{u,v∈V} d(u,v)
+
+#### 算法证明与实现
+1. **两次DFS/BFS算法正确性证明**
+   - 引理1：从任意点u出发到达的最远点v一定是直径的一个端点
+   - 引理2：从v出发到达的最远点w一定是直径的另一个端点
+
+2. **代码实现**
 ```cpp
-#include <queue>
-typedef pair<int, int> pii;
-const int INF = 1e9;
-int dist[N];
+// 两次BFS求树的直径
+int maxDist, farthestNode;
+
+void bfs(int start) {
+    queue<int> q;
+    vector<int> dist(n + 1, -1);
+    
+    q.push(start);
+    dist[start] = 0;
+    maxDist = 0;
+    farthestNode = start;
+    
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int v : adj[u]) {
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + 1;
+                if (dist[v] > maxDist) {
+                    maxDist = dist[v];
+                    farthestNode = v;
+                }
+                q.push(v);
+            }
+        }
+    }
+}
+
+int getDiameter() {
+    bfs(1);         // 第一次BFS找到端点u
+    bfs(farthestNode); // 第二次BFS找到直径
+    return maxDist;
+}
+```
+
+3. **带权树的直径**
+```cpp
+// 带权树的DFS实现
+struct Edge {
+    int to, weight;
+};
+vector<Edge> adj[N];
+int maxDist, farthestNode;
+
+void dfs(int u, int p, int dist) {
+    if (dist > maxDist) {
+        maxDist = dist;
+        farthestNode = u;
+    }
+    for (Edge e : adj[u]) {
+        if (e.to != p) {
+            dfs(e.to, u, dist + e.weight);
+        }
+    }
+}
+```
+
+#### 直径的应用
+- 树的中心位于直径上
+- 树的半径：直径的一半
+- 例题：[CF1187E Tree Painting](https://codeforces.com/problemset/problem/1187/E)
+
+
+### 总结3：树形结构03 - 树的重心及其性质
+#### 重心的严格定义
+- 定义1：删除该节点后，最大子树的节点数最小
+- 定义2：所有节点到该点的距离之和最小
+
+#### 算法实现
+```cpp
+// 计算树的所有重心
+int n;
+vector<int> adj[N];
+int sz[N], maxChild[N];
+vector<int> centroids;
+
+void dfs(int u, int p) {
+    sz[u] = 1;
+    maxChild[u] = 0;
+    for (int v : adj[u]) {
+        if (v != p) {
+            dfs(v, u);
+            sz[u] += sz[v];
+            maxChild[u] = max(maxChild[u], sz[v]);
+        }
+    }
+    // 考虑父节点方向的子树
+    maxChild[u] = max(maxChild[u], n - sz[u]);
+}
+
+void findCentroids() {
+    dfs(1, -1);
+    int minMax = INF;
+    for (int i = 1; i <= n; i++) {
+        if (maxChild[i] < minMax) {
+            minMax = maxChild[i];
+            centroids.clear();
+            centroids.push_back(i);
+        } else if (maxChild[i] == minMax) {
+            centroids.push_back(i);
+        }
+    }
+}
+```
+
+#### 重心的重要性质
+1. 树最多有两个重心
+2. 若有两个重心，它们相邻
+3. 树的重心在直径的中点上
+4. 树的重心是树的平衡点
+
+#### 例题应用
+- [POJ1655 Balancing Act](http://poj.org/problem?id=1655)
+- [CF685B Kay and Snowflake](https://codeforces.com/problemset/problem/685/B)
+
+
+### 总结4：树形结构04 - 树的集合性质与并查集
+#### 并查集的优化实现
+```cpp
+// 路径压缩 + 按秩合并
+int parent[N], rank[N];
+
+void init(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        rank[i] = 1;
+    }
+}
+
+int find(int x) {
+    return parent[x] == x ? x : parent[x] = find(parent[x]);
+}
+
+void unite(int x, int y) {
+    int px = find(x);
+    int py = find(y);
+    if (px == py) return;
+    
+    if (rank[px] < rank[py]) {
+        parent[px] = py;
+    } else {
+        parent[py] = px;
+        if (rank[px] == rank[py]) rank[px]++;
+    }
+}
+
+bool same(int x, int y) {
+    return find(x) == find(y);
+}
+```
+
+#### 时间复杂度分析
+- 路径压缩 + 按秩合并：均摊O(α(n))
+- α(n)为阿克曼函数的反函数，在实际应用中可视为常数
+
+#### 并查集的扩展应用
+1. **维护额外信息**
+```cpp
+// 维护每个集合的大小
+int size[N];
+
+void init(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        size[i] = 1;
+    }
+}
+
+void unite(int x, int y) {
+    int px = find(x);
+    int py = find(y);
+    if (px == py) return;
+    
+    if (rank[px] < rank[py]) {
+        parent[px] = py;
+        size[py] += size[px];
+    } else {
+        parent[py] = px;
+        size[px] += size[py];
+        if (rank[px] == rank[py]) rank[px]++;
+    }
+}
+```
+
+2. **带权并查集**
+```cpp
+// 维护节点到根的距离
+int parent[N], dist[N];
+
+int find(int x) {
+    if (parent[x] != x) {
+        int px = parent[x];
+        parent[x] = find(parent[x]);
+        dist[x] += dist[px];
+    }
+    return parent[x];
+}
+
+void unite(int x, int y, int w) {
+    int px = find(x);
+    int py = find(y);
+    if (px == py) return;
+    
+    parent[px] = py;
+    dist[px] = w + dist[y] - dist[x];
+}
+```
+
+#### 典型例题
+- [POJ1182 食物链](http://poj.org/problem?id=1182)
+- [洛谷P3367 并查集模板](https://www.luogu.com.cn/problem/P3367)
+
+
+### 总结5：树形结构05 - 二叉树的存储遍历和转化
+#### 二叉树的特殊类型
+- 满二叉树：所有层节点数达到最大值
+- 完全二叉树：除最后一层外均满，最后一层节点靠左
+- 二叉搜索树：左子树节点值 < 根节点值 < 右子树节点值
+
+#### 遍历算法对比
+```cpp
+// 递归遍历
+void preOrder(TreeNode* root) {
+    if (!root) return;
+    cout << root->val << " ";  // 先序
+    preOrder(root->left);
+    // cout << root->val << " ";  // 中序
+    preOrder(root->right);
+    // cout << root->val << " ";  // 后序
+}
+
+// 非递归遍历（迭代）
+void inOrder(TreeNode* root) {
+    stack<TreeNode*> st;
+    TreeNode* curr = root;
+    
+    while (curr || !st.empty()) {
+        while (curr) {
+            st.push(curr);
+            curr = curr->left;
+        }
+        
+        curr = st.top(); st.pop();
+        cout << curr->val << " ";
+        curr = curr->right;
+    }
+}
+
+// 层序遍历
+void levelOrder(TreeNode* root) {
+    if (!root) return;
+    queue<TreeNode*> q;
+    q.push(root);
+    
+    while (!q.empty()) {
+        TreeNode* curr = q.front(); q.pop();
+        cout << curr->val << " ";
+        
+        if (curr->left) q.push(curr->left);
+        if (curr->right) q.push(curr->right);
+    }
+}
+```
+
+#### 二叉树的转化
+1. **二叉树转线索二叉树**
+```cpp
+// 线索二叉树节点结构
+struct ThreadedNode {
+    int val;
+    ThreadedNode *left, *right;
+    bool ltag, rtag;  // 标记左右指针是否为线索
+    
+    ThreadedNode(int x) : val(x), left(nullptr), right(nullptr), ltag(false), rtag(false) {}
+};
+
+// 中序线索化
+void inThread(ThreadedNode* root, ThreadedNode*& pre) {
+    if (!root) return;
+    
+    inThread(root->left, pre);
+    
+    if (!root->left) {
+        root->left = pre;
+        root->ltag = true;
+    }
+    
+    if (pre && !pre->right) {
+        pre->right = root;
+        pre->rtag = true;
+    }
+    
+    pre = root;
+    inThread(root->right, pre);
+}
+```
+
+2. **二叉树转森林**
+   - 步骤：
+     1. 去掉父节点与右子节点的连线
+     2. 分离出多棵二叉树
+     3. 将每棵二叉树转换为树
+
+#### 典型例题
+- [LeetCode105 从前序与中序遍历序列构造二叉树](https://leetcode-cn.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+- [LeetCode102 二叉树的层序遍历](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)
+
+
+### 总结6：图网络结构01 - 图的概念及储存遍历
+#### 图的基本概念
+1. **术语**：
+   - 有向图/无向图、带权图/无权图
+   - 度（入度/出度）、路径、环、连通分量
+2. **特殊图**：
+   - 完全图、二分图、树、森林
+
+#### 存储结构对比
+```cpp
+// 1. 邻接矩阵
+int graph[N][N];  // 存储边权，0表示无边
+
+// 2. 邻接表（动态数组）
+vector<int> adj[N];  // 无权图
+vector<pair<int, int>> weightedAdj[N];  // 带权图
+
+// 3. 边集数组
+struct Edge {
+    int u, v, w;
+};
+Edge edges[M];
+```
+
+#### 遍历算法
+1. **DFS（递归）**
+```cpp
+vector<int> adj[N];
+bool visited[N];
+
+void dfs(int u) {
+    visited[u] = true;
+    // 处理节点u
+    for (int v : adj[u]) {
+        if (!visited[v]) {
+            dfs(v);
+        }
+    }
+}
+
+// 遍历所有连通分量
+void traverseGraph() {
+    memset(visited, false, sizeof(visited));
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) {
+            dfs(i);
+        }
+    }
+}
+```
+
+2. **BFS（队列）**
+```cpp
+void bfs(int s) {
+    memset(visited, false, sizeof(visited));
+    queue<int> q;
+    q.push(s);
+    visited[s] = true;
+    
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        // 处理节点u
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}
+```
+
+#### 复杂度分析
+| 算法       | 时间复杂度       | 空间复杂度       |
+|------------|------------------|------------------|
+| DFS        | O(V + E)         | O(V)             |
+| BFS        | O(V + E)         | O(V)             |
+| 邻接矩阵   | O(V²)            | O(V²)            |
+| 邻接表     | O(V + E)         | O(V + E)         |
+
+#### 典型例题
+- [POJ3259 Wormholes](http://poj.org/problem?id=3259)（判断负环）
+- [洛谷P1330 封锁阳光大学](https://www.luogu.com.cn/problem/P1330)（二分图判定）
+
+
+### 总结7：图网络结构02 - 单源最短路问题
+#### 算法对比
+| 算法       | 适用范围           | 时间复杂度       | 优化方式          |
+|------------|--------------------|------------------|-------------------|
+| Dijkstra   | 非负权图           | O(V²)            | 优先队列O((V+E)logV) |
+| Bellman-Ford | 含负权边           | O(VE)            | SPFA O(kE)        |
+| SPFA       | 含负权边，无负环   | 平均O(E)         | 队列优化          |
+
+#### Dijkstra算法实现
+```cpp
+// 朴素Dijkstra（邻接矩阵）
+int dist[N], graph[N][N];
+bool visited[N];
+
 void dijkstra(int s) {
-    fill(dist, dist + N, INF);
+    memset(dist, 0x3f, sizeof(dist));
+    memset(visited, false, sizeof(visited));
     dist[s] = 0;
+    
+    for (int i = 1; i <= n; i++) {
+        int u = -1, minDist = INF;
+        for (int j = 1; j <= n; j++) {
+            if (!visited[j] && dist[j] < minDist) {
+                u = j;
+                minDist = dist[j];
+            }
+        }
+        
+        if (u == -1) break;
+        visited[u] = true;
+        
+        for (int v = 1; v <= n; v++) {
+            if (!visited[v] && graph[u][v] != INF) {
+                dist[v] = min(dist[v], dist[u] + graph[u][v]);
+            }
+        }
+    }
+}
+```
+
+#### 优先队列优化Dijkstra
+```cpp
+// 优先队列优化Dijkstra（邻接表）
+typedef pair<int, int> pii;
+vector<pii> adj[N];  // {v, w}
+int dist[N];
+
+void dijkstra(int s) {
+    memset(dist, 0x3f, sizeof(dist));
     priority_queue<pii, vector<pii>, greater<pii>> pq;
+    dist[s] = 0;
     pq.push({0, s});
+    
     while (!pq.empty()) {
         int u = pq.top().second;
         int d = pq.top().first;
         pq.pop();
+        
         if (d > dist[u]) continue;
+        
         for (pii edge : adj[u]) {
             int v = edge.first;
             int w = edge.second;
-            if (dist[u] + w < dist[v]) {
+            if (dist[v] > dist[u] + w) {
                 dist[v] = dist[u] + w;
                 pq.push({dist[v], v});
             }
@@ -251,18 +568,80 @@ void dijkstra(int s) {
     }
 }
 ```
-- **Bellman - Ford 算法**：适用于存在负权边的图，但不能处理负环。
 
-### 总结 8：图网络结构 03 - 多源最短路与负环判定
-#### 多源最短路问题
-求图中任意两个节点之间的最短路径。
-
-#### 算法
-- **Floyd - Warshall 算法**：
+#### SPFA算法实现
 ```cpp
-const int INF = 1e9;
+// SPFA（队列优化的Bellman-Ford）
+int dist[N], cnt[N];  // cnt记录入队次数
+bool inQueue[N];
+vector<pii> adj[N];
+
+bool spfa(int s) {
+    memset(dist, 0x3f, sizeof(dist));
+    memset(inQueue, false, sizeof(inQueue));
+    memset(cnt, 0, sizeof(cnt));
+    
+    queue<int> q;
+    q.push(s);
+    dist[s] = 0;
+    inQueue[s] = true;
+    cnt[s] = 1;
+    
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        inQueue[u] = false;
+        
+        for (pii edge : adj[u]) {
+            int v = edge.first;
+            int w = edge.second;
+            if (dist[v] > dist[u] + w) {
+                dist[v] = dist[u] + w;
+                if (!inQueue[v]) {
+                    q.push(v);
+                    inQueue[v] = true;
+                    cnt[v]++;
+                    if (cnt[v] > n) return false;  // 存在负环
+                }
+            }
+        }
+    }
+    return true;
+}
+```
+
+#### 典型例题
+- [POJ2387 Til the Cows Come Home](http://poj.org/problem?id=2387)（Dijkstra模板）
+- [SPOJ PPATH Prime Path](https://www.spoj.com/problems/PPATH/)（BFS求最短路）
+
+
+### 总结8：图网络结构03 - 多源最短路与负环判定
+#### Floyd-Warshall算法详解
+1. **核心思想**：动态规划
+   - `dp[k][i][j]`表示经过前k个节点的i到j的最短路径
+   - 状态转移：`dp[k][i][j] = min(dp[k-1][i][j], dp[k-1][i][k] + dp[k-1][k][j])`
+   - 空间优化：`dp[i][j] = min(dp[i][j], dp[i][k] + dp[k][j])`
+
+2. **代码实现**
+```cpp
 int dist[N][N];
+
 void floydWarshall() {
+    // 初始化邻接矩阵
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (i == j) dist[i][j] = 0;
+            else dist[i][j] = INF;
+        }
+    }
+    
+    // 读入边权
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        dist[u][v] = min(dist[u][v], w);  // 处理重边
+    }
+    
+    // Floyd算法
     for (int k = 1; k <= n; k++) {
         for (int i = 1; i <= n; i++) {
             for (int j = 1; j <= n; j++) {
@@ -275,18 +654,92 @@ void floydWarshall() {
 }
 ```
 
-#### 负环判定
-使用 Bellman - Ford 算法或 Floyd - Warshall 算法可以判断图中是否存在负环。
+#### 负环判定方法
+1. **Floyd-Warshall**
+   ```cpp
+   bool hasNegativeCycle() {
+       for (int i = 1; i <= n; i++) {
+           if (dist[i][i] < 0) return true;
+       }
+       return false;
+   }
+   ```
 
-### 总结 9：图网络结构 04 - DAG 与拓扑排序
-#### DAG 定义
-有向无环图（DAG）是一种有向图，其中不存在环。
+2. **SPFA**
+   ```cpp
+   bool spfaNegativeCycle() {
+       // 初始化与标准SPFA相同
+       // ...
+       
+       queue<int> q;
+       // 虚拟源点连接所有节点
+       for (int i = 1; i <= n; i++) {
+           q.push(i);
+           inQueue[i] = true;
+           cnt[i] = 1;
+           dist[i] = 0;
+       }
+       
+       while (!q.empty()) {
+           int u = q.front(); q.pop();
+           inQueue[u] = false;
+           
+           for (pii edge : adj[u]) {
+               int v = edge.first;
+               int w = edge.second;
+               if (dist[v] > dist[u] + w) {
+                   dist[v] = dist[u] + w;
+                   if (!inQueue[v]) {
+                       q.push(v);
+                       inQueue[v] = true;
+                       cnt[v]++;
+                       if (cnt[v] > n) return true;
+                   }
+               }
+           }
+       }
+       return false;
+   }
+   ```
 
-#### 拓扑排序定义
-对 DAG 的节点进行排序，使得对于任意一条有向边 `(u, v)`，节点 `u` 在排序中都出现在节点 `v` 之前。
+#### 传递闭包
+```cpp
+// 传递闭包实现
+bool reach[N][N];
 
-#### 算法
-- **Kahn 算法**：
+void transitiveClosure() {
+    // 初始化
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            reach[i][j] = (i == j || adj[i][j]);
+        }
+    }
+    
+    // 计算传递闭包
+    for (int k = 1; k <= n; k++) {
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                reach[i][j] = reach[i][j] || (reach[i][k] && reach[k][j]);
+            }
+        }
+    }
+}
+```
+
+#### 典型例题
+- [POJ1125 Stockbroker Grapevine](http://poj.org/problem?id=1125)（Floyd模板）
+- [SPOJ MFISH Meeting For Fish](https://www.spoj.com/problems/MFISH/)（多源最短路）
+
+
+### 总结9：图网络结构04 - DAG与拓扑排序
+#### 拓扑排序的应用场景
+1. 任务调度
+2. 课程安排
+3. 依赖关系处理
+4. 关键路径分析
+
+#### 算法实现
+1. **Kahn算法（BFS）**
 ```cpp
 vector<int> topoSort() {
     vector<int> inDegree(n + 1, 0);
@@ -295,17 +748,19 @@ vector<int> topoSort() {
             inDegree[v]++;
         }
     }
+    
     queue<int> q;
     for (int i = 1; i <= n; i++) {
         if (inDegree[i] == 0) {
             q.push(i);
         }
     }
+    
     vector<int> result;
     while (!q.empty()) {
-        int u = q.front();
-        q.pop();
+        int u = q.front(); q.pop();
         result.push_back(u);
+        
         for (int v : adj[u]) {
             inDegree[v]--;
             if (inDegree[v] == 0) {
@@ -313,45 +768,234 @@ vector<int> topoSort() {
             }
         }
     }
+    
+    if (result.size() != n) {
+        // 存在环，无法完成拓扑排序
+        return {};
+    }
     return result;
 }
 ```
 
-### 总结 10：图网络结构 05 - 最小生成树
-#### 问题描述
-给定一个带权无向图，求一个边的子集，使得这些边连接所有节点，且边的权值之和最小。
-
-#### 算法
-- **Prim 算法**：
+2. **DFS实现**
 ```cpp
-typedef pair<int, int> pii;
-const int INF = 1e9;
-int dist[N];
-bool visited[N];
-int prim() {
-    fill(dist, dist + N, INF);
-    fill(visited, visited + N, false);
-    dist[1] = 0;
-    priority_queue<pii, vector<pii>, greater<pii>> pq;
-    pq.push({0, 1});
-    int mstWeight = 0;
-    while (!pq.empty()) {
-        int u = pq.top().second;
-        int d = pq.top().first;
-        pq.pop();
-        if (visited[u]) continue;
-        visited[u] = true;
-        mstWeight += d;
+vector<int> order;
+bool visited[N], onPath[N];
+bool hasCycle = false;
+
+void dfs(int u) {
+    if (onPath[u]) {
+        hasCycle = true;
+        return;
+    }
+    if (visited[u]) return;
+    
+    visited[u] = true;
+    onPath[u] = true;
+    
+    for (int v : adj[u]) {
+        dfs(v);
+        if (hasCycle) return;
+    }
+    
+    onPath[u] = false;
+    order.push_back(u);
+}
+
+vector<int> topoSortDFS() {
+    memset(visited, false, sizeof(visited));
+    memset(onPath, false, sizeof(onPath));
+    hasCycle = false;
+    order.clear();
+    
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) {
+            dfs(i);
+            if (hasCycle) return {};
+        }
+    }
+    
+    reverse(order.begin(), order.end());
+    return order;
+}
+```
+
+#### 关键路径
+```cpp
+// 计算最早开始时间和最晚开始时间
+int earliest[N], latest[N];
+
+void criticalPath() {
+    // 拓扑排序
+    vector<int> topo = topoSort();
+    if (topo.empty()) return;  // 存在环
+    
+    // 计算最早开始时间
+    memset(earliest, 0, sizeof(earliest));
+    for (int u : topo) {
         for (pii edge : adj[u]) {
             int v = edge.first;
             int w = edge.second;
-            if (!visited[v] && w < dist[v]) {
-                dist[v] = w;
-                pq.push({dist[v], v});
+            earliest[v] = max(earliest[v], earliest[u] + w);
+        }
+    }
+    
+    // 计算最晚开始时间
+    int maxTime = earliest[topo.back()];
+    for (int i = 1; i <= n; i++) {
+        latest[i] = maxTime;
+    }
+    
+    for (int i = topo.size() - 1; i >= 0; i--) {
+        int u = topo[i];
+        for (pii edge : adj[u]) {
+            int v = edge.first;
+            int w = edge.second;
+            latest[u] = min(latest[u], latest[v] - w);
+        }
+    }
+}
+```
+
+#### 典型例题
+- [洛谷P1113 杂务](https://www.luogu.com.cn/problem/P1113)（拓扑排序+DP）
+- [POJ1094 Sorting It All Out](http://poj.org/problem?id=1094)（拓扑排序应用）
+
+
+### 总结10：图网络结构05 - 最小生成树
+#### 算法对比
+| 算法       | 适用范围         | 时间复杂度         | 实现方式          |
+|------------|------------------|--------------------|-------------------|
+| Prim       | 稠密图           | O(V²)              | 邻接矩阵          |
+| Prim(堆优化) | 稀疏图         | O((V+E)logV)       | 优先队列          |
+| Kruskal    | 稀疏图           | O(ElogE)           | 并查集            |
+
+#### Prim算法实现
+```cpp
+// 朴素Prim（邻接矩阵）
+int graph[N][N], dist[N];
+bool visited[N];
+
+int prim() {
+    memset(dist, 0x3f, sizeof(dist));
+    memset(visited, false, sizeof(visited));
+    dist[1] = 0;
+    int mstWeight = 0;
+    
+    for (int i = 1; i <= n; i++) {
+        int u = -1, minDist = INF;
+        for (int j = 1; j <= n; j++) {
+            if (!visited[j] && dist[j] < minDist) {
+                u = j;
+                minDist = dist[j];
+            }
+        }
+        
+        if (u == -1) return -1;  // 图不连通
+        visited[u] = true;
+        mstWeight += minDist;
+        
+        for (int v = 1; v <= n; v++) {
+            if (!visited[v] && graph[u][v] < dist[v]) {
+                dist[v] = graph[u][v];
             }
         }
     }
     return mstWeight;
 }
 ```
-- **Kruskal 算法**：使用并查集来实现。
+
+#### 堆优化Prim
+```cpp
+// 堆优化Prim（邻接表）
+typedef pair<int, int> pii;
+vector<pii> adj[N];
+int dist[N];
+bool visited[N];
+
+int prim() {
+    memset(dist, 0x3f, sizeof(dist));
+    memset(visited, false, sizeof(visited));
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    
+    dist[1] = 0;
+    pq.push({0, 1});
+    int mstWeight = 0;
+    int edgeCount = 0;
+    
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        int d = pq.top().first;
+        pq.pop();
+        
+        if (visited[u]) continue;
+        visited[u] = true;
+        mstWeight += d;
+        edgeCount++;
+        
+        if (edgeCount == n) break;
+        
+        for (pii edge : adj[u]) {
+            int v = edge.first;
+            int w = edge.second;
+            if (!visited[v] && w < dist[v]) {
+                dist[v] = w;
+                pq.push({w, v});
+            }
+        }
+    }
+    
+    if (edgeCount != n) return -1;  // 图不连通
+    return mstWeight;
+}
+```
+
+#### Kruskal算法实现
+```cpp
+// Kruskal算法（并查集）
+struct Edge {
+    int u, v, w;
+    bool operator<(const Edge& other) const {
+        return w < other.w;
+    }
+};
+
+Edge edges[M];
+int parent[N];
+
+int find(int x) {
+    return parent[x] == x ? x : parent[x] = find(parent[x]);
+}
+
+int kruskal() {
+    sort(edges, edges + m);
+    
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+    }
+    
+    int mstWeight = 0;
+    int edgeCount = 0;
+    
+    for (int i = 0; i < m && edgeCount < n - 1; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int w = edges[i].w;
+        
+        int pu = find(u);
+        int pv = find(v);
+        if (pu != pv) {
+            parent[pu] = pv;
+            mstWeight += w;
+            edgeCount++;
+        }
+    }
+    
+    if (edgeCount != n - 1) return -1;  // 图不连通
+    return mstWeight;
+}
+```
+
+#### 典型例题
+- [POJ1258 Agri-Net](http://poj.org/problem?id=1258)（最小生成树模板）
+- [洛谷P2872 Building Roads](https://www.luogu.com.cn/problem/P2872)（Kruskal应用）
