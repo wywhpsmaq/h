@@ -8,7 +8,7 @@ int main() {
         for (int j = 0; j < m; ++j) {
             ans += (j % 2 == 0) ? 'B' : 'G';
         }
-        cout << ans << endl;
+        cout << ans;
     } else {
         for (int i = 0; i < n; ++i) {
             string s;

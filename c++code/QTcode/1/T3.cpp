@@ -2,16 +2,16 @@
 using namespace std;
 vector<long long> t;
 int n;
-void it(int size) {
+void it(int si) {
     n = 1;
-    while (n < size) n <<= 1;
+    while (n < si) n <<= 1;
     t.assign(2 * n, LLONG_MIN);
 }
 void u(int o, long long v) {
     o += n;
     if (t[o] >= v) return;
     t[o] = v;
-    for (int i = o>>1; i >= 1; i >>= 1) {
+    for (int i = o >> 1; i >= 1; i >>= 1) {
         long long v = max(t[2 * i], t[2 * i + 1]);
         if (t[i] == v) break;
         t[i] = v;
@@ -29,8 +29,7 @@ long long q(int l, int r) {
             e = max(e, t[r]);
             r--;
         }
-        l >>= 1;
-        r >>= 1;
+        l >>= 1, r >>= 1;
     }
     return e;
 }
