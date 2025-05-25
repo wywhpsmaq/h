@@ -10,3 +10,5 @@ AllowShortForLoopsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse 
 AllowShortBlocksOnASingleLine: Always
+AllowShortForLoopsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true

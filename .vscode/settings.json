@@ -4,7 +4,10 @@
         "iostream": "cpp",
         "ostream": "cpp",
         "iosfwd": "cpp",
-        "tuple": "cpp"
+        "tuple": "cpp",
+        "bitset": "cpp",
+        "algorithm": "cpp",
+        "format": "cpp"
     },
     "cSpell.words": [
         "erfen",

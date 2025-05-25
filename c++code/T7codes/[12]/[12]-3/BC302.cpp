@@ -1,14 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
-// 1
-int sz[666999], ch[666999], n, q;
+int sz[114514], ch[114514], n, q;
 vector<vector<int>> cc;
-vector<int> t[666999];
+vector<int> t[114514];
 vector<int> p;
-// 1 2
 void dfs(int u, int fa);
 void so(int u);
-// 1 2
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(0);
@@ -37,7 +34,6 @@ int main() {
     }
     return 0;
 }
-
 void so(int u) {
     int c = u;
     while (true) {
@@ -57,8 +53,6 @@ void so(int u) {
         so(v);
     }
 }
-
-// 1 2
 void dfs(int u, int fa) {
     sz[u] = 1;
     for (int v : t[u]) {
