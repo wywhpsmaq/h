@@ -18,17 +18,11 @@ void dfs2(int x, int fa) {
     ans = min(ans, dp[x]);
     for (int y : t[x]) {
         if (y == fa) continue;
-        long long dp_x = dp[x], dp_y = dp[y];
-        long long sum_x = sum[x], sum_y = sum[y];
-        dp[x] -= dp[y] + sum[y];
-        sum[x] -= sum[y];
-        dp[y] += dp[x] + sum[x];
-        sum[y] += sum[x];
+        long long dx = dp[x], dy = dp[y];
+        long long sx = sum[x], sy = sum[y];
+        dp[x] -= dp[y] + sum[y], sum[x] -= sum[y], dp[y] += dp[x] + sum[x], sum[y] += sum[x];
         dfs2(y, x);
-        dp[x] = dp_x;
-        dp[y] = dp_y;
-        sum[x] = sum_x;
-        sum[y] = sum_y;
+        dp[x] = dx, dp[y] = dy, sum[x] = sx, sum[y] = sy;
     }
 }
 int main() {
@@ -54,5 +48,5 @@ int main() {
     }
     dfs1(1, 0);
     dfs2(1, 0);
-    cout << ans << '\n';
+    cout << ans;
 }

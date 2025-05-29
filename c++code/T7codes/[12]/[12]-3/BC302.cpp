@@ -1,8 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
-const int N = 300005;
-int sz[N], ch[N], n, q, fa[N];
-vector<int> t[N], cc[N];
+int sz[114514], ch[114514], n, q, fa[114514];
+vector<int> t[114514], cc[114514];
 void dfs(int u, int f) {
     sz[u] = 1;
     for (int v : t[u]) {
@@ -14,16 +13,16 @@ void dfs(int u, int f) {
 void so(int u) {
     int c = u;
     while (true) {
-        bool found = false;
+        bool f = false;
         for (int v : t[c]) {
             if (v == fa[c]) continue;
             if (sz[v] > sz[u] / 2) {
                 c = v;
-                found = true;
+                f = true;
                 break;
             }
         }
-        if (!found) break;
+        if (!f) break;
     }
     ch[u] = c;
     for (int v : cc[u]) {
