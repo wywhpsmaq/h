@@ -13,10 +13,18 @@ git push -u origin main
 
 git config --global --unset http.proxy;git config --global --unset https.proxy;
 
-git add .;git commit -S -m "In the code submitted 2025/5/30, some contents were added.";git push origin main
+git add .;git commit -S -m "In the code submitted 2025/5/31, some contents were added.";git push origin main
 
 git push -u origin main
 git push origin main
 git push origin main --force
 
 git checkout -b dev
+
+
+///**
+Win + R-powershell
+cd f:\h
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\build_all_cpp.ps1
+***///
