@@ -2,6 +2,7 @@
 git init;
 git remote add origin https://github.com/wywhpsmaq/h.git;
 git remote add origin git@github.com:wywhpsmaq/h.git;
+git remote add origin git@gitlab.com:wywhpsmaq/h.git
 
 echo "# h" >> README.md
 git init
