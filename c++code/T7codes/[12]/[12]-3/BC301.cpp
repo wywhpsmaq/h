@@ -3,8 +3,7 @@ using namespace std;
 vector<int> t[10086];
 int sz[10086];
 int n;
-int cd = 0, mt = 10086;
-void dfs(int u, int parent) {
+int cd = 0, mt = 10086;void dfs(int u, int parent) {
     sz[u] = 1;
     int ms = 0;
     for (int v : t[u]) {
