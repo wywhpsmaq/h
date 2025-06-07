@@ -24,7 +24,10 @@ int main() {
     cin >> t;
     while (t--) {
         cin >> n;
-        for (int i = 1; i <= n; ++i) p[i].clear();
+        for (int i = 1; i <= n; ++i) {
+            p[i].clear();
+            sz[i] = 0;
+        }
         vector<pair<int, int>> e;
         for (int i = 1; i < n; ++i) {
             int x, y;
@@ -33,6 +36,7 @@ int main() {
             p[y].push_back(x);
             e.push_back({x, y});
         }
+        
         dfs(1, 0);
         int c = f(1, 0);
         int l = -1, pp = -1;
@@ -48,13 +52,17 @@ int main() {
             pp = e[0].first;
         }
         cout << pp << " " << l << '\n';
+        bool ff = false;
         for (int v : p[l]) {
             if (v != pp) {
                 cout << l << " " << v << '\n';
-                return;
+                ff = true;
+                break;
             }
         }
-        cout << pp << " " << l << '\n';
+        if (!ff) {
+            cout << pp << " " << l << '\n';
+        }
     }
     return 0;
 }

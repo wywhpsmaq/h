@@ -1,34 +1,40 @@
 #include <bits/stdc++.h>
 using namespace std;
-int sz[114514], ch[114514], n, q, fa[114514];
-vector<int> t[114514], cc[114514];
-void dfs(int u, int f) {
+
+const int MAXN = 1e5 + 10;
+int sz[MAXN], centroid[MAXN], n, q, fa[MAXN];
+vector<int> t[MAXN];
+
+void calc_size(int u, int f) {
     sz[u] = 1;
     for (int v : t[u]) {
         if (v == f) continue;
-        dfs(v, u);
+        calc_size(v, u);
         sz[u] += sz[v];
     }
 }
-void so(int u) {
+
+void find_centroid(int u, int f) {
     int c = u;
     while (true) {
-        bool f = false;
+        bool found = false;
         for (int v : t[c]) {
-            if (v == fa[c]) continue;
+            if (v == f) continue;
             if (sz[v] > sz[u] / 2) {
                 c = v;
-                f = true;
+                found = true;
                 break;
             }
         }
-        if (!f) break;
+        if (!found) break;
     }
-    ch[u] = c;
-    for (int v : cc[u]) {
-        so(v);
+    centroid[u] = c;
+    for (int v : t[u]) {
+        if (v == f) continue;
+        find_centroid(v, u);
     }
 }
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(0);
@@ -37,14 +43,13 @@ int main() {
         cin >> fa[i];
         t[fa[i]].push_back(i);
         t[i].push_back(fa[i]);
-        cc[fa[i]].push_back(i);
     }
-    dfs(1, 0);
-    so(1);
+    calc_size(1, 0);
+    find_centroid(1, 0);
     while (q--) {
         int x;
         cin >> x;
-        cout << ch[x] << '\n';
+        cout << centroid[x] << '\n';
     }
     return 0;
 }
