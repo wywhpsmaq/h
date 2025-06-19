@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 int n, k, zj, num, aans;
-int cut, h[114514], v[114514], et[114514];
-int d[114514], f[114514], md[114514], ans[114514];
+int cut, h[11114514], v[11114514], et[11114514];
+int d[11114514], f[11114514], md[11114514], ans[11114514];
 bool cmp(int a, int b) { return a > b; }
 void dfs(int x, int fa) {
     if (d[x] > zj) {
@@ -40,10 +40,10 @@ void dfs2(int x, int fa) {
     }
 }
 int main() {
-    scanf("%d%d", &n, &k);
+    cin >> n >> k;
     for (int i = 1; i < n; ++i) {
         int x, y;
-        scanf("%d%d", &x, &y);
+        cin >> x >> y;
         v[++cut] = y;
         et[cut] = h[x];
         h[x] = cut;

@@ -1,8 +1,84 @@
 2025年4月24日：项目启动
 2025年5月10日：按计划完工，耗时19天
-2025年5月18日：最后一次更新
+2025年9月19日：最后一次更新
 
 版本信息：
-版本：15.3.0.1781
+版本：15502004
 系统词频: 630211129
-编译时间: May 18, 2025, 19: 54: 56
+编译时间: Jun 10 2025 12:48:15
+
+详细信息：
+93 DEPRECATION: Running PyInstaller as admin is not necessary nor sensible. Run PyInstaller from a non-administrator terminal. PyInstaller 7.0 will block this.
+580 INFO: PyInstaller: 6.13.0, contrib hooks: 2025.4
+580 INFO: Python: 3.12.10
+600 INFO: Platform: Windows-10-10.0.19045-SP0
+600 INFO: Python environment: C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0
+610 INFO: wrote F:\h\rc\rc\main.spec
+619 INFO: Module search paths (PYTHONPATH):
+['C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\Scripts\\pyinstaller.exe',
+ 'C:\\Program '
+ 'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\python312.zip',
+ 'C:\\Program '
+ 'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\DLLs',
+ 'C:\\Program '
+ 'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib',
+ 'C:\\Program '
+ 'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0',
+ 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages',
+ 'C:\\Program '
+ 'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\site-packages',
+ 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\setuptools\\_vendor',
+ 'F:\\h\\rc\\rc']
+1692 INFO: Appending 'datas' from .spec
+1694 INFO: checking Analysis
+1694 INFO: Building Analysis because Analysis-00.toc is non existent
+1694 INFO: Running Analysis Analysis-00.toc
+1694 INFO: Target bytecode optimization level: 0
+1695 INFO: Initializing module dependency graph...
+1701 INFO: Initializing module graph hook caches...
+1768 INFO: Analyzing modules for base_library.zip ...
+4508 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks'
+6721 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks'
+7898 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks'
+9254 INFO: Caching module dependency graph...
+10018 INFO: Looking for Python shared library...
+10044 INFO: Using Python shared library: D:\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\python312.dll
+10045 INFO: Analyzing F:\h\rc\rc\main.py
+10116 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+10120 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+10969 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks'
+11055 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'  
+13535 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+14074 INFO: Processing module hooks (post-graph stage)...
+14082 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks'
+14095 INFO: Performing binary vs. data reclassification (944 entries)
+15078 INFO: Looking for ctypes DLLs
+15084 INFO: Analyzing run-time hooks ...
+15086 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks\\rthooks'
+15089 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'15091 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\Administrator\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyInstaller\\hooks\\rthooks'
+15119 INFO: Creating base_library.zip...
+15198 INFO: Looking for dynamic libraries
+15733 INFO: Extra DLL search directories (AddDllDirectory): []
+15733 INFO: Extra DLL search directories (PATH): []
+16850 INFO: Warnings written to F:\h\rc\rc\build\main\warn-main.txt
+16875 INFO: Graph cross-reference written to F:\h\rc\rc\build\main\xref-main.html
+16921 INFO: checking PYZ
+16921 INFO: Building PYZ because PYZ-00.toc is non existent
+16921 INFO: Building PYZ (ZlibArchive) F:\h\rc\rc\build\main\PYZ-00.pyz
+17259 INFO: Building PYZ (ZlibArchive) F:\h\rc\rc\build\main\PYZ-00.pyz completed successfully.
+17286 INFO: checking PKG
+17287 INFO: Building PKG because PKG-00.toc is non existent
+17287 INFO: Building PKG (CArchive) main.pkg
+23388 INFO: Building PKG (CArchive) main.pkg completed successfully.
+23438 INFO: Bootloader C:\Users\Administrator\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\PyInstaller\bootloader\Windows-64bit-intel\runw.exe
+23439 INFO: checking EXE
+23440 INFO: Building EXE because EXE-00.toc is non existent
+23440 INFO: Building EXE from EXE-00.toc
+23443 INFO: Copying bootloader EXE to F:\h\rc\rc\dist\main.exe
+23785 INFO: Copying icon to EXE
+24145 INFO: Copying 0 resources to EXE
+24146 INFO: Embedding manifest in EXE
+24377 INFO: Appending PKG archive to EXE
+24421 INFO: Fixing EXE headers
+25914 INFO: Building EXE from EXE-00.toc completed successfully.
+26100 INFO: Build complete! The results are available in: F:\h\rc\rc\dist

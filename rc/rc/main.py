@@ -405,6 +405,35 @@ class MainWindow(tk.Tk):
     def kh_action(self, person):
         info = f"姓名: {person.get('姓名', '')}\n性别: {person.get('性别', '')}\n身份证号: {person.get('身份证号', '')}\n出生日期: {person.get('出生日期', '')}\n地点: {person.get('地点', '')}\n年龄: {person.get('年龄', '')}"
         if tk.messagebox.askokcancel('信息确认', info):
+            import random
+            import threading
+            def show_auto_close(title, msg, min_sec=2, max_sec=5, callback=None):
+                popup = tk.Toplevel(self)
+                popup.title(title)
+                popup.geometry('220x100')
+                popup.resizable(False, False)
+                tk.Label(popup, text=msg, font=('微软雅黑', 14)).pack(expand=True, fill='both', pady=20)
+                popup.update_idletasks()
+                x = self.winfo_rootx() + self.winfo_width() // 2 - 110
+                y = self.winfo_rooty() + self.winfo_height() // 2 - 50
+                popup.geometry(f'+{x}+{y}')
+                sec = random.randint(min_sec, max_sec)
+                def close_popup():
+                    try:
+                        popup.destroy()
+                    except Exception:
+                        pass
+                    if callback:
+                        self.after(100, callback)
+                popup.after(sec * 1000, close_popup)
+            def after_connect_popup():
+                r = random.random()
+                if r < 0.3:
+                    tk.messagebox.showinfo('kh', 'kh成功')
+                elif r < 0.6:
+                    tk.messagebox.showinfo('kh', 'kh失败,服务器未响应')
+                else:
+                    tk.messagebox.showinfo('kh', 'Runtime Error : ExitCode: 11 (Segmentation fault)')
             def do_kh_format():
                 win = tk.Toplevel(self)
                 win.title('kh格式')
@@ -431,12 +460,14 @@ class MainWindow(tk.Tk):
                         result['ok'] = True
                         result['fmt'] = '1'
                         win.destroy()
+                        show_auto_close('连接', '正在连接服务器...', 2, 5, after_connect_popup)
                     else:
                         if getattr(self, 'is_admin', False):
                             tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入管理员密码')
                             result['ok'] = True
                             result['fmt'] = '2'
                             win.destroy()
+                            show_auto_close('连接', '正在连接服务器...', 2, 5, after_connect_popup)
                         else:
                             def check_admin():
                                 pwd = pwd_entry.get()
@@ -445,6 +476,7 @@ class MainWindow(tk.Tk):
                                     result['fmt'] = '2'
                                     admin_win.destroy()
                                     win.destroy()
+                                    show_auto_close('连接', '666999', 2, 5, after_connect_popup)
                                 else:
                                     tk.messagebox.showerror('错误', '管理员密码错误', parent=admin_win)
                             admin_win = tk.Toplevel(win)
@@ -462,6 +494,7 @@ class MainWindow(tk.Tk):
                             tk.Button(admin_win, text='取消', command=on_cancel, font=('微软雅黑', 10)).pack()
                             admin_win.transient(win)
                             admin_win.grab_set()
+                        return
                 def on_cancel():
                     win.destroy()
                 tk.Button(btn_frame, text='确定', command=on_ok, width=8, font=('微软雅黑', 11)).pack(side='left', padx=10)
