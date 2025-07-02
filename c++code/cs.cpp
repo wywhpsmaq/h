@@ -1,19 +1,16 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
 using namespace std;
-vector<pair<int, int>> p;
-int nn, x, y, ans = -1;
-void dfs(int n, int m, int x) {
-    if (n > nn) return;
-    ans = max(ans, x);
-    if (m >= p[n].first) dfs(n + 1, m - p[n].first + 1, x + p[n].second);
-    dfs(n + 1, m + 1, x);
-}
-int main() {
-    cin >> nn;
-    for (int i = 0; i < nn; i++) {
-        cin >> x >> y;
-        p.push_back({x, y});
+int main()
+{
+    int ans=0,ans_=0;
+    srand(chrono::steady_clock::now().time_since_epoch().count());
+    for(int i=0;i<1000000;i++)
+    {
+        int x=rand()%2;
+        if(x==0)
+            ans++;
+        else
+            ans_++;
     }
-    dfs(0, 1, 0);
-    cout << ans;
+    cout<<(ans>ans_?"Yes!":"No!")<<endl;
 }

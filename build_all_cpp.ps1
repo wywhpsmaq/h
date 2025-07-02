@@ -1,6 +1,6 @@
-$cppFiles = Get-ChildItem -Path "f:\h\c++code" -Recurse -Filter *.cpp
+$cppFiles = Get-ChildItem -Path "e:\h\c++code" -Recurse -Filter *.cpp
 $gpp = "C:\mingw64\bin\g++.exe"
-$maxJobs = 6   # 最大并发数，可根据CPU调整
+$maxJobs = 6 
 $jobs = @()
 
 foreach ($file in $cppFiles) {
@@ -10,7 +10,6 @@ foreach ($file in $cppFiles) {
         New-Item -ItemType Directory -Path $outdir -ErrorAction SilentlyContinue | Out-Null 
     }
     $exe = Join-Path $outdir ($file.BaseName + ".exe")
-    # 控制并发数
     while ($jobs.Count -ge $maxJobs) {
         $finished = Wait-Job -Job $jobs -Any
         Receive-Job $finished
@@ -20,13 +19,12 @@ foreach ($file in $cppFiles) {
         param($src, $exe, $gpp)
         & $gpp -g "$src" -o "$exe"
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "编译失败，跳过: $src"
+            Write-Host "no: $src"
         } else {
-            Write-Host "编译成功: $src"
+            Write-Host "yes: $src"
         }
     } -ArgumentList $src, $exe, $gpp
 }
 
-# 等待剩余任务
 $jobs | ForEach-Object { Wait-Job $_; Receive-Job $_ }
-Write-Host "全部编译完成"
+Write-Host "ok"

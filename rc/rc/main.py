@@ -143,10 +143,9 @@ class MainWindow(tk.Tk):
         for btn in btns:
             btn.bind('<Enter>', lambda e, b=btn: b.config(bg=STYLE['button_active_bg']))
             btn.bind('<Leave>', lambda e, b=btn: b.config(bg=STYLE['button_bg']))
-        # 在按钮区最后加一个“公示”按钮，并与前面按钮有间隔
         notice_btn = tk.Button(top_frame, text='公示', command=self.show_notice, bg='#1976D2', fg='white', font=('微软雅黑', 11, 'bold'), bd=0, relief='ridge', cursor='hand2')
         style_btn(notice_btn)
-        notice_btn.grid(row=0, column=14+len(btns)*2, padx=(30, 0))  # 与前面按钮有较大间隔
+        notice_btn.grid(row=0, column=14+len(btns)*2, padx=(30, 0))
         list_frame_outer = tk.Frame(self.main_frame, bg=STYLE['main_bg'])
         list_frame_outer.pack(fill='both', expand=True, padx=12, pady=8)
         canvas = tk.Canvas(list_frame_outer, bg=STYLE['main_bg'], highlightthickness=0)
@@ -428,9 +427,9 @@ class MainWindow(tk.Tk):
                 popup.after(sec * 1000, close_popup)
             def after_connect_popup():
                 r = random.random()
-                if r < 0.3:
+                if r < 0.4:
                     tk.messagebox.showinfo('kh', 'kh成功')
-                elif r < 0.6:
+                elif r < 0.7:
                     tk.messagebox.showinfo('kh', 'kh失败,服务器未响应')
                 else:
                     tk.messagebox.showinfo('kh', 'Runtime Error : ExitCode: 11 (Segmentation fault)')
@@ -688,7 +687,6 @@ class MainWindow(tk.Tk):
         win.resizable(False, False)
         frame = tk.Frame(win, bg='white')
         frame.pack(fill='both', expand=True, padx=16, pady=16)
-        # 公示内容持久化到 data/notice.txt
         notice_file = os.path.join(DATA_DIR, 'notice.txt')
         if not hasattr(self, '_notice_text'):
             if os.path.exists(notice_file):
@@ -709,7 +707,6 @@ class MainWindow(tk.Tk):
             def save_notice():
                 new_text = text_widget.get('1.0', 'end').strip()
                 self._notice_text = new_text
-                # 保存到文件
                 with open(notice_file, 'w', encoding='utf-8') as f:
                     f.write(new_text)
                 text_widget.config(state='disabled')

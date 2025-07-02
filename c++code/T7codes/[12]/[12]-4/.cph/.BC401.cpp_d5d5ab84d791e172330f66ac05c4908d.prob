@@ -1,0 +1,1 @@
+{"name":"Local: BC401","url":"e:\\h\\c++code\\T7codes\\[12]\\[12]-4\\BC401.cpp","tests":[{"id":1751450888056,"input":"8 3 2\n4 5\n6 7\n7 8\n8 6\n1 7","output":"YES\nNO"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"e:\\h\\c++code\\T7codes\\[12]\\[12]-4\\BC401.cpp","group":"local","local":true}
