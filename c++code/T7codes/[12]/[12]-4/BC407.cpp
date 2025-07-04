@@ -23,12 +23,12 @@ int main () {
 			if (ex) e[f (fx)] = ex;
 			if (ey) e[f (fy)] = ey;
 		} else {
-			int fx = f (x), fy = f (y);
-			if (fx == fy) continue;
-			if (!e[fx]) e[fx] = fy;
-			else ff (e[fx], fy);
-			if (!e[fy]) e[fy] = fx;
-			else ff (e[fy], fx);
+			int fx = f(x), fy = f(y);
+            if (fx == fy) continue;
+            if (e[fx]) ff(e[fx], fy);
+            if (e[fy]) ff(e[fy], fx);
+            e[fx] = f(fy);
+            e[fy] = f(fx);
 		}
 	}
 	int ans = 0;
