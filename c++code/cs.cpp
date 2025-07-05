@@ -1,50 +1,43 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
 using namespace std;
-vector<pair<int,int>> g[114514];
-int n, m;
-int dis[114514], cnt[114514];
-bool vi[114514];
-bool f() {
-    fill(dis, dis + n + 2, 0);
-    fill(cnt, cnt + n + 2, 0);
-    fill(vi, vi + n + 2, false);
-    queue<int> q;
-    for (int i = 0; i <= n; ++i) {
-        q.push(i);
-        vi[i] = true;
+const int N = 1010;
+int fa[114514], sz[114514];
+vector<int> g[114514];
+int find(int x) {
+    return fa[x] == x ? x : fa[x] = find(fa[x]);
+}
+int main() {
+    int n;
+    cin >> n;
+    for (int i = 1; i <= n; ++i) {
+        int cnt, x;
+        cin >> cnt;
+        for (int j = 0; j < cnt; ++j) {
+            cin >> x;
+            g[i].push_back(x);
+        }
     }
-    while (!q.empty()) {
-        int u = q.front(); q.pop();
-        vi[u] = false;
-        for (auto &e : g[u]) {
-            int v = e.first, w = e.second;
-            if (dis[v] > dis[u] + w) {
-                dis[v] = dis[u] + w;
-                cnt[v] = cnt[u] + 1;
-                if (cnt[v] > n + 1) return false;
-                if (!vi[v]) {
-                    q.push(v);
-                    vi[v] = true;
+    for (int k = 1; k <= n; ++k) {
+        for (int i = 1; i <= n; ++i) fa[i] = i, sz[i] = 1;
+        for (int i = k + 1; i <= n; ++i) {
+            for (int v : g[i]) {
+                if (v > k) {
+                    int fi = find(i), fv = find(v);
+                    if (fi != fv) {
+                        fa[fi] = fv;
+                        sz[fv] += sz[fi];
+                    }
                 }
             }
         }
-    }
-    return true;
-}
-int main() {
-    int w;
-    cin >> w;
-    while (w--) {
-        cin >> n >> m;
-        for (int i = 0; i <= n; ++i) g[i].clear();
-        for (int i = 0; i < m; ++i) {
-            int l, r, v;
-            cin >> l >> r >> v;
-            g[l - 1].push_back({r, v});
-            g[r].push_back({l - 1, -v});
+        int mx = 0;
+        for (int i = k + 1; i <= n; ++i) {
+            if (find(i) == i) mx = max(mx, sz[i]);
         }
-        if (f()) cout << "true\n";
-        else cout << "false\n";
+        if (mx <= n / 2) {
+            cout << k << endl;
+            return 0;
+        }
     }
     return 0;
 }
