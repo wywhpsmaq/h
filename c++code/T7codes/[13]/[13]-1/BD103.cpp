@@ -2,25 +2,25 @@
 #include <vector>
 using namespace std;
 vector<int> p;
-int f (int x) {
-	if (p[x] != x) p[x] = f (p[x]);
+int f(int x) {
+	if (p[x] != x) p[x] = f(p[x]);
 	return p[x];
 }
-void ff (int x, int y) {
-	int fx = f (x), fy = f (y);
+void ff(int x, int y) {
+	int fx = f(x), fy = f(y);
 	if (fx != fy) p[fx] = fy;
 }
-int main () {
+int main() {
 	int n, m;
 	cin >> n >> m;
-	vector<int> d (n + 1, 0);
-	p.resize (n + 1);
+	vector<int> d(n + 1, 0);
+	p.resize(n + 1);
 	for (int i = 1; i <= n; ++i) p[i] = i;
 	for (int i = 0; i < m; ++i) {
 		int a, b;
 		cin >> a >> b;
-		d[a]++,d[b]++;
-		ff (a, b);
+		d[a]++, d[b]++;
+		ff(a, b);
 	}
 	for (int i = 1; i <= n; ++i) {
 		cout << d[i];
@@ -30,8 +30,8 @@ int main () {
 	int sum = 0, r = -1;
 	for (int i = 1; i <= n; ++i) {
 		if (d[i] > 0) {
-			if (r == -1) r = f (i);
-			else if (f (i) != r) sum = 1;
+			if (r == -1) r = f(i);
+			else if (f(i) != r) sum = 1;
 		}
 	}
 	if (sum) {

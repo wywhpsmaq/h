@@ -26,7 +26,7 @@ int main() {
 	}
 	int ans = 0;
 	for (int i = 1; i <= n; i++) {
-		if (f(i) == i) ans++;
+		if (fa[i] == i) ans++;//=if (f(i) == i) ans++;
 	}
 	cout << ans;
 	return 0;

@@ -1,34 +1,36 @@
 #include<bits/stdc++.h>
 using namespace std;
-int n;
-int zs[114514], rs[114514];
-int p[114];
-int dfs(int xx) {
-    queue<int> q;
-    q.push(xx);
-    while (!q.empty()) {
-        int x = q.front();
-        q.pop();
-        if (zs[x] != 0) { cout << zs[x] << " "; q.push(zs[x]); }
-        if (rs[x] != 0) { cout << rs[x] << " "; q.push(rs[x]); }
-    }
+struct uu {
+    int fa, ls, rs;
+#define fa(i) t[i].fa
+#define ls(i) t[i].ls
+#define rs(i) t[i].rs
+}t[10086];
+int d[114514], d1[114514], d2[114514];
+int ans = 0;
+int dfs(int x, int l) {
+    int num = l;
+    num += d[x] + d1[x] + d2[x];
+    ans += num;
+    if (ls(x) != 0) dfs(ls(x), num);
+    if (rs(x) != 0) dfs(rs(x), num);
     return 0;
 }
 int main() {
-    cin >> n;
-    for (int i = 1; i <= n; i++) {
-        int x;
-        cin >> x;
-        cin >> zs[x] >> rs[x];
-        p[zs[x]] = 1, p[rs[x]] = 1;
+    int n, m;
+    cin >> n >> m;
+    for (int i = 0; i < n; i++) {
+        int x, y, z;
+        cin >> x >> y >> z;
+        ls(x) = y, rs(x) = z, fa(y) = x, fa(z) = x;
     }
-    int xx;
-    for (int i = 1; i <= n; i++) {
-        if (p[i] != 1) {
-            xx = i;
-            break;
-        }
+    for (int i = 0; i < m; i++) {
+        int x, y;
+        cin >> x >> y;
+        if (x == 1) d[y]++;
+        else if (x == 2) d1[y]++;
+        else d2[y]++;
     }
-    cout << xx << " ";
-    dfs(xx);
+    dfs(1, 0);
+    cout << ans;
 }
