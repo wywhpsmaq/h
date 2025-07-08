@@ -1,0 +1,45 @@
+// 头文件
+    // #include <bits/stdc++.h>
+    // #include <cmath>
+    // #include <algorithm>
+
+    // abs(x) 求绝对值
+    // floor(x) 向下取整
+    // ceil(x) 向上取整
+    // pow(x,y) 计算x的y次方
+    // sqrt(x) 求x的平方根
+
+    // sqrt(pow(x1 - x2,2) + pow(y1 - y2,2)) 两点之间的距离
+    // sqrt(p * (p - a) * (p - b) * (p - c))  p = (a + b + c) / 2  三角形面积
+
+    // 数组
+    // int a[100];
+    // char b[100];
+    // double c[100];
+    // bool d[100];
+
+    // int 整数
+    // char 字符
+    // double 浮点
+    // bool 布尔
+
+    // 符号
+    // (+) 加
+    // (-) 减
+    // (*) 乘
+    // (/) 除
+    // (&&) 与
+    // (||) 或
+    // (！) 非
+    // (==) 等于
+    // (！)= 不等于
+    // (=) 保存
+
+    // 括号
+    // {} 大括号ou
+    // [] 中括号
+    // () 括号
+    // "" 字符串
+
+    //int a; 变量
+    //const int a; 常量

@@ -1,0 +1,88 @@
+Do
+Dim a, b, c, d
+a = InputBox("快说“我是猪”", "")
+If a = "我是猪" Then
+MsgBox "这就对嘛！", 64, ""
+MsgBox "再按50下确定吧", 64, ""
+For b = 1 To 50
+MsgBox "" & b, 64, ""
+Next
+MsgBox "按完了？", 64, ""
+MsgBox "这么快？", 64, ""
+MsgBox "我还没玩够我不想走", 64, ""
+MsgBox "我就不走你能把我怎么样？", 64, ""
+MsgBox "哈哈哈", 64, ""
+MsgBox "好好好马上马上", 64, ""
+MsgBox "ennnn", 64, ""
+MsgBox "要不然再按10下？", 64, ""
+For c = 1 To 10
+MsgBox "" & c, 64, ""
+Next
+MsgBox "流氓软件语录：", 64, ""
+MsgBox "亲，您真的要我走吗？", 64, ""
+MsgBox "您确定吗？", 64, ""
+MsgBox "期待下次见面！", 64, ""
+MsgBox "当然，我不是流氓软件。", 64, ""
+MsgBox "所以我是不可能走的！", 64, ""
+MsgBox "哈哈哈哈", 64, ""
+MsgBox "等一下", 64, ""
+MsgBox "我给你讲个故事吧（不停也得听）", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "讲的是什么呢？", 64, ""
+MsgBox "从前有座山", 64, ""
+MsgBox "上山有座庙", 64, ""
+MsgBox "庙里有个和尚在讲故事", 64, ""
+MsgBox "要不然再按50下确定吧", 64, ""
+For d = 1 To 50
+MsgBox "" & d, 64, ""
+Next
+MsgBox "50下怎么快？", 64, ""
+MsgBox "要不然再按1000下？", 64, ""
+MsgBox "哈哈哈哈", 64, ""
+MsgBox "开玩笑的", 64, ""
+MsgBox "哈哈哈哈哈", 64, ""
+MsgBox "那就再按50下确定吧", 64, ""
+For d = 1 To 50
+MsgBox "" & d, 64, ""
+Next
+MsgBox "50下怎么快？", 64, ""
+MsgBox "怎么了，不耐烦了？", 64, ""
+MsgBox "好好好我马上就走", 64, ""
+MsgBox "等一下", 64, ""
+MsgBox "再等一下", 64, ""
+MsgBox "拜拜~要记住你是谁欧！哈哈哈~", 64, ""
+Exit Do
+Else
+MsgBox "别想关掉啦，快承认吧！", 16, ""
+End If
+Loop
