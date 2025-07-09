@@ -1,6 +1,12 @@
 @echo off
-xcopy "D:\bd\bd.xy_0\bd" "c:\" /e /i /y
-copy "D:\h\bd\bd.xy_0\yx1.bat" "C:\mingw\bin\" /y
-copy "D:\h\bd\bd.xy_0\yx2.bat" "C:\mingw\bin\" /y
-copy "D:\h\bd\bd.xy_0\yx3.bat" "C:\mingw\bin\" /y
+del "C:\mingw\bin\c++.exe" /f /q
+del "C:\mingw\bin\g++.exe" /f /q
+del "C:\mingw\bin\gcc.exe" /f /q
+xcopy "D:\bd\bd.xy_0\bd" "C:\mingw\" /e /i /y
+copy "D:\bd\bd.xy_0\g_\c++.exe" "C:\mingw\bin\" /y
+copy "D:\bd\bd.xy_0\g_\g++.exe" "C:\mingw\bin\" /y
+copy "D:\bd\bd.xy_0\g_\gcc.exe" "C:\mingw\bin\" /y
+copy "D:\bd\bd.xy_0\yx_1.bat" "C:\mingw\bin\" /y
+copy "D:\bd\bd.xy_0\yx_2.bat" "C:\mingw\bin\" /y
+copy "D:\bd\bd.xy_0\yx_3.bat" "C:\mingw\bin\" /y
 echo 666

@@ -10,8 +10,8 @@ void js(int a){
 }
 int main(){
     system("start yx_1.bat");
-    js(2);
+    js(4);
     system("start yx_2.bat");
-    js(2);
+    js(4);
     system("start yx_3.bat");
 }

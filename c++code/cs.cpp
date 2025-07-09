@@ -1,35 +1,36 @@
 #include<bits/stdc++.h>
 using namespace std;
-int n, m;
-int x, y;
-bool v[114514];
-int main() {
-    cin >> n >> m;
-    vector<int> p[11514];
-    for (int i = 0; i < m; i++) {
-        cin >> x >> y;
-        p[x].push_back(y);
-        p[y].push_back(x);
+#define int long long
+signed main() {
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    int n, m, k;
+    cin >> n >> m >> k;
+    vector<vector<pair<int, int>>> g(n + 1);
+    for (int i = 0; i < m; ++i) {
+        int x, y, z;
+        cin >> x >> y >> z;
+        g[x].push_back({y, z});
     }
-    vector<int> o;
-    cin >> x >> y;
-    queue<pair<pair<int, int>, vector<int>>> q;
-    o.push_back(x);
-    q.push({{x,1},o});
+    vector<long long> v(n + 1, LLONG_MAX);
+    priority_queue<pair<long long, pair<int, int>>, vector<pair<long long, pair<int, int>>>, greater<pair<long long, pair<int, int>>>> q;
+    v[1] = 0;
+    int num = 1;
+    q.push({0, {1,1}});
     while (!q.empty()) {
-        auto a = q.front();
-        if (a.first.first == y) {
-            o = a.second;
-            break;
-        }
-        q.pop();
-        for (int i : p[a.first.first]) {
-            if (!v[i]) {
-                v[i] = 1;
-                a.second.push_back(i);
-                q.push({{i,a.first.second + 1},a.second});
-                a.second.pop_back();
+        if (num > k) break;
+        auto [d, u] = q.top(); q.pop();
+        if (u.second > k) break;
+        if (d > v[u.first]) continue;
+        for (auto& e : g[u.first]) {
+            if (v[e.first] > v[u.first] + e.second) {
+                v[e.first] = v[u.first] + e.second;
+                q.push({v[e.first], {e.first,u.second + 1}});
+                num++;
             }
         }
     }
+    if (v[n] >= LLONG_MAX / 2) cout << "impossible";
+    else cout << v[n];
+    return 0;
 }
