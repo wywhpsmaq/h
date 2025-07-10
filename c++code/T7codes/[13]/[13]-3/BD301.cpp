@@ -1,68 +1,48 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
-struct uu {
-    long long a;
-    int b;
-    vector<int> v;
-    uu() : a(LLONG_MAX), b(-1) {}
-};
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(0);
-    int n, m, q;
-    cin >> n >> m >> q;
-    vector<vector<pair<int,int>>> p(n + 1);
-    for (int i = 0; i < m; ++i) {
-        int u, v, w;
-        cin >> u >> v >> w;
-        p[u].push_back({v, w});
-        p[v].push_back({u, w});
-    }
-    while (q--) {
-        int s, t;
-        cin >> s >> t;
-        vector<uu> vv(n + 1);
-        vector<bool> f(n + 1, false);
-        queue<int> q;
-        vv[s].a = 0;
-        vv[s].v.push_back(s);
-        q.push(s);
-        f[s] = true;
-        while (!q.empty()) {
-            int u = q.front();
-            q.pop();
-            f[u] = false;
-            for (const auto& e : p[u]) {
-                int v = e.first;
-                long long x = vv[u].a + e.second;
-                if (x < vv[v].a) {
-                    vv[v].a = x;
-                    vv[v].v = vv[u].v;
-                    vv[v].v.push_back(v);
-                    if (!f[v]) {
-                        q.push(v);
-                        f[v] = true;
-                    }
-                } else if (x == vv[v].a) {
-                    vector<int> cc = vv[u].v;
-                    cc.push_back(v);
-                    if (cc < vv[v].v) {
-                        vv[v].v = cc;
-                        if (!f[v]) {
-                            q.push(v);
-                            f[v] = true;
-                        }
-                    }
-                }
-            }
-        }
-        if (vv[t].a == LLONG_MAX) {
-            cout << -1 << '\n';
-        } else {
-            cout << vv[t].a;
-            for (int x : vv[t].v) cout << ' ' << x;
-            cout << '\n';
+int p[510][510], v[510][510];
+void print (int x, int y) {
+	if (v[x][y] == 0) {
+		cout << x << " " << y;
+		return;
+	}
+	print (x, v[x][y]);
+	cout << " " << v[x][y];
+	print (v[x][y], y);
+}
+int main () {
+	int n, m, q;
+	cin >> n >> m >> q;
+	memset (p, 0x3f3f3f3f, sizeof (p));
+    for(int i = 1; i <= n; i++) 
+        p[i][i] = 0;
+	for(int i = 0; i < m; i++) {
+        int x, y, z;
+        cin >> x >> y >> z;
+        if(z < p[x][y]) {
+            p[x][y] = z;
+            v[x][y] = 0;
         }
     }
-    return 0;
+	for (int k = 1; k <= n; k++) {
+		for (int i = 1; i <= n; i++) {
+			for (int j = 1; j <= n; j++) {
+				if (p[i][j] > p[i][k] + p[k][j]) {
+					p[i][j] = p[i][k] + p[k][j];
+					v[i][j] = k;
+				}
+			}
+		}
+	}
+	while (q--) {
+		int x, y;
+		cin >> x >> y;
+		if (p[x][y] == 0x3f3f3f3f) {
+			cout << -1 << '\n';
+		} else {
+			cout << p[x][y] << " ";
+			print (x, y);
+			cout << '\n';
+		}
+	}
 }

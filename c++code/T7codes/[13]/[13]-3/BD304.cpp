@@ -1,17 +1,12 @@
-#include <iostream>
-#include <vector>
-#include <queue>
+#include<bits/stdc++.h>
 using namespace std;
-
-const int MAXN = 1005;
-vector<int> win[MAXN], lose[MAXN];
-int N, M;
-
-int bfs(int start, vector<int> graph[]) {
-    vector<bool> vis(N + 1, false);
+vector<int> ww[114514], ll[114514];
+int n, m;
+int bfs(int s, vector<int> graph[]) {
+    vector<bool> vis(n + 1, false);
     queue<int> q;
-    q.push(start);
-    vis[start] = true;
+    q.push(s);
+    vis[s] = true;
     int cnt = 0;
     while (!q.empty()) {
         int u = q.front(); q.pop();
@@ -26,18 +21,18 @@ int bfs(int start, vector<int> graph[]) {
     return cnt;
 }
 int main() {
-    cin >> N >> M;
-    for (int i = 0; i < M; ++i) {
+    cin >> n >> m;
+    for (int i = 0; i < m; ++i) {
         int a, b;
         cin >> a >> b;
-        win[a].push_back(b);
-        lose[b].push_back(a);
+        ww[a].push_back(b);
+        ll[b].push_back(a);
     }
     int ans = 0;
-    for (int i = 1; i <= N; ++i) {
-        int win_cnt = bfs(i, win);
-        int lose_cnt = bfs(i, lose);
-        if (win_cnt + lose_cnt == N - 1) ans++;
+    for (int i = 1; i <= n; ++i) {
+        int w = bfs(i, ww);
+        int l = bfs(i, ll);
+        if (w + l == n - 1) ans++;
     }
     cout << ans << endl;
     return 0;

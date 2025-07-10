@@ -50,7 +50,7 @@ struct INT {
     int sign;
     INT() : sign(1) {}
     INT(long long num) { *this = num; }
-    INT(const string &str) { *this = str; }
+    INT(const string& str) { *this = str; }
     INT operator=(long long num) {
         s.clear();
         sign = num < 0 ? -1 : 1;
@@ -61,7 +61,7 @@ struct INT {
         } while (num);
         return *this;
     }
-    INT operator=(const string &str) {
+    INT operator=(const string& str) {
         s.clear();
         sign = (str[0] == '-') ? -1 : 1;
         int start = (str[0] == '-') ? 1 : 0;
@@ -73,19 +73,19 @@ struct INT {
         }
         return *this;
     }
-    bool operator<(const INT &b) const {
+    bool operator<(const INT& b) const {
         if (sign != b.sign) return sign < b.sign;
         if (s.size() != b.s.size()) return s.size() * sign < b.s.size() * b.sign;
         for (int i = s.size() - 1; i >= 0; i--)
             if (s[i] != b.s[i]) return s[i] * sign < b.s[i] * b.sign;
         return false;
     }
-    bool operator>(const INT &b) const { return b < *this; }
-    bool operator<=(const INT &b) const { return !(b < *this); }
-    bool operator>=(const INT &b) const { return !(*this < b); }
-    bool operator!=(const INT &b) const { return *this < b || b < *this; }
-    bool operator==(const INT &b) const { return !(*this < b) && !(b < *this); }
-    INT operator+(const INT &b) const {
+    bool operator>(const INT& b) const { return b < *this; }
+    bool operator<=(const INT& b) const { return !(b < *this); }
+    bool operator>=(const INT& b) const { return !(*this < b); }
+    bool operator!=(const INT& b) const { return *this < b || b < *this; }
+    bool operator==(const INT& b) const { return !(*this < b) && !(b < *this); }
+    INT operator+(const INT& b) const {
         if (sign != b.sign) return *this - (-b);
         INT c;
         c.sign = sign;
@@ -99,7 +99,7 @@ struct INT {
         if (carry) c.s.push_back(carry);
         return c;
     }
-    INT operator-(const INT &b) const {
+    INT operator-(const INT& b) const {
         if (sign != b.sign) return *this + (-b);
         if ((*this).abs() < b.abs()) return -(b - *this);
         INT c;
@@ -120,7 +120,7 @@ struct INT {
             c.s.pop_back();
         return c;
     }
-    INT operator*(const INT &b) const {
+    INT operator*(const INT& b) const {
         INT c;
         c.sign = sign * b.sign;
         c.s.resize(s.size() + b.s.size());
@@ -134,7 +134,7 @@ struct INT {
             c.s.pop_back();
         return c;
     }
-    INT operator/(const INT &b) const {
+    INT operator/(const INT& b) const {
         if (b.s.size() == 1 && b.s[0] == 0) throw runtime_error("Division by zero");
         INT a = this->abs(), d = b.abs(), res, cur;
         res.s.resize(a.s.size());
@@ -161,7 +161,7 @@ struct INT {
         if (res.s.size() == 1 && res.s[0] == 0) res.sign = 1;
         return res;
     }
-    INT operator%(const INT &b) const {
+    INT operator%(const INT& b) const {
         INT a = *this, d = b;
         INT q = a / d;
         INT r = a - q * d;
@@ -197,7 +197,7 @@ struct INT {
             result = result / 2;
         return result;
     }
-    INT operator&(const INT &b) const {
+    INT operator&(const INT& b) const {
         // 仅支持非负数
         INT a = this->abs(), bb = b.abs();
         INT res;
@@ -213,7 +213,7 @@ struct INT {
         res.sign = 1;
         return res;
     }
-    INT operator|(const INT &b) const {
+    INT operator|(const INT& b) const {
         INT a = this->abs(), bb = b.abs();
         INT res;
         size_t n = max(a.s.size(), bb.s.size());
@@ -228,7 +228,7 @@ struct INT {
         res.sign = 1;
         return res;
     }
-    INT operator^(const INT &b) const {
+    INT operator^(const INT& b) const {
         INT a = this->abs(), bb = b.abs();
         INT res;
         size_t n = max(a.s.size(), bb.s.size());
@@ -253,13 +253,13 @@ public:
             ss << setw(WIDTH) << setfill('0') << s[i];
         return ss.str();
     }
-    friend istream &operator>>(istream &in, INT &x) {
+    friend istream& operator>>(istream& in, INT& x) {
         string s;
         in >> s;
         x = s;
         return in;
     }
-    friend ostream &operator<<(ostream &out, const INT &x) {
+    friend ostream& operator<<(ostream& out, const INT& x) {
         if (x.sign == -1) out << '-';
         out << (x.s.empty() ? 0 : x.s.back());
         for (int i = x.s.size() - 2; i >= 0; i--)
@@ -278,23 +278,23 @@ public:
         --(*this);
         return old;
     }
-    INT operator+=(const INT &b) {
+    INT operator+=(const INT& b) {
         *this = *this + b;
         return *this;
     }
-    INT operator-=(const INT &b) {
+    INT operator-=(const INT& b) {
         *this = *this - b;
         return *this;
     }
-    INT operator*=(const INT &b) {
+    INT operator*=(const INT& b) {
         *this = *this * b;
         return *this;
     }
-    INT operator/=(const INT &b) {
+    INT operator/=(const INT& b) {
         *this = *this / b;
         return *this;
     }
-    INT operator%=(const INT &b) {
+    INT operator%=(const INT& b) {
         *this = *this % b;
         return *this;
     }
@@ -336,8 +336,8 @@ ll fast_pow(ll a, ll b, ll m) {
 void merge(int arr[], int left, int mid, int right) {
     int n1 = mid - left + 1;
     int n2 = right - mid;
-    int *leftArr = new int[n1];
-    int *rightArr = new int[n2];
+    int* leftArr = new int[n1];
+    int* rightArr = new int[n2];
     for (int i = 0; i < n1; i++)
         leftArr[i] = arr[left + i];
     for (int j = 0; j < n2; j++)
@@ -419,7 +419,6 @@ bool zs(int n) {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-
     cout << "=== gj ===" << endl;
     INT a("123123123");
     INT b("987987987");
@@ -462,7 +461,7 @@ int main() {
     int target = 34;
     int result = erfen(arr2, 0, n2 - 1, target);
     cout << "cz " << target << " ans: " << (result == -1 ? "no" : "on " + to_string(result))
-         << endl;
+        << endl;
 
     cout << "\n=== Miller-Rabin ===" << endl;
     int primes[] = {2, 17, 19, 97, 100};
