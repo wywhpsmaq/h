@@ -464,7 +464,7 @@ int main() {
         << endl;
 
     cout << "\n=== Miller-Rabin ===" << endl;
-    int primes[] = {2, 17, 19, 97, 100};
+    int primes[] = {2, 17, 19, 97, 100, 101};
     for (int p : primes) {
         cout << p << " ?: " << (zs(p) ? "y" : "n") << endl;
     }

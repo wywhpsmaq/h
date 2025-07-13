@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "14eec53daf29f99f",
+        "id": "4c9c60cca830f6f0",
         "type": "tabs",
         "children": [
           {
-            "id": "8fb7c3551b4b9c94",
+            "id": "dff6f141b20cc358",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "总结/2025-06-07周中介.md",
-                "mode": "source",
-                "source": true
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "2025-06-07周中介"
+              "title": "新标签页"
             }
           }
         ]
@@ -141,13 +137,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "总结/2025-06-07周中介.md",
+                "file": "2025-07-12.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "2025-06-07周中介 的大纲"
+              "title": "2025-07-12 的大纲"
             }
           }
         ],
@@ -167,11 +163,12 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "8fb7c3551b4b9c94",
+  "active": "364d50d911ad616a",
   "lastOpenFiles": [
+    "2025-07-12.md",
+    "总结/2025-06-07周中介.md",
     "知识点/树.md",
     "知识点/树形结构.md",
-    "总结/2025-06-07周中介.md",
     "总结/2025-03-22周中介.md",
     "666.md",
     "总结/2025-05-18.md",
@@ -201,7 +198,6 @@
     "知识点/动态规划.md",
     "2025-04-25.md",
     "知识点/STL容器.md",
-    "zy-BBC.md",
     "zy",
     "题目"
   ]

@@ -2,7 +2,7 @@
 using namespace std;
 vector<int> ww[114514], ll[114514];
 int n, m;
-int bfs(int s, vector<int> graph[]) {
+int bfs(int s, vector<int> p[]) {
     vector<bool> vis(n + 1, false);
     queue<int> q;
     q.push(s);
@@ -10,7 +10,7 @@ int bfs(int s, vector<int> graph[]) {
     int cnt = 0;
     while (!q.empty()) {
         int u = q.front(); q.pop();
-        for (int v : graph[u]) {
+        for (int v : p[u]) {
             if (!vis[v]) {
                 vis[v] = true;
                 q.push(v);
