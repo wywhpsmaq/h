@@ -1,29 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
-bool cmp(pair<int,int> a, pair<int,int> b) {
-    return a.second > b.second;
-}
 int main() {
     int n;
     cin >> n;
-    vector<pair<int,int>> p(n);
-    int num = 0;
-    for(int i = 0; i < n; i++) {
-        cin >> p[i].first >> p[i].second;
-        num = max(num, p[i].first);
+    vector<pair<int, int>> v;
+    for (int i = 0; i < n; i++) {
+        int t, w;
+        cin >> t >> w;
+        v.push_back({t, w});
     }
-    sort(p.begin(), p.end(), cmp);
-    vector<bool> v(num, false);
-    long long ans = 0;
-    for(int i = 0; i < n; i++) {
-        for(int j = min(num - 1, p[i].first - 1); j >= 0; j--) {
-            if(!v[j]) {
-                v[j] = true;
-                ans += p[i].second;
-                break;
-            }
+    sort(v.begin(), v.end());
+    priority_queue<int, vector<int>, greater<int>> q;
+    for (int i = 0; i < n; i++) {
+        if ((int)q.size() < v[i].first) {
+            q.push(v[i].second);
+        } else if (q.top() < v[i].second) {
+            q.pop();
+            q.push(v[i].second);
         }
     }
+    long long ans = 0;
+    while (!q.empty()) {
+        ans += q.top();
+        q.pop();
+    }
     cout << ans;
-    return 0;
 }
