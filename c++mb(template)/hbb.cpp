@@ -1,8 +1,5 @@
-#include <bits/stdc++.h>
-#pragma GCC optimize(2)
-typedef long long ll;
+#include<bits/stdc++.h>
 using namespace std;
-// 快读快写
 template <typename T> inline T read() {
     T x = 0, f = 1;
     char ch = getchar();
@@ -16,7 +13,6 @@ template <typename T> inline T read() {
     }
     return x * f;
 }
-// 超级快读
 /*template<typename T>
 inline T fastread() {
     T x = 0, f = 1;
@@ -40,11 +36,36 @@ template <typename T> inline void write(T x) {
     if (x > 9) write(x / 10);
     putchar(x % 10 + '0');
 }
-// 刷新输出缓冲区
 inline void flush() { fflush(stdout); }
-// 高精度
+
+vector<vector<pair<int,int>>> jtob(int** ar, int n, int m) {
+    vector<vector<pair<int,int>>> ans(n);
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            ans[i].emplace_back(j, ar[i][j]);
+        }
+    }
+    return ans;
+}
+int** btoj(vector<vector<pair<int,int>>> v, int n, int m) {
+    int** ar = new int*[n];
+    for(int i = 0; i < n; i++) {
+        if(i >= v.size()) {
+            ar[i] = new int[m]{0};
+            continue;
+        }
+        ar[i] = new int[m];
+        for(int j = 0; j < m; j++) {
+            ar[i][j] = (j < v[i].size()) ? v[i][j].second : 0;
+        }
+    }
+    return ar;
+}
+
+
+
 struct INT {
-    static const int BASE = 100000000; // 1e8
+    static const int BASE = 100000000;
     static const int WIDTH = 8;
     vector<int> s;
     int sign;
@@ -299,175 +320,8 @@ public:
         return *this;
     }
 };
-// 快速排序
-template <typename T> int partition(T arr[], int low, int high) {
-    T pivot = arr[high];
-    int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (arr[j] <= pivot) {
-            i++;
-            std::swap(arr[i], arr[j]);
-        }
-    }
-    std::swap(arr[i + 1], arr[high]);
-    return i + 1;
-}
-template <typename T> void fastsort(T arr[], int low, int high) {
-    if (low < high) {
-        int pi = partition(arr, low, high);
-        fastsort(arr, low, pi - 1);
-        fastsort(arr, pi + 1, high);
-    }
-}
-// 快速幂,求a^b%m
-ll fast_pow(ll a, ll b, ll m) {
-    ll result = 1;
-    a %= m;
-    while (b > 0) {
-        if (b & 1) {
-            result = (result * a) % m;
-        }
-        a = (a * a) % m;
-        b >>= 1;
-    }
-    return result;
-}
-// 归并排序
-void merge(int arr[], int left, int mid, int right) {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
-    int* leftArr = new int[n1];
-    int* rightArr = new int[n2];
-    for (int i = 0; i < n1; i++)
-        leftArr[i] = arr[left + i];
-    for (int j = 0; j < n2; j++)
-        rightArr[j] = arr[mid + 1 + j];
-    int i = 0;
-    int j = 0;
-    int k = left;
-    while (i < n1 && j < n2) {
-        if (leftArr[i] <= rightArr[j]) {
-            arr[k] = leftArr[i];
-            i++;
-        } else {
-            arr[k] = rightArr[j];
-            j++;
-        }
-        k++;
-    }
-    while (i < n1) {
-        arr[k] = leftArr[i];
-        i++;
-        k++;
-    }
-    while (j < n2) {
-        arr[k] = rightArr[j];
-        j++;
-        k++;
-    }
-    delete[] leftArr;
-    delete[] rightArr;
-}
-void mergesort(int arr[], int left, int right) {
-    if (left < right) {
-        int mid = left + (right - left) / 2;
-        mergesort(arr, left, mid);
-        mergesort(arr, mid + 1, right);
-        merge(arr, left, mid, right);
-    }
-}
-// 二分查找
-int erfen(int arr[], int left, int right, int target) {
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target)
-            left = mid + 1;
-        else
-            right = mid - 1;
-    }
-    return -1;
-}
-// Miller-Rabin素数测试
-bool zs(int n) {
-    if (n < 2) return false;
-    if (n == 2) return true;
-    if (n % 2 == 0) return false;
-    ll d = n - 1;
-    int r = 0;
-    while (d % 2 == 0) {
-        d /= 2;
-        r++;
-    }
-    ll bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
-    for (ll a : bases) {
-        if (a >= n) break;
-        ll x = fast_pow(a, d, n);
-        if (x == 1 || x == n - 1) continue;
-        bool composite = true;
-        for (int i = 0; i < r - 1; i++) {
-            x = (x * x) % n;
-            if (x == n - 1) {
-                composite = false;
-                break;
-            }
-        }
-        if (composite) return false;
-    }
-    return true;
-}
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-    cout << "=== gj ===" << endl;
-    INT a("-123123123");
-    INT b("987987987");
-    cout << "a = " << a << endl;
-    cout << "b = " << b << endl;
-    cout << "a + b = " << a + b << endl;
-    cout << "a - b = " << a - b << endl;
-    cout << "a * b = " << a * b << endl;
-    cout << "b / a = " << b / a << endl;
-    cout << "b % a = " << b % a << endl;
-    cout << "a << 2 = " << (a << 2) << endl;
-    cout << "b >> 2 = " << (b >> 2) << endl;
-    cout << "a & b = " << (a & b) << endl;
-    cout << "a | b = " << (a | b) << endl;
-    cout << "a ^ b = " << (a ^ b) << endl;
 
-    cout << "\n=== px ===" << endl;
-    int arr1[] = {64, 34, 25, 12, 22, 11, 90};
-    int n1 = sizeof(arr1) / sizeof(arr1[0]);
-    fastsort(arr1, 0, n1 - 1);
-    cout << "h: ";
-    for (int i = 0; i < n1; i++)
-        cout << arr1[i] << " ";
-    cout << endl;
 
-    cout << "\n=== m ===" << endl;
-    ll x = 2, y = 10, m = 1000000007;
-    cout << x << "^" << y << " mod " << m << " = " << fast_pow(x, y, m) << endl;
+int main(){
 
-    cout << "\n=== px ===" << endl;
-    int arr2[] = {64, 34, 25, 12, 22, 11, 90};
-    int n2 = sizeof(arr2) / sizeof(arr2[0]);
-    mergesort(arr2, 0, n2 - 1);
-    cout << "h: ";
-    for (int i = 0; i < n2; i++)
-        cout << arr2[i] << " ";
-    cout << endl;
-
-    cout << "\n=== cz ===" << endl;
-    int target = 34;
-    int result = erfen(arr2, 0, n2 - 1, target);
-    cout << "cz " << target << " ans: " << (result == -1 ? "no" : "on " + to_string(result))
-        << endl;
-
-    cout << "\n=== Miller-Rabin ===" << endl;
-    int primes[] = {2, 17, 19, 97, 100, 101};
-    for (int p : primes) {
-        cout << p << " ?: " << (zs(p) ? "y" : "n") << endl;
-    }
-
-    return 0;
 }

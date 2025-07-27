@@ -21,7 +21,7 @@ with open(STYLE_PATH, 'r', encoding='utf-8') as f:
 class LoginWindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('信息查找软件')
+        self.title('信息查找软件 - 登录')
         self.geometry('400x300')
         self.configure(bg='white')
         self.icon_img = tk.PhotoImage(file=ICON_PATH)
