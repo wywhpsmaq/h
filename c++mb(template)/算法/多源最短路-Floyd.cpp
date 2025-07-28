@@ -26,6 +26,8 @@ int main () {
 		int x, y, z; // x->y权值为z
 		cin >> x >> y >> z;
 		dis[x][y] = min (dis[x][y], z);
+		
+		
 		dis[y][x] = min (dis[y][x], z); // 无向图
 	}
 	for (int k = 1; k <= n; ++k) { // 枚举中间点
