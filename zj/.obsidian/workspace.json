@@ -137,13 +137,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "2025-07-12.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "2025-07-12 的大纲"
+              "title": "大纲"
             }
           }
         ],
