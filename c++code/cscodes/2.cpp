@@ -26,7 +26,6 @@ pair<int,int> sr()
 }
 void yd(pair<int,int> s,pair<int,int> e){
     if(cc[e.first][e.second]==1){num++;}
-    
 }
 int main()
 {

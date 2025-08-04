@@ -1,1 +1,1 @@
-instante
+g++ 3.cpp -o 3.exe -L"F:\下载\ege24.04\lib\mingw64\mingw-w64-gcc-8.1.0-x86_64" -lgraphics -lgdi32

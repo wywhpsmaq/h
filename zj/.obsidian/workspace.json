@@ -11,10 +11,14 @@
             "id": "dff6f141b20cc358",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "666.md",
+                "mode": "source",
+                "source": true
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "666"
             }
           }
         ]
@@ -137,12 +141,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "666.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "大纲"
+              "title": "666 的大纲"
             }
           }
         ],
@@ -162,14 +167,15 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "364d50d911ad616a",
+  "active": "dff6f141b20cc358",
   "lastOpenFiles": [
+    "总结/2025-05-01周中介.md",
+    "666.md",
     "2025-07-12.md",
     "总结/2025-06-07周中介.md",
     "知识点/树.md",
     "知识点/树形结构.md",
     "总结/2025-03-22周中介.md",
-    "666.md",
     "总结/2025-05-18.md",
     "模版/周总结.md",
     "bbcoj.cn/training/17/problem/BC302.md",
@@ -191,7 +197,6 @@
     "BB101.cpp.md",
     "总结/2025-04-05周中介.md",
     "总结/2025-05-02.md",
-    "总结/2025-05-01周中介.md",
     "zy/zy-BBC.md",
     "知识点/倍增.md",
     "知识点/动态规划.md",

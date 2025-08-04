@@ -50,7 +50,7 @@ void dfs (int sx, int sy) {
 		if (c == 0 || c == -32) { c = _getch (); }
 		int nx = x, ny = y;
 		if (c == 77) {ny = y + 1;}
-        else if (c == 75) {ny = y - 1;} 
+        else if (c == 75) {ny = y - 1;}
         else if (c == 72) {nx = x - 1;}
         else if (c == 80) {nx = x + 1;}
         else {continue;}
