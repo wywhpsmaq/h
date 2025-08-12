@@ -1,44 +1,44 @@
 {
-  "collapse-filter": true,
+  "collapse-filter": false,
   "search": "",
   "showTags": true,
   "showAttachments": true,
   "hideUnresolved": true,
   "showOrphans": true,
-  "collapse-color-groups": true,
+  "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "tag:#zsd  ",
+      "query": "tag:#zj  ",
       "color": {
         "a": 1,
         "rgb": 14701138
       }
     },
     {
-      "query": "tag:#zj  ",
+      "query": "tag:#zsd  ",
       "color": {
         "a": 1,
-        "rgb": 262399
+        "rgb": 14725458
       }
     },
     {
       "query": "tag:#zy  ",
       "color": {
         "a": 1,
-        "rgb": 16756224
+        "rgb": 11657298
       }
     }
   ],
   "collapse-display": false,
-  "showArrow": true,
+  "showArrow": false,
   "textFadeMultiplier": 0,
-  "nodeSizeMultiplier": 0.699739583333333,
-  "lineSizeMultiplier": 0.59765625,
+  "nodeSizeMultiplier": 0.929427083333333,
+  "lineSizeMultiplier": 1.03151041666667,
   "collapse-forces": false,
-  "centerStrength": 0.497395833333333,
-  "repelStrength": 10.0520833333333,
-  "linkStrength": 0.502604166666667,
-  "linkDistance": 264,
-  "scale": 0.885498794525493,
-  "close": true
+  "centerStrength": 0.4453125,
+  "repelStrength": 6.71875,
+  "linkStrength": 0.299479166666667,
+  "linkDistance": 200,
+  "scale": 0.8854987945255024,
+  "close": false
 }

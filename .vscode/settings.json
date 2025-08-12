@@ -108,7 +108,10 @@
         "locale": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "version": "cpp"
+        "version": "cpp",
+        "strstream": "cpp",
+        "flat_map": "cpp",
+        "flat_set": "cpp"
     },
     "cSpell.words": [
         "aans",

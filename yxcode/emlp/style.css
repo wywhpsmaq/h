@@ -1,0 +1,254 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #1a1a2e;
+    color: #f0f0f0;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* 游戏容器 */
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #16213e;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* 头部样式 */
+header {
+    background-color: #e94560;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 主内容区 */
+main {
+    padding: 20px;
+}
+
+/* 游戏信息区域 */
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.player-info, .computer-info {
+    flex: 1;
+    min-width: 300px;
+    background-color: #0f3460;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.player-info h2, .computer-info h2 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: #e94560;
+}
+
+.player-info h2 {
+    color: #4ecdc4;
+}
+
+/* 道具区域 */
+.props {
+    margin-top: 15px;
+}
+
+.props p {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #f0f0f0;
+}
+
+.props ul {
+    list-style-type: none;
+}
+
+.props li {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 游戏状态区域 */
+.game-status {
+    background-color: #0f3460;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.game-status p {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.message-box {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    min-height: 100px;
+    margin-top: 20px;
+    overflow-y: auto;
+}
+
+/* 游戏控制区域 */
+.game-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.prop-controls, .shoot-controls, .game-menu {
+    flex: 1;
+    min-width: 250px;
+    background-color: #0f3460;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.game-controls h3 {
+    margin-bottom: 15px;
+    color: #e94560;
+}
+
+/* 按钮样式 */
+button {
+    background-color: #4ecdc4;
+    color: #1a1a2e;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #38b0b0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .game-info, .game-controls {
+        flex-direction: column;
+    }
+
+    .player-info, .computer-info, .prop-controls, .shoot-controls, .game-menu {
+        margin: 10px 0;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+}
+
+/* 动画效果 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.pulse {
+    animation: pulse 1s infinite;
+}
+
+/* 血量显示样式 */
+#player-health, #computer-health {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e94560;
+}
+
+.player-info #player-health {
+    color: #4ecdc4;
+}
+
+/* 当前子弹高亮 */
+#current-bullet {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #e94560;
+}
+
+/* 按钮特殊样式 */
+#start-game, #restart-game {
+    background-color: #e94560;
+    color: white;
+    font-weight: bold;
+}
+
+#start-game:hover, #restart-game:hover {
+    background-color: #d6304a;
+}
+
+/* 消息提示样式 */
+.message {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.info-message {
+    background-color: rgba(78, 205, 196, 0.2);
+}
+
+.warning-message {
+    background-color: rgba(233, 69, 96, 0.2);
+}
+
+.success-message {
+    background-color: rgba(46, 204, 113, 0.2);
+}
+
+/* 子弹状态指示器 */
+.bullet-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.real-bullet {
+    background-color: #e94560;
+}
+
+.fake-bullet {
+    background-color: #4ecdc4;
+}

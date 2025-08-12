@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>子弹游戏 - 网页版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>子弹游戏</h1>
+        </header>
+        <main>
+            <div class="game-info">
+                <div class="player-info">
+                    <h2>玩家</h2>
+                    <p>血量: <span id="player-health">0</span></p>
+                    <div class="props">
+                        <p>道具:</p>
+                        <ul id="player-props">
+                            <li>刀: <span id="player-knife">0</span></li>
+                            <li>手铐: <span id="player-handcuffs">0</span></li>
+                            <li>电话: <span id="player-phone">0</span></li>
+                            <li>汽水: <span id="player-soda">0</span></li>
+                            <li>放大镜: <span id="player-magnifier">0</span></li>
+                            <li>药: <span id="player-medicine">0</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="computer-info">
+                    <h2>电脑</h2>
+                    <p>血量: <span id="computer-health">0</span></p>
+                    <div class="props">
+                        <p>道具:</p>
+                        <ul id="computer-props">
+                            <li>刀: <span id="computer-knife">0</span></li>
+                            <li>手铐: <span id="computer-handcuffs">0</span></li>
+                            <li>电话: <span id="computer-phone">0</span></li>
+                            <li>汽水: <span id="computer-soda">0</span></li>
+                            <li>放大镜: <span id="computer-magnifier">0</span></li>
+                            <li>药: <span id="computer-medicine">0</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="game-status">
+                <p>当前回合: <span id="current-turn">玩家</span></p>
+                <p>当前子弹: 第 <span id="current-bullet">1</span> 发</p>
+                <p>子弹总数: <span id="total-bullets">0</span> 发 (真: <span id="real-bullets">0</span>, 假: <span id="fake-bullets">0</span>)</p>
+                <div id="message-box" class="message-box"></div>
+            </div>
+            <div class="game-controls">
+                <div class="prop-controls">
+                    <h3>使用道具</h3>
+                    <button id="use-knife">使用刀</button>
+                    <button id="use-handcuffs">使用手铐</button>
+                    <button id="use-phone">使用电话</button>
+                    <button id="use-soda">使用汽水</button>
+                    <button id="use-magnifier">使用放大镜</button>
+                    <button id="use-medicine">使用药</button>
+                </div>
+                <div class="shoot-controls">
+                    <h3>开枪</h3>
+                    <button id="shoot-computer">向电脑开枪</button>
+                    <button id="shoot-player">向自己开枪</button>
+                </div>
+                <div class="game-menu">
+                    <button id="start-game">开始游戏</button>
+                    <button id="restart-game">重新开始</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

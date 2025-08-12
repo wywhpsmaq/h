@@ -34,7 +34,7 @@ int main() {
         for (int i = 0; i < 4; ++i) {
             int nx = x + dx[i];
             int ny = y + dy[i];
-            if (nx >= 1 && nx <= n && ny >= 1 && ny <= m 
+            if (nx >= 1 && nx <= n && ny >= 1 && ny <= m
                 && a[nx][ny] == 0 && !vis[nx][ny]) {
                 vis[nx][ny] = true;
                 prev[nx][ny] = {x, y};
