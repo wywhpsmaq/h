@@ -9,7 +9,7 @@ void v () {
 	}
 }
 long long dfs (int i, int l, int r, string s, vector<vector<vector<long long>>> &p) {
-	int l = s.size ();
+	int len = s.size ();
 	if (i == l) return 1;
 	if (p[i][l][r] != -1) return p[i][l][r];
 	long long res = 0;

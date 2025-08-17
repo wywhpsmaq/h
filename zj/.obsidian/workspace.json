@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "6f409a7844b1a6e6",
+        "id": "41fc19eb96021356",
         "type": "tabs",
         "children": [
           {
-            "id": "7836edafd92bbe85",
+            "id": "8a8e5dd4aa5378a1",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "总结/2025-08-10比赛中介.md",
+                "file": "总结/2025-08-13比赛中介.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "2025-08-10比赛中介"
+              "title": "2025-08-13比赛中介"
             }
           }
         ]
@@ -141,13 +141,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "总结/2025-08-10比赛中介.md",
+                "file": "总结/2025-08-13比赛中介.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "2025-08-10比赛中介 的大纲"
+              "title": "2025-08-13比赛中介 的大纲"
             }
           }
         ],
@@ -167,8 +167,10 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "7836edafd92bbe85",
+  "active": "8a8e5dd4aa5378a1",
   "lastOpenFiles": [
+    "总结/2025-08-13比赛中介.md",
+    "总结/2025-08-10比赛中介.md",
     "比赛.md",
     "666.md",
     "总结/2025-04-05周中介.md",
@@ -176,7 +178,6 @@
     "未命名.canvas",
     "知识点/前缀和、差分与离散化.md",
     "总结/2025-06-07周中介.md",
-    "总结/2025-08-10比赛中介.md",
     "总结/2025-03-22周中介.md",
     "总结/2025-05-01周中介.md",
     "总结/2025-05-02周总结.md",

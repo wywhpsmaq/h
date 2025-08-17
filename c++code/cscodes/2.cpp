@@ -7,7 +7,7 @@ struct man {
 };
 int zd, jd;
 int zjd[50];
-int ain[50] = {-1};
+int ain[50];
 int sh = 1;
 random_device rd;
 mt19937 gen (rd ());
@@ -54,7 +54,7 @@ void dj3 (int num, int yy) {
 		m2.dj[3]--;
 	}
 }
-void dj4 (int *num, int yy) {
+void dj4 (int& num, int yy) {
 	if (!yy) {
 		cout << name << "使用了汽水" << endl;
 		cout << name << "退掉了一发子弹！！！" << endl;
@@ -64,7 +64,7 @@ void dj4 (int *num, int yy) {
 		cout << "它退掉了一发子弹！！！" << endl;
 		m2.dj[4]--;
 	}
-	(*num)++;
+	num++;
 }
 void dj5 (int num, int yy) {
 	if (!yy) {
@@ -89,13 +89,15 @@ void dj6 (int yy) {
 		m2.dj[6]--;
 	}
 }
-void dl (int num) {
+void dl (int& num) {
+	/*版本1
 	vector<int> available;
 	bool used = false;
 	if (m2.xl <= 3 && m2.dj[6] > 0) {
 		dj6 (1);
 		used = true;
 	}
+
 	if (!used && sh == 1 && m2.dj[1] > 0) {
 		dj1 (1);
 		if (m2.dj[2] > 0) {
@@ -174,8 +176,14 @@ void dl (int num) {
 		dj6 (1);
 		break;
 	}
+	*/
+	//版本2
+	if(ain[num]!=-1) return;
+	if(m2.xl<=3&&m2.dj[6]>=1){
+
+	}
 }
-void generate_new_props () {
+void xdj () {//随机道具
 	memset (m1.dj, 0, sizeof (m1.dj));
 	memset (m2.dj, 0, sizeof (m2.dj));
 	uniform_int_distribution<> djs (2, 10);
@@ -197,7 +205,8 @@ void generate_new_props () {
 		 << m2.dj[1] << "个刀，" << m2.dj[2] << "个手铐，" << m2.dj[3] << "个电话，" << m2.dj[4] << "个汽水，" << m2.dj[5] << "个放大镜，" << m2.dj[6]
 		 << "个药，" << endl;
 }
-void generate_new_bullets () {
+void xzd () {//随机子弹
+	memset (ain, -1, sizeof (ain));
 	memset (zjd, -1, sizeof (zjd));
 	uniform_int_distribution<> zds (1, 6);
 	zd = zds (gen);
@@ -214,18 +223,18 @@ void generate_new_bullets () {
 		zjd[xy] = 0;
 	}
 }
-void games () {
+void games () {//游戏
 	int num = 1;
 	sh = 1;
 	aq = -1;
 	xyg = false;
-	generate_new_bullets ();
+	xzd ();
 	memset (m1.dj, 0, sizeof (m1.dj));
 	memset (m2.dj, 0, sizeof (m2.dj));
 	cout << "有" << zd << "发真子弹，" << jd << "发假子弹！！！" << endl;
 	system ("pause");
 	system ("cls");
-	generate_new_props ();
+	xdj ();
 	system ("pause");
 	cout << "开始！！！";
 	system ("pause");
@@ -235,8 +244,8 @@ void games () {
 		if (num > zd + jd) {
 			cout << "子弹用完了，重新生成子弹和道具！！！" << endl;
 			num = 1;
-			generate_new_bullets ();
-			generate_new_props ();
+			xzd ();
+			xdj ();
 			cout << "新的一轮有" << zd << "发真子弹，" << jd << "发假子弹！！！" << endl;
 			system ("pause");
 			system ("cls");
@@ -272,7 +281,7 @@ void games () {
 					}
 				} else if (u == 4) {
 					if (m1.dj[4] > 0) {
-						dj4 (&num, 0);
+						dj4 (num, 0);
 						if (num > zd + jd) {
 							cout << "已经没有子弹了，将重新生成！！！" << endl;
 							break;
@@ -323,23 +332,8 @@ void games () {
 				 << m2.dj[1] << "个刀，" << m2.dj[2] << "个手铐，" << m2.dj[3] << "个电话，" << m2.dj[4] << "个汽水，" << m2.dj[5] << "放大镜，"
 				 << m2.dj[6] << "个药，" << endl;
 			dl (num);
-			if (m2.dj[5] > 0) {
-				dj5 (num, 1);
-				int current_bullet = ain[num] != -1 ? ain[num] : zjd[num];
-				if (m2.xl < m1.xl && current_bullet == 1) {
-					aq = 1;
-				} else if (current_bullet == 0) {
-					aq = 2;
-				}
-			} else {
-				if (zd + jd - num < 3) {
-					aq = (m1.xl > m2.xl) ? 1 : 2;
-				} else {
-					uniform_int_distribution<> shoot (1, 2);
-					aq = shoot (gen);
-				}
-			}
-			cout << "它选择向" << (aq == 1 ? "m2" : name) << "开枪" << endl;
+			int x=xz();
+			cout << "它选择向" << (aq == 1 ? "m2" : name) << "开枪" << endl;//2-name,1-m2
 		}
 		system ("pause");
 		system ("cls");
@@ -369,7 +363,7 @@ void games () {
 	}
 	system ("pause");
 }
-void start () {
+void start () {//主界面
 	while (1) {
 		cout << "1.开始游戏" << endl;
 		cout << "2.退出游戏" << endl;

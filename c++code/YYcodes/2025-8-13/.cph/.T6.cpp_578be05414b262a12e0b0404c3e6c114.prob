@@ -1,0 +1,1 @@
+{"name":"Local: T6","url":"e:\\h\\c++code\\YYcodes\\2025-8-13\\T6.cpp","tests":[{"id":1755074727804,"input":"5\n1 5 33\n3 2 17\n7 2 32\n6 3 10\n6 3 9\n","output":"YES\nYES\nYES\nNO\nYES\n"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"e:\\h\\c++code\\YYcodes\\2025-8-13\\T6.cpp","group":"local","local":true}
