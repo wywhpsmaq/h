@@ -1,20 +1,15 @@
-#include <iostream>
+#include <bits/stdc++.h>
 using namespace std;
-int a[51], b[51], c[51];
-int f[501][501];
+int ans[1100][1100];
+int a, b, c;
 int main () {
-	int i, j, l, m, n, k;
-	cin >> m >> n >> k;
-	for (i = 1; i <= k; i++) {
-        cin >> a[i] >> b[i] >> c[i];
-    }
-	for (i = 1; i <= k; i++) {
-		for (j = m; j >= a[i]; j--) {
-			for (l = n; l >= b[i]; l--) {
-                f[j][l] = max (f[j][l], f[j - a[i]][l - b[i]] + c[i]);
-            }
+	int n, t, m;
+	cin >> t >> m >> n;
+	for (int i = 0; i < n; i++) {
+		cin >> a >> b >> c;
+		for (int j = t; j >= a; j--) {
+			for (int k = m; k >= b; k--) { ans[j][k] = max (ans[j][k], ans[j - a][k - b] + c); }
 		}
 	}
-	cout << f[m][n];
-	return 0;
+	cout << ans[t][m];
 }

@@ -1,24 +1,26 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
+#define int long long
 using namespace std;
-int v, n, t, x;
-int w[10001], z[10001], b[10001];
-int g[205][205];
-int dp[10001];
-int main () {
-	cin >> v >> n;
-	for (int i = 1; i <= n; i++) {
-		cin >> w[i] >> z[i] >> x;
-		t = max (t, x);
-		b[x]++;
-		g[x][b[x]] = i;
+int n,V;
+int a[1100][1100],b[1100][1100],s[1100],dp[11000];
+signed main() {
+	cin >> V >> n;
+	for(int i = 1; i <= n; i++) {
+		int x,y,z;
+		cin >> x >> y >> z;
+		s[z]++;
+		a[z][s[z]] = x;
+		b[z][s[z]] = y;
 	}
-	for (int i = 1; i <= t; i++) {
-		for (int j = v; j >= 0; j--) {
-			for (int k = 1; k <= b[i]; k++) {
-				if (j >= w[g[i][k]]) { dp[j] = max (dp[j], dp[j - w[g[i][k]]] + z[g[i][k]]); }
+	for(int i = 1; i <= n; i++) {
+		for(int j = V; j >= 0; j--) {
+			for(int k = 1; k <= s[i]; k++) {
+				if(j >= a[i][k]) {
+					dp[j] = max(dp[j],dp[j - a[i][k]] + b[i][k]);
+				}
 			}
 		}
 	}
-	cout << dp[v];
+	cout << dp[V];
 	return 0;
 }
