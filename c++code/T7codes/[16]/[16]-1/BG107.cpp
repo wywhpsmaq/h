@@ -2,17 +2,17 @@
 using namespace std;
 const int inf = 1e9;
 int n, g[114][114], dp[114][114][1145];
-int minn (int a, int b, int c, int d, int e) {
-	return min (a, min (b, min (c, min (d, e))));
+int minn (int a, int b, int c, int d) {
+	return min (a, min (b, min (c, d)));
 }
+
 int ddpp (int x, int y, int s) {
 	if (x < 0 || x >= n || y < 0 || y >= n) return inf;
 	if (s < 0) return inf;
 	if (x == n - 1 && y == n - 1) { return (s == 0) ? g[x][y] : inf; }
 	if (s == 0) return inf;
 	if (dp[x][y][s] != -1) return dp[x][y][s];
-	int num = inf;
-	num = minn (ddpp (x + 1, y, s - 1), ddpp (x, y + 1, s - 1), ddpp (x + 1, y + 1, s - 1), ddpp (x - 1, y, s - 1), ddpp (x, y - 1, s - 1));
+	int num = minn (ddpp (x + 1, y, s - 1), ddpp (x, y + 1, s - 1), ddpp (x - 1, y, s - 1), ddpp (x, y - 1, s - 1));
 	if (num == inf) {
 		dp[x][y][s] = inf;
 		return inf;

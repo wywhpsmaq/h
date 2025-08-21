@@ -31,7 +31,7 @@ int main () {
 		e = p[e];
 	}
 	reverse (ans.begin (), ans.end ());
-	cout << ml << endl;
+	cout << ml << '\n';
 	for (int i = 0; i < ans.size (); ++i) {
 		if (i > 0) cout << ' ';
 		cout << ans[i];
