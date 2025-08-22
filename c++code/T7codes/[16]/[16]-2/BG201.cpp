@@ -3,6 +3,8 @@ using namespace std;
 int dp[1145][1145];
 int sum[1145];
 int main () {
+	ios::sync_with_stdio(false);
+    cin.tie(0);
 	int n;
 	cin >> n;
 	for (int i = 1; i <= n; i++) {
@@ -19,5 +21,4 @@ int main () {
 		}
 	}
 	cout << dp[1][n];
-	return 0;
 }
