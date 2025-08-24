@@ -23,11 +23,8 @@ int main () {
 		else if (t == 'G') b[i] = 3;
 		else if (t == 'T') b[i] = 4;
 	}
-
 	for (int i = 1; i <= la; i++) { f[i][0] = f[i - 1][0] + d[a[i]][5]; }
-
 	for (int i = 1; i <= lb; i++) { f[0][i] = f[0][i - 1] + d[5][b[i]]; }
-
 	for (int i = 1; i <= la; i++) {
 		for (int j = 1; j <= lb; j++) { f[i][j] = max (f[i - 1][j - 1] + d[a[i]][b[j]], max (f[i - 1][j] + d[a[i]][5], f[i][j - 1] + d[5][b[j]])); }
 	}

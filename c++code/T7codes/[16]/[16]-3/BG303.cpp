@@ -3,7 +3,6 @@ using namespace std;
 int n, m;
 struct uu {
 	int d, v;
-	uu (int dd, int vv) : d (dd), v (vv) {};
 };
 vector<vector<uu>> g;
 int dp[114][114];
@@ -27,8 +26,8 @@ int main () {
 	for (int i = 1; i < n; ++i) {
 		int s, d, v;
 		cin >> s >> d >> v;
-		g[s].push_back (uu (d, v));
-		g[d].push_back (uu (s, v));
+		g[s].push_back ({d, v});
+		g[d].push_back ({s, v});
 	}
 	dfs (1, -1);
 	cout << dp[1][m];
