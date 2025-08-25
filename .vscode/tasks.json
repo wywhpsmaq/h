@@ -7,7 +7,6 @@
       "command": "g++",
       "args": [
         "-g",
-        "-O3",
         "-march=native",
         "-fstack-protector",
         "-Wall",

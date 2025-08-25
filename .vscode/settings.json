@@ -122,5 +122,7 @@
         "wxhhpsmaq",
         "Wywhpsmaq"
     ],
-    "C_Cpp.clang_format_style": "file"
+    "C_Cpp.clang_format_style": "file",
+    "trae.tab.enableRename": false,
+    "trae.tab.enableAutoImport": false
 }
