@@ -1,1 +1,0 @@
-{"name":"Local: T5","url":"e:\\h\\c++code\\YYcodes\\2025-8-13\\T5.cpp","tests":[{"id":1755077964914,"input":"10 10\nno 6\nno 1\nno 4","output":"1 2 3 4 5 6 7 8"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"e:\\h\\c++code\\YYcodes\\2025-8-13\\T5.cpp","group":"local","local":true}

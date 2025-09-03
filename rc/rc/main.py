@@ -428,9 +428,9 @@ class MainWindow(tk.Tk):
             def after_connect_popup():
                 r = random.random()
                 if r < 0.4:
-                    tk.messagebox.showinfo('kh', 'kh成功')
+                    tk.messagebox.showinfo('kh', 'kh成功!!!')
                 elif r < 0.7:
-                    tk.messagebox.showinfo('kh', 'kh失败,服务器未响应')
+                    tk.messagebox.showinfo('kh', 'kh失败,kh服务器未响应!!!')
                 else:
                     tk.messagebox.showinfo('kh', 'Runtime Error : ExitCode: 11 (Segmentation fault)')
             def do_kh_format():
@@ -459,14 +459,14 @@ class MainWindow(tk.Tk):
                         result['ok'] = True
                         result['fmt'] = '1'
                         win.destroy()
-                        show_auto_close('连接', '正在连接服务器...', 2, 5, after_connect_popup)
+                        show_auto_close('连接', '正在连kh接服务器...', 2, 5, after_connect_popup)
                     else:
                         if getattr(self, 'is_admin', False):
                             tk.messagebox.showinfo('提示', '已以管理员身份登录，无需再次输入管理员密码')
                             result['ok'] = True
                             result['fmt'] = '2'
                             win.destroy()
-                            show_auto_close('连接', '正在连接服务器...', 2, 5, after_connect_popup)
+                            show_auto_close('连接', '正在连接kh服务器...', 2, 5, after_connect_popup)
                         else:
                             def check_admin():
                                 pwd = pwd_entry.get()

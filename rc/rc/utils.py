@@ -7,28 +7,38 @@ import sys
 from datetime import datetime
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
+import secrets
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hmac
+from cryptography.hazmat.primitives import keywrap
 if getattr(sys, 'frozen', False):
     BASE_DIR = os.path.dirname(sys.executable)
 else:
     BASE_DIR = os.path.dirname(__file__)
 # AES加密
 AES_KEY = hashlib.sha256(b'rc_key').digest()  # 32字节密钥
-AES_IV = b'rc_iv_2024_12345'  # 16字节IV
-def encrypt(data: bytes, key: bytes = AES_KEY, iv: bytes = AES_IV) -> bytes:
-    padder = padding.PKCS7(128).padder()
-    padded_data = padder.update(data) + padder.finalize()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+GCM_IV_SIZE = 12
+GCM_TAG_SIZE = 16
+
+def encrypt(data: bytes, key: bytes = AES_KEY) -> bytes:
+    iv = secrets.token_bytes(GCM_IV_SIZE)
+    cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
     encryptor = cipher.encryptor()
-    ct = encryptor.update(padded_data) + encryptor.finalize()
-    return base64.b64encode(ct)
-def decrypt(data: bytes, key: bytes = AES_KEY, iv: bytes = AES_IV) -> bytes:
-    ct = base64.b64decode(data)
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    ct = encryptor.update(data) + encryptor.finalize()
+    tag = encryptor.tag
+    # 返回: base64(IV+tag+密文)
+    return base64.b64encode(iv + tag + ct)
+
+def decrypt(data: bytes, key: bytes = AES_KEY) -> bytes:
+    raw = base64.b64decode(data)
+    iv = raw[:GCM_IV_SIZE]
+    tag = raw[GCM_IV_SIZE:GCM_IV_SIZE+GCM_TAG_SIZE]
+    ct = raw[GCM_IV_SIZE+GCM_TAG_SIZE:]
+    cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend=default_backend())
     decryptor = cipher.decryptor()
-    padded_data = decryptor.update(ct) + decryptor.finalize()
-    unpadder = padding.PKCS7(128).unpadder()
-    return unpadder.update(padded_data) + unpadder.finalize()
+    return decryptor.update(ct) + decryptor.finalize()
 PASS_HASH_FILE = os.path.join(BASE_DIR, 'data', 'password.dat')
 def check_password(input_pwd: str, idx: int = 0) -> bool:
     if not os.path.exists(PASS_HASH_FILE):
