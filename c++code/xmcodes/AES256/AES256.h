@@ -10,5 +10,4 @@ class AES256
 {
 };
 
-
 #endif //H_AES256_H
