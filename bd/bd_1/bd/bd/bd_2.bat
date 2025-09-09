@@ -1,4 +1,4 @@
-color 
+color
 echo 王超烈马
 color 1a
 echo
@@ -7,7 +7,7 @@ echo
 color 3c
 echo
 color 4d
-echo 
+echo
 color 5e
 echo
 color 6f
