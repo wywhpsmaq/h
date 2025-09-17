@@ -1,5 +1,5 @@
 color
-echo 王超烈马
+echo 114514
 color 1a
 echo
 color 2b
