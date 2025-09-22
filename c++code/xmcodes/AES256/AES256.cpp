@@ -5,13 +5,13 @@
 #include <string>
 #include <windows.h>
 using byte = uint8_t;
-struct Word {
+struct word {
 	byte bytes[4];
 };
-struct State {
+struct state {
 	byte bytes[4][4];
 };
-Word roundKeys[60]; // 60 words for AES-256 (15 round keys)
+word round_keys[60]; // 60 words for AES-256 (15 round keys)
 const byte rcon[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 const byte sbox[256] = {
 	// 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
@@ -33,41 +33,40 @@ const byte sbox[256] = {
 	0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16	// F
 };
 namespace aes_1 {
-Word g (Word input, int roundIndex) {
-	Word result = input;
-	byte temp = result.bytes[0];
+word g (const word input, const int round_index) {
+	word result = input;
+	const byte temp = result.bytes[0];
 	result.bytes[0] = result.bytes[1];
 	result.bytes[1] = result.bytes[2];
 	result.bytes[2] = result.bytes[3];
 	result.bytes[3] = temp;
-	for (int i = 0; i < 4; i++) { result.bytes[i] = sbox[result.bytes[i]]; }
-	result.bytes[0] ^= rcon[roundIndex];
+	for (unsigned char & byte : result.bytes) { byte = sbox[byte]; }
+	result.bytes[0] ^= rcon[round_index];
 
 	return result;
 }
-Word h (Word input) {
-	Word result = input;
-	for (int i = 0; i < 4; i++) { result.bytes[i] = sbox[result.bytes[i]]; }
+word h (word input) {
+	word result = input;
+	for (unsigned char & byte : result.bytes) { byte = sbox[byte]; }
 	return result;
 }
 } // namespace aes_1
 namespace aes_2 {
-void addRoundKey (State &state, const Word roundKey[4]) {
+void add_round_key (state &state, const word round_key[4]) {
 	for (int col = 0; col < 4; col++) {
-		for (int row = 0; row < 4; row++) { state.bytes[row][col] ^= roundKey[col].bytes[row]; }
+		for (int row = 0; row < 4; row++) { state.bytes[row][col] ^= round_key[col].bytes[row]; }
 	}
 }
-void subBytes (State &state) {
-	for (int row = 0; row < 4; row++) {
-		for (int col = 0; col < 4; col++) { state.bytes[row][col] = sbox[state.bytes[row][col]]; }
+void sub_bytes (state &state) {
+	for (auto & byte : state.bytes) {
+		for (unsigned char & col : byte) { col = sbox[col]; }
 	}
 }
-void shiftRows (State &state) {
+void shift_rows (state &state) {
 	byte temp = state.bytes[1][0];
 	state.bytes[1][0] = state.bytes[1][1];
 	state.bytes[1][1] = state.bytes[1][2];
 	state.bytes[1][2] = state.bytes[1][3];
-	state.bytes[1][3] = temp;
 	std::swap (state.bytes[2][0], state.bytes[2][2]);
 	std::swap (state.bytes[2][1], state.bytes[2][3]);
 	temp = state.bytes[3][3];
@@ -76,42 +75,41 @@ void shiftRows (State &state) {
 	state.bytes[3][1] = state.bytes[3][0];
 	state.bytes[3][0] = temp;
 }
-byte gfMultiply (byte a, byte b) {
+byte gf_multiply (byte a, byte b) {
 	byte result = 0;
-	byte highBit;
 	for (int i = 0; i < 8; i++) {
 		if (b & 1) { result ^= a; }
-		highBit = a & 0x80;
+		byte high_bit = a & 0x80;
 		a <<= 1;
-		if (highBit) { a ^= 0x1B; }
+		if (high_bit) { a ^= 0x1B; }
 		b >>= 1;
 	}
 	return result;
 }
-void mixColumns (State &state) {
+void mix_columns (state &state) {
 	byte temp[4];
 	for (int col = 0; col < 4; col++) {
 		temp[0] = state.bytes[0][col];
 		temp[1] = state.bytes[1][col];
 		temp[2] = state.bytes[2][col];
 		temp[3] = state.bytes[3][col];
-		state.bytes[0][col] = gfMultiply (0x02, temp[0]) ^ gfMultiply (0x03, temp[1]) ^ temp[2] ^ temp[3];
-		state.bytes[1][col] = temp[0] ^ gfMultiply (0x02, temp[1]) ^ gfMultiply (0x03, temp[2]) ^ temp[3];
-		state.bytes[2][col] = temp[0] ^ temp[1] ^ gfMultiply (0x02, temp[2]) ^ gfMultiply (0x03, temp[3]);
-		state.bytes[3][col] = gfMultiply (0x03, temp[0]) ^ temp[1] ^ temp[2] ^ gfMultiply (0x02, temp[3]);
+		state.bytes[0][col] = gf_multiply (0x02, temp[0]) ^ gf_multiply (0x03, temp[1]) ^ temp[2] ^ temp[3];
+		state.bytes[1][col] = temp[0] ^ gf_multiply (0x02, temp[1]) ^ gf_multiply (0x03, temp[2]) ^ temp[3];
+		state.bytes[2][col] = temp[0] ^ temp[1] ^ gf_multiply (0x02, temp[2]) ^ gf_multiply (0x03, temp[3]);
+		state.bytes[3][col] = gf_multiply (0x03, temp[0]) ^ temp[1] ^ temp[2] ^ gf_multiply (0x02, temp[3]);
 	}
 }
-void printState (const State &state, const std::string &title = "State") {
+void print_state (const state &state, const std::string &title = "State") {
 	std::cout << title << ":" << std::endl;
-	for (int row = 0; row < 4; row++) {
+	for (auto byte : state.bytes) {
 		for (int col = 0; col < 4; col++) {
-			std::cout << std::hex << std::setw (2) << std::setfill ('0') << static_cast<int> (state.bytes[row][col]) << " ";
+			std::cout << std::hex << std::setw (2) << std::setfill ('0') << static_cast<int> (byte[col]) << " ";
 		}
 		std::cout << std::endl;
 	}
 	std::cout << std::dec;
 }
-std::string stateToHexString (const State &state) {
+std::string state_to_hex_string (const state &state) {
 	std::string result;
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
@@ -126,72 +124,71 @@ std::string stateToHexString (const State &state) {
 int main () {
 	SetConsoleOutputCP (65001);
 	SetConsoleCP (65001);
-	std::ifstream keyFile ("my-in.txt");
-	if (!keyFile.is_open ()) {
+	std::ifstream key_file ("my-in.txt");
+	if (!key_file.is_open ()) {
 		std::cerr << "无法打开密钥文件!" << std::endl;
 		return 1;
 	}
-	std::string keyStr;
-	keyFile >> keyStr;
-	keyFile.close ();
-	if (keyStr.length () != 64) {
+	std::string key_str;
+	key_file >> key_str;
+	key_file.close ();
+	if (key_str.length () != 64) {
 		std::cerr << "密钥长度错误! AES-256需要64个十六进制字符." << std::endl;
 		return 1;
 	}
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 4; j++) {
-			std::string byteStr = keyStr.substr (i * 8 + j * 2, 2);
-			roundKeys[i].bytes[j] = static_cast<byte> (std::stoul (byteStr, nullptr, 16));
+			std::string byte_str = key_str.substr (i * 8 + j * 2, 2);
+			round_keys[i].bytes[j] = static_cast<byte> (std::stoul (byte_str, nullptr, 16));
 		}
 	}
 	for (int i = 8; i < 60; i++) {
 		if (i % 8 == 0) {
-			Word temp = aes_1::g (roundKeys[i - 1], i / 8 - 1);
-			for (int j = 0; j < 4; j++) { roundKeys[i].bytes[j] = roundKeys[i - 8].bytes[j] ^ temp.bytes[j]; }
+			auto [bytes] = aes_1::g (round_keys[i - 1], i / 8 - 1);
+			for (int j = 0; j < 4; j++) { round_keys[i].bytes[j] = round_keys[i - 8].bytes[j] ^ bytes[j]; }
 		} else if (i % 8 == 4) {
-			Word temp = aes_1::h (roundKeys[i - 1]);
-			for (int j = 0; j < 4; j++) { roundKeys[i].bytes[j] = roundKeys[i - 8].bytes[j] ^ temp.bytes[j]; }
+			word temp = aes_1::h (round_keys[i - 1]);
+			for (int j = 0; j < 4; j++) { round_keys[i].bytes[j] = round_keys[i - 8].bytes[j] ^ temp.bytes[j]; }
 		} else {
-			for (int j = 0; j < 4; j++) { roundKeys[i].bytes[j] = roundKeys[i - 8].bytes[j] ^ roundKeys[i - 1].bytes[j]; }
+			for (int j = 0; j < 4; j++) { round_keys[i].bytes[j] = round_keys[i - 8].bytes[j] ^ round_keys[i - 1].bytes[j]; }
 		}
 	}
 	std::cout << "密钥扩展完成!" << std::endl;
-	std::ifstream plaintextFile ("jm-in.txt");
-	if (!plaintextFile.is_open ()) {
+	std::ifstream plaintext_file ("jm-in.txt");
+	if (!plaintext_file.is_open ()) {
 		std::cerr << "无法打开明文文件!" << std::endl;
 		return 1;
 	}
-	std::string plaintextStr;
-	plaintextFile >> plaintextStr;
-	plaintextFile.close ();
-	if (plaintextStr.length () != 32) {
+	std::string plaintext_str;
+	plaintext_file >> plaintext_str;
+	plaintext_file.close ();
+	if (plaintext_str.length () != 32) {
 		std::cerr << "明文长度错误! 必须是32个十六进制字符." << std::endl;
 		return 1;
 	}
-	State state;
+	state state{};
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
-			std::string byteStr = plaintextStr.substr (col * 8 + row * 2, 2);
-			state.bytes[row][col] = static_cast<byte> (std::stoul (byteStr, nullptr, 16));
+			std::string byte_str = plaintext_str.substr (col * 8 + row * 2, 2);
+			state.bytes[row][col] = static_cast<byte> (std::stoul (byte_str, nullptr, 16));
 		}
 	}
-	aes_2::addRoundKey (state, roundKeys);
+	aes_2::add_round_key (state, round_keys);
 	std::cout << "first round is good to go" << std::endl;
 	for (int round = 1; round <= 13; round++) {
-		aes_2::subBytes (state);
-		aes_2::shiftRows (state);
-		aes_2::mixColumns (state);
-		aes_2::addRoundKey (state, &roundKeys[round * 4]);
+		aes_2::sub_bytes (state);
+		aes_2::shift_rows (state);
+		aes_2::mix_columns (state);
+		aes_2::add_round_key (state, &round_keys[round * 4]);
 		std::cout << round << " round is good to go" << std::endl;
 	}
-	aes_2::subBytes (state);
-	aes_2::shiftRows (state);
-	aes_2::addRoundKey (state, &roundKeys[14 * 4]);
-	std::string ciphertext = aes_2::stateToHexString (state);
-	std::ofstream outFile ("jm-out.txt");
-	if (outFile.is_open ()) {
-		outFile << ciphertext;
-		outFile.close ();
+	aes_2::sub_bytes (state);
+	aes_2::shift_rows (state);
+	aes_2::add_round_key (state, &round_keys[14 * 4]);
+	std::string ciphertext = aes_2::state_to_hex_string (state);
+	if (std::ofstream out_file ("jm-out.txt"); out_file.is_open ()) {
+		out_file << ciphertext;
+		out_file.close ();
 		std::cout << "密文成功写入" << std::endl;
 	} else {
 		std::cerr << "无法打开输出文件!" << std::endl;
