@@ -28,8 +28,7 @@ string processKey (const string &key) {
 	if (processedKey.length () < 32) {
 		uint8_t padValue = 32 - processedKey.length ();
 		processedKey.append (padValue, static_cast<char> (padValue));
-	}
-	else if (processedKey.length () > 32) {
+	} else if (processedKey.length () > 32) {
 		processedKey = processedKey.substr (0, 32);
 	}
 
@@ -48,20 +47,18 @@ int main () {
 	SetConsoleCP (CP_UTF8);
 	setlocale (LC_ALL, "en_US.UTF-8");
 	string key, plaintext;
-	cout << "请输入密钥: ";
+	freopen ("AES256-q.txt", "r", stdin);
+	freopen ("AES256-q1.txt", "w", stdout);
 	getline (cin, key);
-	cout << "请输入要加密的文本: ";
 	getline (cin, plaintext);
 	string processedKey = processKey (key);
 	string hexKey = stringToHex (processedKey);
 	ofstream keyFile ("my-in.txt");
 	if (!keyFile) {
-		cerr << "无法创建密钥文件!" << endl;
 		return 1;
 	}
 	keyFile << hexKey;
 	keyFile.close ();
-	cout << "密钥已写入 my-in.txt" << endl;
 	string paddedText = pkcs7Pad (plaintext, 16);
 	vector<string> blocks;
 	for (size_t i = 0; i < paddedText.length (); i += 16) {
@@ -72,19 +69,16 @@ int main () {
 	for (size_t i = 0; i < blocks.size (); i++) {
 		ofstream plaintextFile ("jm-in.txt");
 		if (!plaintextFile) {
-			cerr << "无法创建明文文件!" << endl;
 			return 1;
 		}
 		plaintextFile << blocks[i];
 		plaintextFile.close ();
 		int result = system ("AES256.exe");
 		if (result != 0) {
-			cerr << "AES256.exe执行失败!" << endl;
 			return 1;
 		}
 		ifstream ciphertextFile ("jm-out.txt");
 		if (!ciphertextFile) {
-			cerr << "无法读取密文文件!" << endl;
 			return 1;
 		}
 		string hexCiphertext;
@@ -92,6 +86,6 @@ int main () {
 		ciphertextFile.close ();
 		ciphertext += hexCiphertext;
 	}
-	cout << "加密完成! 密文: " << ciphertext << endl;
+	cout << ciphertext << endl;
 	return 0;
 }

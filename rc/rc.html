@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .welcome-section {
+            flex: 1;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .welcome-section h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .welcome-section p {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .login-section {
+            flex: 1;
+            padding: 50px 40px;
+        }
+
+        .login-section h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
+            outline: none;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+        }
+
+        .forgot-password {
+            color: #6a11cb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+        }
+
+        .signup-link a {
+            color: #6a11cb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: #2ecc71;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .welcome-section {
+                padding: 30px 25px;
+            }
+
+            .login-section {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="welcome-section">
+            <h1>欢迎回来</h1>
+            <p>登录您的账户，探索我们平台的所有功能。我们很高兴再次见到您！</p>
+        </div>
+
+        <div class="login-section">
+            <h2>用户登录</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">用户名或邮箱</label>
+                    <input type="text" id="username" placeholder="请输入用户名或邮箱">
+                    <div class="error-message" id="usernameError">请输入有效的用户名或邮箱</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码">
+                    <div class="error-message" id="passwordError">密码长度至少为6个字符</div>
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember">
+                        <label for="remember">记住我</label>
+                    </div>
+                    <a href="#" class="forgot-password">忘记密码？</a>
+                </div>
+
+                <button type="submit" class="login-btn">登录</button>
+
+                <div class="success-message" id="successMessage">登录成功！正在跳转...</div>
+            </form>
+
+            <div class="signup-link">
+                还没有账户？ <a href="#">立即注册</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // 获取输入值
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            // 重置错误消息
+            document.getElementById('usernameError').style.display = 'none';
+            document.getElementById('passwordError').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+
+            let isValid = true;
+
+            // 验证用户名
+            if (username === '') {
+                document.getElementById('usernameError').textContent = '请输入用户名或邮箱';
+                document.getElementById('usernameError').style.display = 'block';
+                isValid = false;
+            } else if (!isValidEmail(username) && username.length < 3) {
+                document.getElementById('usernameError').textContent = '请输入有效的用户名或邮箱';
+                document.getElementById('usernameError').style.display = 'block';
+                isValid = false;
+            }
+
+            // 验证密码
+            if (password === '') {
+                document.getElementById('passwordError').textContent = '请输入密码';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            } else if (password.length < 6) {
+                document.getElementById('passwordError').textContent = '密码长度至少为6个字符';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            }
+
+            // 如果验证通过
+            if (isValid) {
+                document.getElementById('successMessage').style.display = 'block';
+
+                // 在实际应用中，这里会发送登录请求到服务器
+                console.log('登录信息:', { username, password });
+
+                // 模拟登录成功后的跳转
+                setTimeout(() => {
+                    alert('登录成功！在实际应用中，这里会跳转到用户仪表板。');
+                    // window.location.href = 'dashboard.html'; // 实际跳转代码
+                }, 1500);
+            }
+        });
+
+        // 简单的邮箱验证函数
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // 为输入框添加实时验证
+        document.getElementById('username').addEventListener('input', function () {
+            const username = this.value.trim();
+            if (username !== '' && (isValidEmail(username) || username.length >= 3)) {
+                document.getElementById('usernameError').style.display = 'none';
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function () {
+            const password = this.value;
+            if (password.length >= 6) {
+                document.getElementById('passwordError').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -17,11 +17,11 @@ int main () {
 	int n;
 	cin >> n;
 	for (int i = 1; i <= n; i++) cin >> h[i];
-		int x, y;
-		cin >> x >> y;
-		ez[y].push_back (x);
-		v[x] = 1;
-	}
+	int x, y;
+	cin >> x >> y;
+	ez[y].push_back (x);
+	v[x] = 1;
+
 	int r;
 	for (int i = 1; i <= n; i++)
 		if (!v[i]) {

@@ -1,0 +1,347 @@
+<!--上一次屎山检查：2025年11月11日23:14:26-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录系统</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <div class="bottom-left-text">
+        蜀ICP备2025102051号-2 | AGPL3.0 协议
+    </div>
+    <div class="bottom-right-text">
+        Copyright © 2025 wywhpsmaq
+    </div>
+    <div class="container">
+        <div class="welcome-section">
+            <h1>欢迎回来</h1>
+            <p>登录您的账户，探索我们平台的所有功能。我们很高兴再次见到您！</p>
+        </div>
+        <div class="login-section">
+            <div id="loginFormContainer" class="form-container">
+                <h2>用户登录</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">用户名或邮箱</label>
+                        <input type="text" id="username" placeholder="请输入用户名或邮箱">
+                        <div class="error-message" id="usernameError">请输入有效的用户名或邮箱</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" placeholder="请输入密码">
+                        <div class="error-message" id="passwordError">密码长度至少为6个字符</div>
+                    </div>
+                    <div class="form-group">
+                        <div class="admin-login-option">
+                            <input type="checkbox" id="isAdmin">
+                            <label for="isAdmin">管理员登录</label>
+                        </div>
+                    </div>
+                    <div class="form-group" id="adminPasswordContainer" style="display: none;">
+                        <label for="adminPassword">管理员密码</label>
+                        <input type="password" id="adminPassword" placeholder="请输入管理员密码">
+                        <div class="error-message" id="adminPasswordError">管理员密码不能为空</div>
+                    </div>
+                    <div class="remember-forgot">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember">
+                            <label for="remember">记住我</label>
+                        </div>
+                        <a href="#" class="forgot-password">忘记密码？</a>
+                    </div>
+                    <button type="submit" class="login-btn">登录</button>
+                    <div class="loading" id="loginLoading">
+                        <div class="loading-spinner"></div>
+                        <p>正在处理，请稍候...</p>
+                    </div>
+                    <div class="success-message" id="loginSuccessMessage">登录成功！</div>
+                    <div class="failure-message" id="loginFailureMessage">登录失败！</div>
+                </form>
+                <div class="signup-link">
+                    还没有账户？ <a href="#" id="showRegister">立即注册</a>
+                </div>
+            </div>
+            <div id="registerFormContainer" class="form-container hidden">
+                <h2>用户注册</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="regUsername">用户名</label>
+                        <input type="text" id="regUsername" placeholder="请输入用户名">
+                        <div class="error-message" id="regUsernameError">请输入有效的用户名</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="regPassword">密码</label>
+                        <input type="password" id="regPassword" placeholder="请输入密码">
+                        <div class="error-message" id="regPasswordError">密码长度至少为6个字符</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="regConfirmPassword">确认密码</label>
+                        <input type="password" id="regConfirmPassword" placeholder="请再次输入密码">
+                        <div class="error-message" id="regConfirmPasswordError">两次输入的密码不一致</div>
+                    </div>
+                    <button type="submit" class="register-btn">注册</button>
+                    <div class="loading" id="registerLoading">
+                        <div class="loading-spinner"></div>
+                        <p>正在处理，请稍候...</p>
+                    </div>
+                    <div class="success-message" id="registerSuccessMessage">注册成功！</div>
+                    <div class="failure-message" id="registerFailureMessage">注册失败！</div>
+                </form>
+                <div class="login-link">
+                    已有账户？ <a href="#" id="showLogin">立即登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('showRegister').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('loginFormContainer').classList.add('hidden');
+            document.getElementById('registerFormContainer').classList.remove('hidden');
+        });
+        document.getElementById('showLogin').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('registerFormContainer').classList.add('hidden');
+            document.getElementById('loginFormContainer').classList.remove('hidden');
+        });
+        document.querySelector('.forgot-password').addEventListener('click', function (e) {
+            e.preventDefault();
+            alert('请联系管理员修改！');
+        });
+        document.getElementById('isAdmin').addEventListener('change', function () {
+            const adminPasswordContainer = document.getElementById('adminPasswordContainer');
+            if (this.checked) {
+                adminPasswordContainer.style.display = 'block';
+            } else {
+                adminPasswordContainer.style.display = 'none';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPasswordError').style.display = 'none';
+            }
+        });
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const isAdmin = document.getElementById('isAdmin').checked;
+            const adminPassword = document.getElementById('adminPassword').value;
+            document.getElementById('usernameError').style.display = 'none';
+            document.getElementById('passwordError').style.display = 'none';
+            document.getElementById('adminPasswordError').style.display = 'none';
+            document.getElementById('loginSuccessMessage').style.display = 'none';
+            document.getElementById('loginFailureMessage').style.display = 'none';
+            document.getElementById('loginLoading').style.display = 'none';
+            let isValid = true;
+            if (username === '') {
+                document.getElementById('usernameError').textContent = '请输入用户名或邮箱';
+                document.getElementById('usernameError').style.display = 'block';
+                isValid = false;
+            } else if (!isValidEmail(username) && username.length < 3) {
+                document.getElementById('usernameError').textContent = '请输入有效的用户名或邮箱';
+                document.getElementById('usernameError').style.display = 'block';
+                isValid = false;
+            }
+            if (password === '') {
+                document.getElementById('passwordError').textContent = '请输入密码';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            } else if (password.length < 6) {
+                document.getElementById('passwordError').textContent = '密码长度至少为6个字符';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            }
+            if (isAdmin) {
+                if (adminPassword === '') {
+                    document.getElementById('adminPasswordError').textContent = '请输入管理员密码';
+                    document.getElementById('adminPasswordError').style.display = 'block';
+                    isValid = false;
+                } else if (adminPassword.length < 6) {
+                    document.getElementById('adminPasswordError').textContent = '管理员密码长度至少为6个字符';
+                    document.getElementById('adminPasswordError').style.display = 'block';
+                    isValid = false;
+                }
+            }
+            if (isValid) {
+                document.getElementById('loginLoading').style.display = 'block';
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username,
+                            password,
+                            isAdmin,
+                            adminPassword: isAdmin ? adminPassword : undefined
+                        }),
+                    });
+                    const result = await response.json();
+                    document.getElementById('loginLoading').style.display = 'none';
+                    if (result.success) {
+                        document.getElementById('loginSuccessMessage').textContent = result.message;
+                        document.getElementById('loginSuccessMessage').style.display = 'block';
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('username', username);
+                        if (result.token) {
+                            localStorage.setItem('token', result.token);
+                        }
+                        if (result.role) {
+                            localStorage.setItem('userRole', result.role);
+                        }
+                        setTimeout(() => {
+                            window.location.href = 'main.html';
+                        }, 1000);
+                    } else {
+                        document.getElementById('loginFailureMessage').textContent = result.message;
+                        document.getElementById('loginFailureMessage').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('loginForm').reset();
+                            document.getElementById('loginFailureMessage').style.display = 'none';
+                        }, 5000);
+                    }
+                } catch (error) {
+                    console.error('登录请求失败:', error);
+                    document.getElementById('loginLoading').style.display = 'none';
+                    document.getElementById('loginFailureMessage').textContent = '网络错误，请重试';
+                    document.getElementById('loginFailureMessage').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('loginForm').reset();
+                        document.getElementById('loginFailureMessage').style.display = 'none';
+                    }, 5000);
+                }
+            }
+        });
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            document.getElementById('regUsernameError').style.display = 'none';
+            document.getElementById('regPasswordError').style.display = 'none';
+            document.getElementById('regConfirmPasswordError').style.display = 'none';
+            document.getElementById('registerSuccessMessage').style.display = 'none';
+            document.getElementById('registerFailureMessage').style.display = 'none';
+            document.getElementById('registerLoading').style.display = 'none';
+            let isValid = true;
+            if (username === '') {
+                document.getElementById('regUsernameError').textContent = '请输入用户名';
+                document.getElementById('regUsernameError').style.display = 'block';
+                isValid = false;
+            } else if (username.length < 3) {
+                document.getElementById('regUsernameError').textContent = '用户名长度至少为3个字符';
+                document.getElementById('regUsernameError').style.display = 'block';
+                isValid = false;
+            }
+            if (password === '') {
+                document.getElementById('regPasswordError').textContent = '请输入密码';
+                document.getElementById('regPasswordError').style.display = 'block';
+                isValid = false;
+            } else if (password.length < 6) {
+                document.getElementById('regPasswordError').textContent = '密码长度至少为6个字符';
+                document.getElementById('regPasswordError').style.display = 'block';
+                isValid = false;
+            }
+            if (confirmPassword === '') {
+                document.getElementById('regConfirmPasswordError').textContent = '请确认密码';
+                document.getElementById('regConfirmPasswordError').style.display = 'block';
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                document.getElementById('regConfirmPasswordError').textContent = '两次输入的密码不一致';
+                document.getElementById('regConfirmPasswordError').style.display = 'block';
+                isValid = false;
+            }
+            if (isValid) {
+                document.getElementById('registerLoading').style.display = 'block';
+                try {
+                    const response = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password, confirmPassword }),
+                    });
+                    const result = await response.json();
+                    document.getElementById('registerLoading').style.display = 'none';
+                    if (result.success) {
+                        document.getElementById('registerSuccessMessage').textContent = result.message;
+                        document.getElementById('registerSuccessMessage').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('registerForm').reset();
+                            document.getElementById('registerSuccessMessage').style.display = 'none';
+                        }, 5000);
+                        setTimeout(() => {
+                            document.getElementById('registerFormContainer').classList.add('hidden');
+                            document.getElementById('loginFormContainer').classList.remove('hidden');
+                        }, 2000);
+                    } else {
+                        document.getElementById('registerFailureMessage').textContent = result.message;
+                        document.getElementById('registerFailureMessage').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('registerForm').reset();
+                            document.getElementById('registerFailureMessage').style.display = 'none';
+                        }, 5000);
+                    }
+                } catch (error) {
+                    console.error('注册请求失败:', error);
+                    document.getElementById('registerLoading').style.display = 'none';
+                    document.getElementById('registerFailureMessage').textContent = '网络错误，请重试';
+                    document.getElementById('registerFailureMessage').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('registerForm').reset();
+                        document.getElementById('registerFailureMessage').style.display = 'none';
+                    }, 5000);
+                }
+            }
+        });
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        document.getElementById('username').addEventListener('input', function () {
+            const username = this.value.trim();
+            if (username !== '' && (isValidEmail(username) || username.length >= 3)) {
+                document.getElementById('usernameError').style.display = 'none';
+            }
+        });
+        document.getElementById('password').addEventListener('input', function () {
+            const password = this.value;
+            if (password.length >= 6) {
+                document.getElementById('passwordError').style.display = 'none';
+            }
+        });
+        document.getElementById('adminPassword').addEventListener('input', function () {
+            const adminPassword = this.value;
+            if (adminPassword.length >= 6) {
+                document.getElementById('adminPasswordError').style.display = 'none';
+            }
+        });
+        document.getElementById('regUsername').addEventListener('input', function () {
+            const username = this.value.trim();
+            if (username !== '' && username.length >= 3) {
+                document.getElementById('regUsernameError').style.display = 'none';
+            }
+        });
+        document.getElementById('regPassword').addEventListener('input', function () {
+            const password = this.value;
+            if (password.length >= 6) {
+                document.getElementById('regPasswordError').style.display = 'none';
+            }
+        });
+        document.getElementById('regConfirmPassword').addEventListener('input', function () {
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = this.value;
+            if (confirmPassword !== '' && password === confirmPassword) {
+                document.getElementById('regConfirmPasswordError').style.display = 'none';
+            }
+        });
+        function updateOffsetMultipliers(x, y, left, right) {
+            document.documentElement.style.setProperty('--offset-multiplier-x', x);
+            document.documentElement.style.setProperty('--offset-multiplier-y', y);
+            document.documentElement.style.setProperty('--offset-multiplier-left', left);
+            document.documentElement.style.setProperty('--offset-multiplier-right', right);
+        }
+    </script>
+</body>
+</html>

@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "41fc19eb96021356",
+        "id": "b8d1930ae369e5b2",
         "type": "tabs",
         "children": [
           {
-            "id": "8a8e5dd4aa5378a1",
+            "id": "629248b8f0690d2e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "总结/2025-08-13比赛中介.md",
-                "mode": "source",
+                "file": "2025-11-01.md",
+                "mode": "preview",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "2025-08-13比赛中介"
+              "title": "2025-11-01"
             }
           }
         ]
@@ -141,13 +141,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "总结/2025-08-13比赛中介.md",
+                "file": "2025-11-01.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "2025-08-13比赛中介 的大纲"
+              "title": "2025-11-01 的大纲"
             }
           }
         ],
@@ -167,8 +167,9 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "8a8e5dd4aa5378a1",
+  "active": "629248b8f0690d2e",
   "lastOpenFiles": [
+    "2025-11-01.md",
     "总结/2025-08-13比赛中介.md",
     "总结/2025-08-10比赛中介.md",
     "比赛.md",
@@ -202,7 +203,6 @@
     "模版",
     "zy/zy-LG.md",
     "2025-05-11.md",
-    "知识点/搜索及其优化技巧.md",
     "zy",
     "题目"
   ]

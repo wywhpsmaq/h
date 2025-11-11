@@ -1,26 +1,33 @@
 #include <bits/stdc++.h>
-#include <windows.h> // 用于设置控制台编码
 using namespace std;
-
 int main () {
-	freopen ("1.txt", "r", stdin);
-	freopen ("2.txt", "w", stdout);
-	SetConsoleOutputCP (65001);
-	SetConsoleCP (65001);
-	int a[114]={};
-	for(int i=0;i<4;i++)
-	{
-		random_device rd;
-		mt19937 gen (rd());
-		uniform_int_distribution<> f(10,15);
-		a[i] = f(gen);
+	ios::sync_with_stdio (false);
+	cin.tie (nullptr);
+	int t;
+	cin >> t;
+	while (t--) {
+		int m;
+		cin >> m;
+		if (m == 1) {
+			cout << "lose!\n";
+			continue;
+		}
+		int l;
+		if (m == 0) {
+			l = 0;
+		} else {
+			long long num = 1 + 8l * m;
+			double sum = sqrt (num);
+			l = ceil ((1 + sum) / 2);
+			while (1l * l * (l - 1) / 2 < m) { l++; }
+			while (1l * (l - 1) * (l - 2) / 2 >= m) { l--; }
+		}
+		int r = 2 * m - 2;
+		if (l > r) {
+			cout << "lose!\n";
+		} else {
+			cout << l << " " << r << "\n";
+		}
 	}
-	string ch[114];
-	cout << "请输入中文：";
-	for (int i = 0; i < 4; i++) { 
-		getline (cin, ch[i]);
-		ch[i]^=a[i];
-	}
-	cout << "你输入的中文是：" << ch[0] << endl;
 	return 0;
 }

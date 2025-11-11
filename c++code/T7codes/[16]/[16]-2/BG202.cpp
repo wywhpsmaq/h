@@ -20,6 +20,7 @@ int main () {
 			dp[i][j] = INT_MAX;
 			dpp[i][j] = INT_MIN;
 			for (int k = i; k < j; k++) {
+
 				dp[i][j] = min (dp[i][j], dp[i][k] + dp[k + 1][j] + sum[j] - sum[i - 1]),
 				dpp[i][j] = max (dpp[i][j], dpp[i][k] + dpp[k + 1][j] + sum[j] - sum[i - 1]);
 			}

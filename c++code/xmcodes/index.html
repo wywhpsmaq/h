@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>验证界面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .datetime-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 40px 0;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: #ffeb3b;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 400px;
+        }
+
+        .button-container {
+            margin-top: 40px;
+        }
+
+        .action-button {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .action-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .datetime-display {
+                font-size: 1.8rem;
+                min-width: 300px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .datetime-display {
+                font-size: 1.5rem;
+                min-width: 250px;
+            }
+
+            .action-button {
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>验证界面</h1>
+        <div id="datetime" class="datetime-display">正在加载...</div>
+        <div class="button-container">
+            <button class="action-button" id="redirectButton">跳转到目标页面</button>
+        </div>
+        <div class="info-box">
+            <p>请仔细核对管理员告诉您的验证代码，若没有问题，请点击上方按钮将跳转到kh页面</p>
+            <p>如果跳转失败或代码有问题，您可能需要联系管理员。</p>
+        </div>
+        <div class="footer">
+            <p>© 2025 验证界面设计 | wywhpsmaq设计并编写</p>
+        </div>
+    </div>
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const dateTimeString = `${year}-${month}-${day} - ${hours}:${minutes}:${seconds}`;
+            document.getElementById('datetime').textContent = dateTimeString;
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        document.getElementById('redirectButton').addEventListener('click', function () {
+            window.location.href = 'https://emilie-overcherished-unadroitly.ngrok-free.dev';
+        });
+    </script>
+</body>
+
+</html>

@@ -111,7 +111,9 @@
         "version": "cpp",
         "strstream": "cpp",
         "flat_map": "cpp",
-        "flat_set": "cpp"
+        "flat_set": "cpp",
+        "execution": "cpp",
+        "*.rh": "cpp"
     },
     "cSpell.words": [
         "aans",
