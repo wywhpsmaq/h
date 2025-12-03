@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公共对话室 - 48小时消息保留</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🌐 公共对话室</h1>
+            <p>所有人均可发言 • 消息保留48小时</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="system-message">正在加载消息...</div>
+            </div>
+
+            <div class="input-area">
+                <div class="user-info">
+                    <input type="text" id="username" placeholder="你的名字 (可选)" maxlength="20">
+                </div>
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="输入消息..." maxlength="500">
+                    <button id="sendButton">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>当前在线: <span id="onlineCount">0</span> 人</p>
+        </footer>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

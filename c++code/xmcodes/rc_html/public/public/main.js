@@ -239,17 +239,39 @@ async function saveDataToFile() {
 
 // 搜索数据
 async function searchData() {
-    const keyword = document.getElementById('searchInput').value.trim();
-    if (!keyword) {
-        loadData();
-        return;
-    }
-
+    const searchParams = new URLSearchParams();
+    
+    // 获取所有搜索框的值
+    const id = document.getElementById('searchId').value.trim();
+    const name = document.getElementById('searchName').value.trim();
+    const gender = document.getElementById('searchGender').value.trim();
+    const idCard = document.getElementById('searchIdCard').value.trim();
+    const birth = document.getElementById('searchBirth').value.trim();
+    const location = document.getElementById('searchLocation').value.trim();
+    const age = document.getElementById('searchAge').value.trim();
+    
+    // 调试日志：记录搜索参数
+    console.log('搜索参数收集:', {
+        id, name, gender, idCard, birth, location, age
+    });
+    
+    // 只有当输入框有值时才添加到搜索参数中
+    if (id) searchParams.append('id', id);
+    if (name) searchParams.append('name', name);
+    if (gender) searchParams.append('gender', gender);
+    if (idCard) searchParams.append('idCard', idCard);
+    if (birth) searchParams.append('birth', birth);
+    if (location) searchParams.append('location', location);
+    if (age) searchParams.append('age', age);
+    
+    // 调试日志：记录最终发送的查询字符串
+    console.log('发送的查询字符串:', searchParams.toString());
+    
     try {
         showLoading();
         currentPage = 1; // 搜索时重置到第一页
 
-        const response = await fetch(`/api/data?search=${encodeURIComponent(keyword)}`, {
+        const response = await fetch(`/api/data?${searchParams.toString()}`, {
             headers: {
                 'Authorization': 'Bearer ' + localStorage.getItem('token')
             }
@@ -275,7 +297,13 @@ async function searchData() {
 
 // 清除搜索
 function clearSearch() {
-    document.getElementById('searchInput').value = '';
+    document.getElementById('searchId').value = '';
+    document.getElementById('searchName').value = '';
+    document.getElementById('searchGender').value = '';
+    document.getElementById('searchIdCard').value = '';
+    document.getElementById('searchBirth').value = '';
+    document.getElementById('searchLocation').value = '';
+    document.getElementById('searchAge').value = '';
     loadData();
 }
 

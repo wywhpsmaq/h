@@ -1,30 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>信息管理系统</title>
     <link rel="stylesheet" href="style2.css">
 </head>
-
 <body>
     <script>
-        // 检查登录状态
         document.addEventListener('DOMContentLoaded', function () {
-            // 首先检查是否有token
             const token = localStorage.getItem('token');
             if (!token) {
                 alert('请先登录');
                 window.location.href = 'index.html';
                 return;
             }
-
-            // 使用token验证用户状态
             validateUserSession();
         });
-
-        // 验证用户会话
         async function validateUserSession() {
             try {
                 const response = await fetch('/api/check-auth', {
@@ -32,60 +24,36 @@
                         'Authorization': 'Bearer ' + localStorage.getItem('token')
                     }
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
-                    // 验证成功，初始化页面
                     initPage(result);
                 } else {
-                    // 验证失败，跳转到登录页
                     logout();
                 }
             } catch (error) {
                 console.error('验证会话失败:', error);
-                // 网络错误也跳转到登录页
                 logout();
             }
         }
-
-        // 初始化页面
         function initPage(userInfo) {
-            // 显示当前用户信息
             const username = userInfo.username || localStorage.getItem('username') || '用户';
             const userRole = userInfo.userRole || localStorage.getItem('userRole') || 'user';
-
-            // 保存用户信息到localStorage
             localStorage.setItem('username', username);
             localStorage.setItem('userRole', userRole);
-
             document.getElementById('currentUser').textContent = `欢迎，${username}${userRole === 'admin' ? ' (管理员)' : ''}`;
-
-            // 初始化管理员功能（如果是管理员）
             if (userRole === 'admin') {
                 initAdminFeatures();
             }
-
-            // 加载初始数据
             loadData();
         }
-
-        // 初始化管理员功能
         function initAdminFeatures() {
             try {
-                // 显示管理员特有的导航项
                 const adminSection = document.getElementById('admin-section');
                 if (adminSection) adminSection.style.display = 'block';
-
-                // 显示用户管理导航项
                 const userManagement = document.getElementById('user-management');
                 if (userManagement) userManagement.style.display = 'block';
-
-                // 显示系统设置中的管理员选项
                 const adminSettings = document.getElementById('admin-settings');
                 if (adminSettings) adminSettings.style.display = 'block';
-
-                // 显示数据管理中的高级操作按钮
                 const advancedActions = document.getElementById('advanced-actions');
                 if (advancedActions) advancedActions.style.display = 'block';
 
@@ -93,8 +61,6 @@
                 console.error('初始化管理员功能时出错:', error);
             }
         }
-
-        // 退出登录
         function logout() {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('username');
@@ -102,60 +68,40 @@
             localStorage.removeItem('userRole');
             window.location.href = 'index.html';
         }
-
-        // 显示指定的内容区域
         function showSection(sectionId) {
-            // 隐藏所有内容区域
             const sections = document.querySelectorAll('.section');
             sections.forEach(section => {
                 section.style.display = 'none';
             });
-
-            // 显示选中的内容区域
             document.getElementById(sectionId).style.display = 'block';
-
-            // 更新导航项的激活状态
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
                 item.classList.remove('active');
             });
-
-            // 为对应的导航项添加激活状态
             const activeNavItem = document.querySelector(`.nav-item[onclick="showSection('${sectionId}')"]`);
             if (activeNavItem) {
                 activeNavItem.classList.add('active');
             }
         }
-
-        // 关闭模态框
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.style.display = 'none';
             }
         }
-
-        // 显示添加数据模态框
         function showAddModal() {
             document.getElementById('modalTitle').textContent = '添加数据';
             document.getElementById('dataForm').reset();
             document.getElementById('dataModal').style.display = 'block';
         }
-
-        // 显示修改密码模态框
         function showChangePasswordModal() {
             document.getElementById('passwordForm').reset();
             document.getElementById('passwordModal').style.display = 'block';
         }
-
-        // 显示公告
         function showNotice() {
             document.getElementById('noticeModal').style.display = 'block';
-            // 这里可以加载公告内容
             loadNoticeContent();
         }
-
-        // 加载公告内容
         async function loadNoticeContent() {
             try {
                 const response = await fetch('/api/notice', {
@@ -163,9 +109,7 @@
                         'Authorization': 'Bearer ' + localStorage.getItem('token')
                     }
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
                     document.getElementById('noticeContent').textContent = result.data;
                 } else {
@@ -177,7 +121,6 @@
             }
         }
     </script>
-
     <div class="main-container">
         <div class="header">
             <h1>信息管理系统</h1>
@@ -188,7 +131,6 @@
         </div>
 
         <div class="content">
-            <!-- 侧边栏 -->
             <div class="sidebar">
                 <div class="nav-item active" onclick="showSection('data-management')">
                     📊 数据管理
@@ -210,21 +152,20 @@
                     👥 用户管理
                 </div>
             </div>
-
-            <!-- 主内容区 -->
             <div class="main-content">
-                <!-- 数据管理部分 -->
                 <div id="data-management" class="section">
                     <h2>数据管理</h2>
-
-                    <!-- 搜索栏 -->
                     <div class="search-bar">
-                        <input type="text" class="search-input" id="searchInput" placeholder="搜索姓名、身份证号或地点...">
+                        <input type="text" class="search-input" id="searchId" placeholder="序号">
+                        <input type="text" class="search-input" id="searchName" placeholder="姓名">
+                        <input type="text" class="search-input" id="searchGender" placeholder="性别">
+                        <input type="text" class="search-input" id="searchIdCard" placeholder="身份证号">
+                        <input type="text" class="search-input" id="searchBirth" placeholder="出生日期">
+                        <input type="text" class="search-input" id="searchLocation" placeholder="地点">
+                        <input type="text" class="search-input" id="searchAge" placeholder="年龄">
                         <button class="btn btn-primary" onclick="searchData()">搜索</button>
                         <button class="btn btn-secondary" onclick="clearSearch()">清除</button>
                     </div>
-
-                    <!-- 操作按钮 -->
                     <div class="action-buttons">
                         <button class="btn btn-success" onclick="showAddModal()">添加数据</button>
                         <button class="btn btn-primary" onclick="importData()">导入数据</button>
@@ -233,19 +174,15 @@
                         <button class="btn btn-success" onclick="saveDataToFile()">保存数据</button>
                         <button class="btn btn-danger" onclick="deleteSelected()">删除选中</button>
                     </div>
-
-                    <!-- 管理员特有操作按钮 -->
                     <div class="action-buttons" id="advanced-actions" style="display: none;">
                         <button class="btn btn-warning" onclick="batchProcess()">批量处理</button>
                         <button class="btn btn-info" onclick="backupData()">备份数据</button>
                     </div>
-
-                    <!-- 数据表格 -->
                     <div class="table-container">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th><output type="checkbox" id="selectAll"></th>
                                     <th>序号</th>
                                     <th>姓名</th>
                                     <th>性别</th>
@@ -257,31 +194,23 @@
                                 </tr>
                             </thead>
                             <tbody id="dataTableBody">
-                                <!-- 数据将通过JavaScript动态加载 -->
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- 分页 -->
                     <div class="pagination">
                         <button class="btn btn-secondary" onclick="previousPage()">上一页</button>
                         <span id="pageInfo">第 1 页，共 1 页</span>
                         <button class="btn btn-secondary" onclick="nextPage()">下一页</button>
                     </div>
                 </div>
-
-                <!-- 数据分析部分 -->
                 <div id="data-analysis" class="section" style="display: none;">
                     <h2>数据分析</h2>
                     <div class="action-buttons">
                         <button class="btn btn-primary" onclick="loadAnalysis()">刷新分析</button>
                     </div>
                     <div id="analysisContent">
-                        <!-- 分析内容将通过JavaScript动态加载 -->
                     </div>
                 </div>
-
-                <!-- 系统设置部分 -->
                 <div id="system-settings" class="section" style="display: none;">
                     <h2>系统设置</h2>
                     <div class="form-grid">
@@ -293,7 +222,6 @@
                             <h3>数据维护</h3>
                             <button class="btn btn-secondary" onclick="cleanData()">整理数据</button>
                         </div>
-                        <!-- 管理员特有设置 -->
                         <div id="admin-settings" style="display: none;">
                             <h3>管理员设置</h3>
                             <button class="btn btn-warning" onclick="resetSystem()">重置系统</button>
@@ -301,8 +229,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 管理员面板 -->
                 <div id="admin-panel" class="section" style="display: none;">
                     <h2>管理员面板</h2>
                     <div class="form-grid">
@@ -326,8 +252,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 添加/编辑数据模态框 -->
     <div id="dataModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">添加数据</h3>
@@ -372,20 +296,16 @@
             </form>
         </div>
     </div>
-
-    <!-- 公告模态框 -->
     <div id="noticeModal" class="modal">
         <div class="modal-content">
             <h3>系统公告</h3>
             <div id="noticeContent">
-                <!-- 公告内容 -->
             </div>
             <div class="action-buttons" style="margin-top: 20px;">
                 <button class="btn btn-secondary" onclick="closeModal('noticeModal')">关闭</button>
             </div>
         </div>
     </div>
-    <!-- 修改密码模态框 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
             <h3>修改密码</h3>

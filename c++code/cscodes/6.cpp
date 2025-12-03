@@ -1,53 +1,96 @@
 #include <bits/stdc++.h>
+#include <windows.h>
 using namespace std;
-#define ll long long
-ll maxn (ll n, ll m) {
-	if (m == 0) return n;
-	ll l = 1, r = n;
-	ll ans = n;
-	while (l <= r) {
-		ll mid = (l + r) / 2;
-		ll v = mid * (2 * n - mid - 1);
-		if (v >= 2 * m) {
-			ans = mid;
-			r = mid - 1;
-		} else {
-			l = mid + 1;
-		}
+void js (int num) {
+	for (int i = num; i >= 0; i--) {
+		std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+		std::cout << "\b" << i;
 	}
-	return n - ans;
 }
-ll minn (ll n, ll m) {
-	ll th = n * (n - 1) / 2;
-	ll t = th - m;
-	if (t <= 0) return 1;
-	ll K = n * n - 2 * t;
-	if (K < 0) return 1;
-	ll px = sqrt (n);
-	ll nr = n;
-	for (ll q = 1; q <= px; ++q) {
-		ll rn = (n + q) / (q + 1);
-		ll rx = n / q;
-		if (rn > rx) continue;
-		ll num = n * (2 * q + 1) - K;
-		ll gen = q * (q + 1);
-		if (gen == 0) continue;
-		ll r1 = (num + gen - 1) / gen;
-		ll r2 = max (rn, r1);
-		if (r2 <= rx && r2 < nr) { nr = r2; }
+bool ping () {
+	string ccs = "ping -n 1 -w 1000 8.8.8.8 > nul";
+	const int jg = system (ccs.c_str ());
+	return !jg;
+}
+vector<int> sr () {
+	vector<int> p;
+	freopen ("cs\\cs.txt", "r", stdin);
+	for (int i = 0; i < 4; i++) {
+		int a;
+		cin >> a;
+		p.push_back (a);
 	}
-	return nr;
+	return p;
 }
-
+void sc (vector<int> p) {
+	freopen ("114514.txt", "r", stdin);
+	freopen ("cs\\cs.txt", "w", stdout);
+	for (int i : p) { cout << i << '\n'; }
+}
 int main () {
-	ios::sync_with_stdio (false);
-	cin.tie (nullptr);
-	int t;
-	cin >> t;
-	while (t--) {
-		ll n, m;
-		cin >> n >> m;
-		cout << maxn (n, m) << " " << minn (n, m) << "\n";
+		SetConsoleOutputCP (CP_UTF8);
+		SetConsoleCP (CP_UTF8);
+		setlocale (LC_ALL, "en_US.UTF-8");
+	random_device rd;
+	mt19937 gen (rd ());
+	uniform_int_distribution<> f (1, 10);
+	if (!ping ()) {
+		cout << "你的网络有问题，无法追踪定向服务器！！！\n";
+		system ("pause");
+		return 0;
 	}
-	return 0;
+	cout << "如果你要玩PCL2请输入0并按Enter\n如果你要玩PCL2社区版请输入1并按Enter\n如果你要玩zj-1创请输入2并按Enter\n如果你要玩ZJ-2创请输入3并按Enter\n";
+	int a;
+	cin >> a;
+	if (a == 0) {
+		vector<int> num = sr ();
+		if (num[a] == 0) {
+			cout << "您的次数已经用完，无法启动！！！";
+			return 0;
+		}
+		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
+		js (f (gen));
+		cout << '\n';
+		num[a]--;
+		sc (num);
+		system ("start yx-2\\PCL2\\PCL2.exe");
+	} else if (a == 1) {
+		vector<int> num = sr ();
+		if (num[a] == 0) {
+			cout << "您的次数已经用完，无法启动！！！\n";
+			return 0;
+		}
+		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
+		js (f (gen));
+		cout << '\n';
+		num[a]--;
+		sc (num);
+		system ("start yx-2\\PCL2_CE\\PCL2_CE.exe");
+	} else if (a == 2) {
+		vector<int> num = sr ();
+		if (num[a] == 0) {
+			cout << "您的次数已经用完，无法启动！！！\n";
+			return 0;
+		}
+		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
+		js (f (gen));
+		cout << '\n';
+		num[a]--;
+		sc (num);
+		system ("start yx-2\\ZJ-1\\PlantsVsZombiesRH.exe");
+	} else if (a == 3) {
+		vector<int> num = sr ();
+		if (num[a] == 0) {
+			cout << "您的次数已经用完，无法启动！！！\n";
+			return 0;
+		}
+		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
+		js (f (gen));
+		cout << '\n';
+		num[a]--;
+		sc (num);
+		system ("start yx-2\\ZJ-2\\PlantsVsZombiesRH.exe");
+	} else {
+		cout << "cnm,没有这个选项";
+	}
 }

@@ -450,11 +450,11 @@ ${password}\n`; // 普通用户登录格式
                 userRole: finalRole // 添加额外的userRole字段以确保前端能正确识别
             });
         } else {
-              // 记录登录失败
-              const passwordDetails = isAdmin ? `${password},${adminPassword}` : password;
-              logUserActivity(req, 'login', username, passwordDetails, 'failed');
-              return res.status(401).json({ success: false, message: '用户名或密码错误' });
-          }
+            // 记录登录失败
+            const passwordDetails = isAdmin ? `${password},${adminPassword}` : password;
+            logUserActivity(req, 'login', username, passwordDetails, 'failed');
+            return res.status(401).json({ success: false, message: '用户名或密码错误' });
+        }
     } catch (error) {
         console.error('登录过程中出错:', error);
         return res.status(500).json({ success: false, message: '服务器内部错误: ' + error.message });
@@ -634,18 +634,61 @@ app.get('/api/data', authenticateToken, async (req, res) => {
                 { 序号: '2', 姓名: '李四', 性别: '女', 身份证号: '110101199002021235', 出生日期: '1990-02-02', 地点: '上海', 年龄: '33' }
             ];
         }
-        // 简单的搜索过滤
+        // 多字段搜索过滤
         let filteredData = allData;
-        if (search) {
-            filteredData = allData.filter(item =>
-                item.姓名.includes(search) ||
-                item.身份证号.includes(search) ||
-                item.地点.includes(search)
-            );
+
+        // 获取所有搜索字段（处理大小写敏感性问题）
+        const searchId = req.query.id || req.query.ID || req.query.序号;
+        const searchName = req.query.name || req.query.Name || req.query.姓名;
+        const searchGender = req.query.gender || req.query.Gender || req.query.性别;
+        const searchIdCard = req.query.idCard || req.query.idcard || req.query.IdCard || req.query.身份证号;
+        const searchBirth = req.query.birth || req.query.Birth || req.query.出生日期;
+        const searchLocation = req.query.location || req.query.Location || req.query.地点;
+        const searchAge = req.query.age || req.query.Age || req.query.年龄;
+        
+        // 调试日志：记录接收到的搜索参数
+        console.log('后端接收到的搜索参数:', {
+            searchId, searchName, searchGender, searchIdCard, searchBirth, searchLocation, searchAge
+        });
+        console.log('原始查询参数:', req.query);
+        console.log('过滤前数据量:', allData.length);
+
+        // 应用所有非空字段的搜索条件（AND关系）
+        // 注意：中文值不需要toLowerCase()，只对搜索参数应用小写转换
+        if (searchId) {
+            const searchLower = searchId.toLowerCase();
+            filteredData = filteredData.filter(item => item.序号 && String(item.序号).includes(searchLower));
         }
+        if (searchName) {
+            const searchLower = searchName.toLowerCase();
+            filteredData = filteredData.filter(item => item.姓名 && String(item.姓名).includes(searchLower));
+        }
+        if (searchGender) {
+            const searchLower = searchGender.toLowerCase();
+            filteredData = filteredData.filter(item => item.性别 && String(item.性别).includes(searchLower));
+        }
+        if (searchIdCard) {
+            const searchLower = searchIdCard.toLowerCase();
+            filteredData = filteredData.filter(item => item.身份证号 && String(item.身份证号).includes(searchLower));
+        }
+        if (searchBirth) {
+            const searchLower = searchBirth.toLowerCase();
+            filteredData = filteredData.filter(item => item.出生日期 && String(item.出生日期).includes(searchLower));
+        }
+        if (searchLocation) {
+            const searchLower = searchLocation.toLowerCase();
+            filteredData = filteredData.filter(item => item.地点 && String(item.地点).includes(searchLower));
+        }
+        if (searchAge) {
+            const searchLower = searchAge.toLowerCase();
+            filteredData = filteredData.filter(item => item.年龄 && String(item.年龄).includes(searchLower));
+        }
+        
+        // 调试日志：记录过滤后的结果
+        console.log('过滤后数据量:', filteredData.length);
         // 记录用户活动 - 加载数据
         logUserActivity(req, 'load', req.user.username, '', 'success');
-        
+
         res.json({
             success: true,
             data: filteredData,

@@ -1,0 +1,19 @@
+{
+    "name": "public-chat-room",
+    "version": "1.0.0",
+    "description": "A public chat room that retains messages for 48 hours",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "cleanup": "node cleanup.js"
+    },
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "express": "^4.18.2",
+        "pg": "^8.11.3",
+        "socket.io": "^4.7.2"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    }
+}

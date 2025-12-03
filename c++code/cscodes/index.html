@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天对话页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #128C7E;
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .date-divider span {
+            background-color: #f0f2f5;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .sent {
+            align-self: flex-end;
+            background-color: #dcf8c6;
+            border-bottom-right-radius: 5px;
+        }
+
+        .received {
+            align-self: flex-start;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 24px;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .send-button {
+            background-color: #128C7E;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: #0a6b5f;
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .info-text {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        /* 滚动条样式 */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        @media (max-width: 600px) {
+            .chat-container {
+                height: 90vh;
+                border-radius: 0;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            聊天对话
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- 消息将在这里动态添加 -->
+        </div>
+        <div class="chat-input">
+            <input type="text" class="message-input" id="messageInput" placeholder="输入消息..." maxlength="500">
+            <button class="send-button" id="sendButton">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white" />
+                </svg>
+            </button>
+        </div>
+        <div class="info-text">最多显示最近5天的对话记录</div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // 初始化消息数据（模拟5天的数据）
+        let messages = [
+            // {
+            //     date: getFormattedDate(0),
+            //     text: "你好！最近怎么样？",
+            //     time: "09:15",
+            //     type: "received"
+            // },
+            // {
+            //     date: getFormattedDate(0),
+            //     text: "我很好，谢谢！你呢？",
+            //     time: "09:16",
+            //     type: "sent"
+            // },
+            // {
+            //     date: getFormattedDate(0),
+            //     text: "我也很好。最近有什么新消息吗？",
+            //     time: "09:20",
+            //     type: "received"
+            // },
+            // {
+            //     date: getFormattedDate(1),
+            //     text: "昨天我们讨论的那个项目怎么样了？",
+            //     time: "10:05",
+            //     type: "sent"
+            // },
+            // {
+            //     date: getFormattedDate(1),
+            //     text: "还在进行中，预计下周可以完成。",
+            //     time: "10:10",
+            //     type: "received"
+            // },
+            // {
+            //     date: getFormattedDate(2),
+            //     text: "记得明天下午2点开会。",
+            //     time: "16:30",
+            //     type: "received"
+            // },
+            // {
+            //     date: getFormattedDate(2),
+            //     text: "好的，我会准时参加。",
+            //     time: "16:32",
+            //     type: "sent"
+            // },
+            // {
+            //     date: getFormattedDate(3),
+            //     text: "这个周末有什么计划吗？",
+            //     time: "19:45",
+            //     type: "sent"
+            // },
+            // {
+            //     date: getFormattedDate(4),
+            //     text: "还没有确定，你有什么建议？",
+            //     time: "08:20",
+            //     type: "received"
+            // }
+        ];
+
+        // 初始化显示消息
+        renderMessages();
+
+        // 发送消息功能
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (messageText === '') return;
+
+            // 获取当前时间
+            const now = new Date();
+            const currentDate = getFormattedDate(0);
+            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            // 添加新消息
+            messages.push({
+                date: currentDate,
+                text: messageText,
+                time: currentTime,
+                type: "sent"
+            });
+
+            // 清空输入框
+            messageInput.value = '';
+
+            // 重新渲染消息
+            renderMessages();
+
+            // 自动滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 模拟回复（可选）
+            // setTimeout(() => {
+            //     const replyTime = new Date();
+            //     const replyTimeStr = `${replyTime.getHours().toString().padStart(2, '0')}:${(replyTime.getMinutes() + 1).toString().padStart(2, '0')}`;
+
+            //     messages.push({
+            //         date: currentDate,
+            //         text: "收到你的消息了，稍后回复。",
+            //         time: replyTimeStr,
+            //         type: "received"
+            //     });
+
+            //     renderMessages();
+            //     chatMessages.scrollTop = chatMessages.scrollHeight;
+            // }, 1000);
+        }
+
+        function renderMessages() {
+            // 清空消息容器
+            chatMessages.innerHTML = '';
+
+            // 获取最近5天的日期
+            const recentDates = [];
+            for (let i = 0; i < 5; i++) {
+                recentDates.push(getFormattedDate(i));
+            }
+
+            // 过滤出最近5天的消息
+            const recentMessages = messages.filter(msg => recentDates.includes(msg.date));
+
+            // 按日期分组
+            const groupedMessages = {};
+            recentMessages.forEach(msg => {
+                if (!groupedMessages[msg.date]) {
+                    groupedMessages[msg.date] = [];
+                }
+                groupedMessages[msg.date].push(msg);
+            });
+
+            // 渲染消息（按日期倒序排列，最新的在前面）
+            Object.keys(groupedMessages).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+                // 添加日期分隔符
+                const dateDivider = document.createElement('div');
+                dateDivider.className = 'date-divider';
+
+                const today = new Date();
+                const messageDate = new Date(date);
+                let dateText = formatDateDisplay(date, today);
+
+                dateDivider.innerHTML = `<span>${dateText}</span>`;
+                chatMessages.appendChild(dateDivider);
+
+                // 添加当天的消息
+                groupedMessages[date].forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `message ${msg.type}`;
+                    messageElement.innerHTML = `
+                        <div class="message-text">${msg.text}</div>
+                        <div class="message-time">${msg.time}</div>
+                    `;
+                    chatMessages.appendChild(messageElement);
+                });
+            });
+
+            // 如果没有消息，显示提示
+            if (recentMessages.length === 0) {
+                const noMessages = document.createElement('div');
+                noMessages.className = 'info-text';
+                noMessages.style.padding = '20px';
+                noMessages.textContent = '最近5天内没有对话记录';
+                chatMessages.appendChild(noMessages);
+            }
+        }
+
+        // 获取格式化日期（0=今天，1=昨天，2=前天，以此类推）
+        function getFormattedDate(daysAgo) {
+            const date = new Date();
+            date.setDate(date.getDate() - daysAgo);
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        }
+
+        // 格式化日期显示
+        function formatDateDisplay(dateString, today) {
+            const date = new Date(dateString);
+            const diffTime = Math.abs(today - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                return "今天";
+            } else if (diffDays === 2) {
+                return "昨天";
+            } else if (diffDays === 3) {
+                return "前天";
+            } else {
+                return `${date.getMonth() + 1}月${date.getDate()}日`;
+            }
+        }
+    </script>
+</body>
+
+</html>

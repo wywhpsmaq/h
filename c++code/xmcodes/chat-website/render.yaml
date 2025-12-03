@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: public-chat-room
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chat-database
+          property: connectionString
+
+  - type: psql
+    name: chat-database
+    plan: free
+    ipAllowList: []  # 允许所有IP访问
+
+  - type: cron
+    name: message-cleanup
+    schedule: "0 */6 * * *"  # 每6小时执行一次
+    buildCommand: npm install
+    runCommand: npm run cleanup
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chat-database
+          property: connectionString

@@ -9,20 +9,15 @@
 #include <string>
 #include <vector>
 #include <windows.h>
-
 #define byte uint8_t
 using namespace std;
-
-// AES-256 核心实现
 struct Word {
 	byte bytes[4];
 };
-
 struct State {
 	byte bytes[4][4];
 };
-
-Word roundKeys[60]; // 60 words for AES-256 (15 round keys)
+Word roundKeys[60];
 const byte rcon[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 const byte sbox[256] = {
 	// 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
@@ -43,7 +38,6 @@ const byte sbox[256] = {
 	0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF, // E
 	0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16	// F
 };
-
 namespace aes_1 {
 Word g (Word input, int roundIndex) {
 	Word result = input;
@@ -56,44 +50,37 @@ Word g (Word input, int roundIndex) {
 	result.bytes[0] ^= rcon[roundIndex];
 	return result;
 }
-
 Word h (Word input) {
 	Word result = input;
 	for (int i = 0; i < 4; i++) { result.bytes[i] = sbox[result.bytes[i]]; }
 	return result;
 }
 } // namespace aes_1
-
 namespace aes_2 {
 void addRoundKey (State &state, const Word roundKey[4]) {
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) { state.bytes[row][col] ^= roundKey[col].bytes[row]; }
 	}
 }
-
 void subBytes (State &state) {
 	for (int row = 0; row < 4; row++) {
 		for (int col = 0; col < 4; col++) { state.bytes[row][col] = sbox[state.bytes[row][col]]; }
 	}
 }
-
 void shiftRows (State &state) {
 	byte temp = state.bytes[1][0];
 	state.bytes[1][0] = state.bytes[1][1];
 	state.bytes[1][1] = state.bytes[1][2];
 	state.bytes[1][2] = state.bytes[1][3];
 	state.bytes[1][3] = temp;
-
 	std::swap (state.bytes[2][0], state.bytes[2][2]);
 	std::swap (state.bytes[2][1], state.bytes[2][3]);
-
 	temp = state.bytes[3][3];
 	state.bytes[3][3] = state.bytes[3][2];
 	state.bytes[3][2] = state.bytes[3][1];
 	state.bytes[3][1] = state.bytes[3][0];
 	state.bytes[3][0] = temp;
 }
-
 byte gfMultiply (byte a, byte b) {
 	byte result = 0;
 	byte highBit;
@@ -106,7 +93,6 @@ byte gfMultiply (byte a, byte b) {
 	}
 	return result;
 }
-
 void mixColumns (State &state) {
 	byte temp[4];
 	for (int col = 0; col < 4; col++) {
@@ -114,14 +100,12 @@ void mixColumns (State &state) {
 		temp[1] = state.bytes[1][col];
 		temp[2] = state.bytes[2][col];
 		temp[3] = state.bytes[3][col];
-
 		state.bytes[0][col] = gfMultiply (0x02, temp[0]) ^ gfMultiply (0x03, temp[1]) ^ temp[2] ^ temp[3];
 		state.bytes[1][col] = temp[0] ^ gfMultiply (0x02, temp[1]) ^ gfMultiply (0x03, temp[2]) ^ temp[3];
 		state.bytes[2][col] = temp[0] ^ temp[1] ^ gfMultiply (0x02, temp[2]) ^ gfMultiply (0x03, temp[3]);
 		state.bytes[3][col] = gfMultiply (0x03, temp[0]) ^ temp[1] ^ temp[2] ^ gfMultiply (0x02, temp[3]);
 	}
 }
-
 std::string stateToHexString (const State &state) {
 	std::string result;
 	for (int col = 0; col < 4; col++) {
@@ -134,14 +118,11 @@ std::string stateToHexString (const State &state) {
 	return result;
 }
 } // namespace aes_2
-
-// 辅助函数
 string stringToHex (const string &input) {
 	stringstream ss;
 	for (unsigned char c : input) { ss << hex << setw (2) << setfill ('0') << static_cast<int> (c); }
 	return ss.str ();
 }
-
 string hexToString (const string &hex) {
 	string result;
 	for (size_t i = 0; i < hex.length (); i += 2) {
@@ -151,7 +132,6 @@ string hexToString (const string &hex) {
 	}
 	return result;
 }
-
 string processKey (const string &key) {
 	string processedKey = key;
 	if (processedKey.length () < 32) {
@@ -162,7 +142,6 @@ string processKey (const string &key) {
 	}
 	return processedKey;
 }
-
 string pkcs7Pad (const string &text, size_t blockSize) {
 	size_t padValue = blockSize - (text.length () % blockSize);
 	if (padValue == 0) padValue = blockSize;
@@ -170,17 +149,13 @@ string pkcs7Pad (const string &text, size_t blockSize) {
 	paddedText.append (padValue, static_cast<char> (padValue));
 	return paddedText;
 }
-
-// AES-256 加密单个16字节块
 string aes256EncryptBlock (const string &keyHex, const string &plaintextHex) {
-	// 密钥扩展
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 4; j++) {
 			string byteStr = keyHex.substr (i * 8 + j * 2, 2);
 			roundKeys[i].bytes[j] = static_cast<byte> (std::stoul (byteStr, nullptr, 16));
 		}
 	}
-
 	for (int i = 8; i < 60; i++) {
 		if (i % 8 == 0) {
 			Word temp = aes_1::g (roundKeys[i - 1], i / 8 - 1);
@@ -192,8 +167,6 @@ string aes256EncryptBlock (const string &keyHex, const string &plaintextHex) {
 			for (int j = 0; j < 4; j++) { roundKeys[i].bytes[j] = roundKeys[i - 8].bytes[j] ^ roundKeys[i - 1].bytes[j]; }
 		}
 	}
-
-	// 初始化状态
 	State state;
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
@@ -201,66 +174,41 @@ string aes256EncryptBlock (const string &keyHex, const string &plaintextHex) {
 			state.bytes[row][col] = static_cast<byte> (std::stoul (byteStr, nullptr, 16));
 		}
 	}
-
-	// 加密过程
 	aes_2::addRoundKey (state, roundKeys);
-
 	for (int round = 1; round <= 13; round++) {
 		aes_2::subBytes (state);
 		aes_2::shiftRows (state);
 		aes_2::mixColumns (state);
 		aes_2::addRoundKey (state, &roundKeys[round * 4]);
 	}
-
 	aes_2::subBytes (state);
 	aes_2::shiftRows (state);
 	aes_2::addRoundKey (state, &roundKeys[14 * 4]);
-
 	return aes_2::stateToHexString (state);
 }
-
-// 完整的AES-256加密函数
 string aes256Encrypt (const string &key, const string &plaintext) {
-	// 处理密钥
 	string processedKey = processKey (key);
 	string hexKey = stringToHex (processedKey);
-
-	// PKCS7填充
 	string paddedText = pkcs7Pad (plaintext, 16);
-
-	// 分块处理
 	vector<string> blocks;
 	for (size_t i = 0; i < paddedText.length (); i += 16) {
 		string block = paddedText.substr (i, 16);
 		blocks.push_back (stringToHex (block));
 	}
-
-	// 加密所有块
 	string ciphertext;
 	for (const string &block : blocks) { ciphertext += aes256EncryptBlock (hexKey, block); }
-
 	return ciphertext;
 }
-
 int main () {
 	SetConsoleOutputCP (CP_UTF8);
 	SetConsoleCP (CP_UTF8);
 	setlocale (LC_ALL, "en_US.UTF-8");
-
 	string key, plaintext;
-
-	// 从标准输入读取密钥和明文
 	freopen ("AES256-q.txt", "r", stdin);
 	freopen ("AES256-q1.txt", "w", stdout);
-
 	getline (cin, key);
 	getline (cin, plaintext);
-
-	// 执行AES-256加密
 	string ciphertext = aes256Encrypt (key, plaintext);
-
-	// 输出密文
 	cout << ciphertext << endl;
-
 	return 0;
 }

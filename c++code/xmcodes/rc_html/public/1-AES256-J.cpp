@@ -8,20 +8,15 @@
 #include <string>
 #include <vector>
 #include <windows.h>
-
 #define byte uint8_t
 using namespace std;
-
-// AES-256 核心解密实现
 struct Word {
 	byte bytes[4];
 };
-
 struct State {
 	byte bytes[4][4];
 };
-
-Word roundKeys[60]; // 60 words for AES-256 (15 round keys)
+Word roundKeys[60];
 const byte rcon[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 const byte sbox[256] = {
 	// 0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
@@ -54,7 +49,6 @@ const byte invSbox[256] = {
 	0x1F, 0xDD, 0xA8, 0x33, 0x88, 0x07, 0xC7, 0x31, 0xB1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xEC, 0x5F, 0x60, 0x51, 0x7F, 0xA9, 0x19, 0xB5, 0x4A, 0x0D,
 	0x2D, 0xE5, 0x7A, 0x9F, 0x93, 0xC9, 0x9C, 0xEF, 0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
 	0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D};
-
 namespace aes_1 {
 Word g (Word input, int roundIndex) {
 	Word result = input;
@@ -67,67 +61,56 @@ Word g (Word input, int roundIndex) {
 	result.bytes[0] ^= rcon[roundIndex];
 	return result;
 }
-
 Word h (Word input) {
 	Word result = input;
 	for (int i = 0; i < 4; i++) { result.bytes[i] = sbox[result.bytes[i]]; }
 	return result;
 }
-} // namespace aes_1
-
+}
 namespace aes_2 {
 void addRoundKey (State &state, const Word roundKey[4]) {
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) { state.bytes[row][col] ^= roundKey[col].bytes[row]; }
 	}
 }
-
 void subBytes (State &state) {
 	for (int row = 0; row < 4; row++) {
 		for (int col = 0; col < 4; col++) { state.bytes[row][col] = sbox[state.bytes[row][col]]; }
 	}
 }
-
 void invSubBytes (State &state) {
 	for (int row = 0; row < 4; row++) {
 		for (int col = 0; col < 4; col++) { state.bytes[row][col] = invSbox[state.bytes[row][col]]; }
 	}
 }
-
 void shiftRows (State &state) {
 	byte temp = state.bytes[1][0];
 	state.bytes[1][0] = state.bytes[1][1];
 	state.bytes[1][1] = state.bytes[1][2];
 	state.bytes[1][2] = state.bytes[1][3];
 	state.bytes[1][3] = temp;
-
 	std::swap (state.bytes[2][0], state.bytes[2][2]);
 	std::swap (state.bytes[2][1], state.bytes[2][3]);
-
 	temp = state.bytes[3][3];
 	state.bytes[3][3] = state.bytes[3][2];
 	state.bytes[3][2] = state.bytes[3][1];
 	state.bytes[3][1] = state.bytes[3][0];
 	state.bytes[3][0] = temp;
 }
-
 void invShiftRows (State &state) {
 	byte temp = state.bytes[1][3];
 	state.bytes[1][3] = state.bytes[1][2];
 	state.bytes[1][2] = state.bytes[1][1];
 	state.bytes[1][1] = state.bytes[1][0];
 	state.bytes[1][0] = temp;
-
 	std::swap (state.bytes[2][0], state.bytes[2][2]);
 	std::swap (state.bytes[2][1], state.bytes[2][3]);
-
 	temp = state.bytes[3][0];
 	state.bytes[3][0] = state.bytes[3][1];
 	state.bytes[3][1] = state.bytes[3][2];
 	state.bytes[3][2] = state.bytes[3][3];
 	state.bytes[3][3] = temp;
 }
-
 byte gfMultiply (byte a, byte b) {
 	byte result = 0;
 	byte highBit;
@@ -140,7 +123,6 @@ byte gfMultiply (byte a, byte b) {
 	}
 	return result;
 }
-
 void mixColumns (State &state) {
 	byte temp[4];
 	for (int col = 0; col < 4; col++) {
@@ -148,14 +130,12 @@ void mixColumns (State &state) {
 		temp[1] = state.bytes[1][col];
 		temp[2] = state.bytes[2][col];
 		temp[3] = state.bytes[3][col];
-
 		state.bytes[0][col] = gfMultiply (0x02, temp[0]) ^ gfMultiply (0x03, temp[1]) ^ temp[2] ^ temp[3];
 		state.bytes[1][col] = temp[0] ^ gfMultiply (0x02, temp[1]) ^ gfMultiply (0x03, temp[2]) ^ temp[3];
 		state.bytes[2][col] = temp[0] ^ temp[1] ^ gfMultiply (0x02, temp[2]) ^ gfMultiply (0x03, temp[3]);
 		state.bytes[3][col] = gfMultiply (0x03, temp[0]) ^ temp[1] ^ temp[2] ^ gfMultiply (0x02, temp[3]);
 	}
 }
-
 void invMixColumns (State &state) {
 	byte temp[4];
 	for (int col = 0; col < 4; col++) {
@@ -170,7 +150,6 @@ void invMixColumns (State &state) {
 		state.bytes[3][col] = gfMultiply (0x0B, temp[0]) ^ gfMultiply (0x0D, temp[1]) ^ gfMultiply (0x09, temp[2]) ^ gfMultiply (0x0E, temp[3]);
 	}
 }
-
 void hexStringToState (const string &hexStr, State &state) {
 	for (int col = 0; col < 4; col++) {
 		for (int row = 0; row < 4; row++) {
@@ -179,7 +158,6 @@ void hexStringToState (const string &hexStr, State &state) {
 		}
 	}
 }
-
 string stateToHexString (const State &state) {
 	string result;
 	for (int col = 0; col < 4; col++) {
@@ -192,14 +170,11 @@ string stateToHexString (const State &state) {
 	return result;
 }
 } // namespace aes_2
-
-// 辅助函数
 string stringToHex (const string &input) {
 	stringstream ss;
 	for (unsigned char c : input) { ss << hex << setw (2) << setfill ('0') << static_cast<int> (c); }
 	return ss.str ();
 }
-
 string hexToString (const string &hex) {
 	string result;
 	for (size_t i = 0; i < hex.length (); i += 2) {
@@ -209,7 +184,6 @@ string hexToString (const string &hex) {
 	}
 	return result;
 }
-
 string processKey (const string &key) {
 	string processedKey = key;
 	if (processedKey.length () < 32) {
@@ -220,7 +194,6 @@ string processKey (const string &key) {
 	}
 	return processedKey;
 }
-
 string pkcs7Unpad (const string &text) {
 	if (text.empty ()) return text;
 	uint8_t padValue = static_cast<uint8_t> (text[text.length () - 1]);
@@ -230,17 +203,13 @@ string pkcs7Unpad (const string &text) {
 	}
 	return text.substr (0, text.length () - padValue);
 }
-
-// AES-256 解密单个16字节块
 string aes256DecryptBlock (const string &keyHex, const string &ciphertextHex) {
-	// 密钥扩展
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 4; j++) {
 			string byteStr = keyHex.substr (i * 8 + j * 2, 2);
 			roundKeys[i].bytes[j] = static_cast<byte> (std::stoul (byteStr, nullptr, 16));
 		}
 	}
-
 	for (int i = 8; i < 60; i++) {
 		if (i % 8 == 0) {
 			Word temp = aes_1::g (roundKeys[i - 1], i / 8 - 1);
@@ -252,72 +221,46 @@ string aes256DecryptBlock (const string &keyHex, const string &ciphertextHex) {
 			for (int j = 0; j < 4; j++) { roundKeys[i].bytes[j] = roundKeys[i - 8].bytes[j] ^ roundKeys[i - 1].bytes[j]; }
 		}
 	}
-
-	// 初始化状态
 	State state;
 	aes_2::hexStringToState (ciphertextHex, state);
-
-	// 解密过程
 	aes_2::addRoundKey (state, &roundKeys[14 * 4]);
-
 	for (int round = 13; round >= 1; round--) {
 		aes_2::invShiftRows (state);
 		aes_2::invSubBytes (state);
 		aes_2::addRoundKey (state, &roundKeys[round * 4]);
 		aes_2::invMixColumns (state);
 	}
-
 	aes_2::invShiftRows (state);
 	aes_2::invSubBytes (state);
 	aes_2::addRoundKey (state, roundKeys);
-
 	return aes_2::stateToHexString (state);
 }
-
-// 完整的AES-256解密函数
 string aes256Decrypt (const string &key, const string &ciphertext) {
-	// 处理密钥
 	string processedKey = processKey (key);
 	string hexKey = stringToHex (processedKey);
-
-	// 分块处理密文
 	vector<string> blocks;
 	for (size_t i = 0; i < ciphertext.length (); i += 32) {
 		string block = ciphertext.substr (i, 32);
 		if (block.length () < 32) { block.append (32 - block.length (), '0'); }
 		blocks.push_back (block);
 	}
-
-	// 解密所有块
 	string plaintext;
 	for (const string &block : blocks) {
 		string hexPlaintext = aes256DecryptBlock (hexKey, block);
 		plaintext += hexToString (hexPlaintext);
 	}
-
-	// PKCS7解填充
 	return pkcs7Unpad (plaintext);
 }
-
 int main () {
 	SetConsoleOutputCP (CP_UTF8);
 	SetConsoleCP (CP_UTF8);
 	setlocale (LC_ALL, "en_US.UTF-8");
-
 	string key, ciphertext;
-
-	// 从标准输入读取密钥和密文
 	freopen ("AES256-p.txt", "r", stdin);
 	freopen ("AES256-p1.txt", "w", stdout);
-
 	getline (cin, key);
 	getline (cin, ciphertext);
-
-	// 执行AES-256解密
 	string plaintext = aes256Decrypt (key, ciphertext);
-
-	// 输出明文
 	cout << plaintext << endl;
-
 	return 0;
 }
