@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>50x50 01矩阵生成器 - 像素图片工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 24px 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 24px 28px 32px 28px;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #1e293b, #2d3a4e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .sub {
+            color: #5b6e8c;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            margin: 12px 0 24px 0;
+            font-weight: 400;
+            font-size: 0.95rem;
+        }
+
+        .two-columns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+        }
+
+        .input-panel {
+            flex: 1.2;
+            min-width: 280px;
+        }
+
+        .output-panel {
+            flex: 1.8;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 16px;
+        }
+
+        button {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #1f3a6b;
+            background-color: #f9fafb;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+        }
+
+        button i {
+            font-style: normal;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        button.primary {
+            background: #1e3a8a;
+            border-color: #1e3a8a;
+            color: white;
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+        }
+
+        button.primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        button:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .matrix-editor {
+            background: #fefefe;
+            border-radius: 24px;
+            border: 1px solid #e2edff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            margin-top: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 18px;
+            border: 1px solid #cbd5e6;
+            border-radius: 20px;
+            background: #ffffff;
+            resize: vertical;
+            white-space: pre;
+            overflow-x: auto;
+            transition: 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 16px 0 12px 0;
+            font-size: 0.85rem;
+            color: #334155;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .badge {
+            background: #eef2ff;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #1e40af;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 15px 0 0 0;
+            border-left: 5px solid #ef4444;
+        }
+
+        .canvas-wrapper {
+            background: #f8fafc;
+            border-radius: 28px;
+            padding: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border: 1px solid #eef2ff;
+            width: 100%;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .download-area {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-download {
+            background: #0f3b2c;
+            border-color: #0f3b2c;
+            color: white;
+            padding: 10px 24px;
+            font-size: 1rem;
+        }
+
+        .btn-download:hover {
+            background: #166534;
+        }
+
+        hr {
+            margin: 20px 0 0 0;
+            border: none;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6c7a91;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 780px) {
+            .container {
+                padding: 18px;
+            }
+
+            button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧩 50×50 矩阵画板</h1>
+        <div class="sub">⚫ 1 = 黑色像素 · ⚪ 0 = 白色像素 · 每个格子 30×30 px → 生成 1500×1500 高清图片</div>
+
+        <div class="two-columns">
+            <!-- 左侧输入区 -->
+            <div class="input-panel">
+                <div class="toolbar">
+                    <button id="btnGenerate" class="primary">✨ 生成图片</button>
+                    <button id="btnRandom">🎲 随机矩阵</button>
+                    <button id="btnClearAll">⬜ 全0矩阵</button>
+                    <button id="btnBorderExample">🔲 边框示例</button>
+                    <button id="btnCheckerExample">♟️ 棋盘格示例</button>
+                    <label for="fileUpload"
+                        style="cursor:pointer; background:#f9fafb; border:1px solid #cbd5e1; border-radius:60px; padding:8px 16px; font-size:0.85rem; font-weight:500; display:inline-flex; align-items:center; gap:6px;">
+                        📂 上传 .txt
+                    </label>
+                    <input type="file" id="fileUpload" accept=".txt, .csv, .text/plain" style="display:none">
+                </div>
+                <div class="matrix-editor">
+                    <textarea id="matrixInput" rows="20" wrap="off"
+                        placeholder="请输入50行，每行50个0/1字符（支持空格/逗号分隔）&#10;例如:&#10;0101010101...&#10;1010101010..."></textarea>
+                </div>
+                <div class="info-bar">
+                    <span>📐 矩阵维度: <strong id="dimStatus">等待输入</strong></span>
+                    <span class="badge">⚫ 黑色格子计数: <span id="blackCount">0</span></span>
+                </div>
+                <div id="errorMessage" style="min-height: 70px;"></div>
+            </div>
+
+            <!-- 右侧预览输出区 -->
+            <div class="output-panel">
+                <div class="canvas-wrapper">
+                    <canvas id="matrixCanvas" width="1500" height="1500"
+                        style="width:100%; height:auto; max-width:500px; border:1px solid #e2e8f0; background:#f1f5f9;"></canvas>
+                    <div style="margin-top: 12px; font-size:0.8rem; color:#4b5563;">
+                        ⚡ 原图尺寸 1500×1500 像素 | 点击图片可下载
+                    </div>
+                </div>
+                <div class="download-area">
+                    <button id="btnDownload" class="btn-download">⬇️ 下载 PNG 图片 (1500x1500)</button>
+                    <button id="btnApiDownload" class="btn-download" style="background:#2c3e66;">🌐 API下载图片</button>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <footer>✍️ 支持灵活格式：每行连续01字符 或 空格/逗号分隔 (自动识别) | 必须精确 50×50 个有效0/1</footer>
+    </div>
+
+    <script>
+        (function () {
+            // DOM 元素
+            const textarea = document.getElementById('matrixInput');
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            const btnGenerate = document.getElementById('btnGenerate');
+            const btnRandom = document.getElementById('btnRandom');
+            const btnClearAll = document.getElementById('btnClearAll');
+            const btnBorderExample = document.getElementById('btnBorderExample');
+            const btnCheckerExample = document.getElementById('btnCheckerExample');
+            const btnDownload = document.getElementById('btnDownload');
+            const fileUpload = document.getElementById('fileUpload');
+            const dimStatusSpan = document.getElementById('dimStatus');
+            const blackCountSpan = document.getElementById('blackCount');
+            const errorDiv = document.getElementById('errorMessage');
+
+            // 固定参数
+            const SIZE = 50;          // 50x50 矩阵
+            const CELL_SIZE = 30;     // 30px
+            const CANVAS_SIZE = SIZE * CELL_SIZE; // 1500
+
+            // 确保canvas尺寸严格1500
+            canvas.width = CANVAS_SIZE;
+            canvas.height = CANVAS_SIZE;
+
+            // ---------- 辅助函数：解析矩阵文本 ----------
+            // 输入: 原始文本 (可能包含空格，逗号，换行等)
+            // 输出: 二维数组 matrix[50][50] 每个元素 0 或 1 (number)
+            // 出错时抛出异常 (字符串错误信息)
+            function parseMatrixFromText(rawText) {
+                // 按行分割 (兼容各种换行符)
+                let lines = rawText.split(/\r?\n/);
+                // 过滤掉 完全空白行 (仅空格/制表符等)
+                let nonEmptyLines = lines.filter(line => line.trim().length > 0);
+
+                if (nonEmptyLines.length !== SIZE) {
+                    throw new Error(`行数不正确: 期望 50 行，实际检测到 ${nonEmptyLines.length} 行（空白行已忽略）。请确保矩阵为50行。`);
+                }
+
+                const matrix = [];
+                // 正则：匹配所有0和1字符（忽略其他空白分隔符）
+                for (let rowIdx = 0; rowIdx < nonEmptyLines.length; rowIdx++) {
+                    const line = nonEmptyLines[rowIdx];
+                    // 第一步: 提取所有0/1字符（保持顺序）同时过滤掉无关字符但保留有效数字
+                    // 支持两种常见情况: 连续字符串 "0101" 或带空格/逗号 "0,1,0,1" 或 "0 1 0 1"
+                    // 使用 match 匹配全局 [01] 即可得到所有0和1字符数组
+                    const matches = line.match(/[01]/g);
+                    if (!matches) {
+                        throw new Error(`第 ${rowIdx + 1} 行没有找到任何 0 或 1 字符，请检查内容。`);
+                    }
+                    // 检查长度
+                    if (matches.length !== SIZE) {
+                        throw new Error(`第 ${rowIdx + 1} 行的有效0/1个数为 ${matches.length}，但需要恰好 ${SIZE} 个。`);
+                    }
+                    // 转换为数字数组
+                    const row = matches.map(ch => (ch === '1' ? 1 : 0));
+                    matrix.push(row);
+                }
+                // 最终确保50行
+                if (matrix.length !== SIZE) {
+                    throw new Error(`解析后行数不是50，当前为 ${matrix.length}`);
+                }
+                return matrix;
+            }
+
+            // 计算黑色格子数量
+            function countBlackCells(matrix) {
+                let cnt = 0;
+                for (let i = 0; i < SIZE; i++) {
+                    for (let j = 0; j < SIZE; j++) {
+                        if (matrix[i][j] === 1) cnt++;
+                    }
+                }
+                return cnt;
+            }
+
+            // 更新UI显示维度/黑色计数
+            function updateStats(matrix) {
+                if (!matrix || matrix.length !== SIZE) {
+                    dimStatusSpan.innerText = '❌ 无效矩阵';
+                    blackCountSpan.innerText = '0';
+                    return;
+                }
+                dimStatusSpan.innerText = `✅ 50 行 × 50 列`;
+                const black = countBlackCells(matrix);
+                blackCountSpan.innerText = `${black} / 2500`;
+            }
+
+            // 核心绘图: 根据矩阵绘制canvas (1500x1500)
+            function drawMatrixToCanvas(matrix) {
+                if (!matrix || matrix.length !== SIZE) {
+                    console.warn("矩阵无效，无法绘制");
+                    return false;
+                }
+                // 1. 先整个画布填充白色 (背景)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+                // 2. 遍历所有格子，若为1则绘制黑色方块
+                ctx.fillStyle = '#000000';
+                for (let row = 0; row < SIZE; row++) {
+                    for (let col = 0; col < SIZE; col++) {
+                        if (matrix[row][col] === 1) {
+                            const x = col * CELL_SIZE;
+                            const y = row * CELL_SIZE;
+                            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                        }
+                    }
+                }
+                return true;
+            }
+
+            // 生成并更新整个界面 (解析 + 绘图 + 错误处理)
+            function generateFromText(rawText, silent = false) {
+                // 清空之前的错误显示
+                errorDiv.innerHTML = '';
+                try {
+                    const matrix = parseMatrixFromText(rawText);
+                    // 绘制
+                    drawMatrixToCanvas(matrix);
+                    // 更新统计
+                    updateStats(matrix);
+                    // 可选将当前有效矩阵保存到 textarea 的干净数据 (不修改文本内容，但确保当前展示文本与解析一致)
+                    // 为了体验，不需要重写textarea，但可以留作后续下载
+                    return matrix;
+                } catch (err) {
+                    // 显示错误
+                    errorDiv.innerHTML = `<div class="error-msg">⚠️ 矩阵解析失败: ${err.message}</div>`;
+                    // 清空统计显示异常
+                    dimStatusSpan.innerText = '❌ 格式错误';
+                    blackCountSpan.innerText = '0';
+                    // 可选画一个错误占位: 在canvas上绘制灰色提示
+                    ctx.fillStyle = '#F1F5F9';
+                    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '24px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('矩阵格式错误', CANVAS_SIZE / 2, CANVAS_SIZE / 2);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '16px monospace';
+                    ctx.fillText('请检查50x50 0/1结构', CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 50);
+                    return null;
+                }
+            }
+
+            // 获取当前textarea文本并生成图片
+            function generateFromTextarea() {
+                const raw = textarea.value;
+                generateFromText(raw);
+            }
+
+            // 将矩阵格式化为 50行 每行连续01字符 (无空格，紧凑显示)
+            function matrixToCompactText(matrix) {
+                if (!matrix || matrix.length !== SIZE) return '';
+                let rows = [];
+                for (let i = 0; i < SIZE; i++) {
+                    let rowStr = '';
+                    for (let j = 0; j < SIZE; j++) {
+                        rowStr += matrix[i][j] === 1 ? '1' : '0';
+                    }
+                    rows.push(rowStr);
+                }
+                return rows.join('\n');
+            }
+
+            // 设置textarea内容并自动生成图片 (方便)
+            function setMatrixAndGenerate(matrix) {
+                if (!matrix || matrix.length !== SIZE) return;
+                const textRepresentation = matrixToCompactText(matrix);
+                textarea.value = textRepresentation;
+                generateFromText(textRepresentation);
+            }
+
+            // ---------- 预置矩阵生成器 ----------
+            // 全0矩阵
+            function getAllZeroMatrix() {
+                const mat = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+                return mat;
+            }
+
+            // 随机矩阵 (0/1 概率相等)
+            function getRandomMatrix() {
+                const mat = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+                for (let i = 0; i < SIZE; i++) {
+                    for (let j = 0; j < SIZE; j++) {
+                        mat[i][j] = Math.random() < 0.5 ? 0 : 1;
+                    }
+                }
+                return mat;
+            }
+
+            // 边框示例: 边缘一圈为1，内部为0 (经典相框)
+            function getBorderMatrix() {
+                const mat = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+                for (let i = 0; i < SIZE; i++) {
+                    mat[0][i] = 1;               // 上边
+                    mat[SIZE - 1][i] = 1;          // 下边
+                    mat[i][0] = 1;               // 左边
+                    mat[i][SIZE - 1] = 1;          // 右边
+                }
+                return mat;
+            }
+
+            // 棋盘格示例: 经典交错 (i+j)%2 === 0 为黑(1) 或白(0) 这里定义 (i+j)%2 === 1 为黑更有棋盘感
+            function getCheckerMatrix() {
+                const mat = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+                for (let i = 0; i < SIZE; i++) {
+                    for (let j = 0; j < SIZE; j++) {
+                        // 交错图案: (i + j) % 2 === 0 为黑色1，其他白色0
+                        mat[i][j] = ((i + j) % 2 === 0) ? 1 : 0;
+                    }
+                }
+                return mat;
+            }
+
+            // 一个有趣的“X”形状示例 可做备选，但为了方便我们提供边框和棋盘，再加一个“中心十字”可选但不作为主要，但为了丰富，多做一个不用太多
+            // 但直接按钮已经有两个示例足够
+
+            // 下载图片
+            function downloadImage() {
+                // 获取当前canvas内容 (确保1500x1500)
+                try {
+                    // 确保下载图片无跨域问题，纯本地canvas
+                    const link = document.createElement('a');
+                    link.download = 'matrix_50x50_1500px.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (e) {
+                    errorDiv.innerHTML = `<div class="error-msg">❌ 下载失败: ${e.message}</div>`;
+                }
+            }
+
+            // 点击canvas也可以触发下载
+            function bindCanvasDownload() {
+                canvas.addEventListener('click', () => {
+                    downloadImage();
+                });
+            }
+
+            // 上传txt文件并填充
+            function handleFileUpload(file) {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    textarea.value = content;
+                    // 自动生成图片
+                    generateFromTextarea();
+                };
+                reader.onerror = function () {
+                    errorDiv.innerHTML = `<div class="error-msg">❌ 文件读取失败</div>`;
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            // 初始化界面 (默认显示一个好看的图案，避免空白全白)
+            function initDefaultMatrix() {
+                // 默认展示一个温和的图案：边框+内部中心小方块，但不是复杂，直接用边框示例比较好, 并且用户容易理解
+                const borderMat = getBorderMatrix();
+                // 让边框内部再加入一个 10x10 中心块 增加趣味？但边框足够展示黑边效果
+                // 为了让初始更有辨识度，在边框基础上内部加一个“笑脸”简易风格：中心10x10区域填充1
+                for (let i = 20; i < 30; i++) {
+                    for (let j = 20; j < 30; j++) {
+                        if (i >= 20 && i < 30 && j >= 20 && j < 30) borderMat[i][j] = 1;
+                    }
+                }
+                // 右上角加一个点阵
+                for (let i = 5; i < 12; i++) {
+                    for (let j = 40; j < 47; j++) {
+                        borderMat[i][j] = 1;
+                    }
+                }
+                const textRepresentation = matrixToCompactText(borderMat);
+                textarea.value = textRepresentation;
+                generateFromText(textRepresentation);
+            }
+
+            // ---------- 绑定事件及额外辅助----------
+            function setupEventListeners() {
+                btnGenerate.addEventListener('click', generateFromTextarea);
+                btnRandom.addEventListener('click', () => {
+                    const randMat = getRandomMatrix();
+                    setMatrixAndGenerate(randMat);
+                });
+                btnClearAll.addEventListener('click', () => {
+                    const zeroMat = getAllZeroMatrix();
+                    setMatrixAndGenerate(zeroMat);
+                });
+                btnBorderExample.addEventListener('click', () => {
+                    const borderMat = getBorderMatrix();
+                    setMatrixAndGenerate(borderMat);
+                });
+                btnCheckerExample.addEventListener('click', () => {
+                    const checkerMat = getCheckerMatrix();
+                    setMatrixAndGenerate(checkerMat);
+                });
+                btnDownload.addEventListener('click', downloadImage);
+
+                fileUpload.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                        handleFileUpload(e.target.files[0]);
+                    }
+                    fileUpload.value = ''; // 允许重复上传同一个文件
+                });
+            }
+
+            // 实时校验显示简单维度预览 (可选，不自动生成图片但显示行数提示)
+            function setupLiveValidation() {
+                textarea.addEventListener('input', function () {
+                    // 实时显示当前文本的行数和第一行01个数（非严谨，只做提示）
+                    const raw = textarea.value;
+                    const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+                    if (lines.length === SIZE) {
+                        // 简单检查第一行的01个数
+                        const firstLineMatches = lines[0].match(/[01]/g);
+                        const firstLen = firstLineMatches ? firstLineMatches.length : 0;
+                        if (firstLen === SIZE) {
+                            dimStatusSpan.innerText = `⏳ 检测 ${lines.length} 行, 每行${firstLen}字符 (待生成)`;
+                        } else {
+                            dimStatusSpan.innerText = `⏳ ${lines.length} 行 | 首行有效01数=${firstLen} (需要50)`;
+                        }
+                    } else {
+                        dimStatusSpan.innerText = `📝 当前有效行数: ${lines.length} / 50`;
+                    }
+                    // 不清错误，等生成时再报错，体验更好
+                });
+            }
+
+            // 额外：如果用户想重新生成，确保每次点击生成时清除canvas旧错误样式
+            // 完成所有初始化
+            function init() {
+                setupEventListeners();
+                bindCanvasDownload();
+                setupLiveValidation();
+                initDefaultMatrix();  // 启动一个有辨识度的初始矩阵并生成图片
+            }
+
+            init();
+        })();
+        async function downloadViaApi() {
+                const rawText = textarea.value;
+                try {
+                    const matrix = parseMatrixFromText(rawText);  // 复用原有的解析函数
+                    const response = await fetch('http://localhost:3001/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ matrix })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'API 请求失败');
+                    }
+
+                    // 获取图片 Blob 并触发下载
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'matrix_api.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    errorDiv.innerHTML = `<div class="error-msg">⚠️ API 下载失败: ${err.message}</div>`;
+                }
+            }
+
+            // 绑定事件
+            document.getElementById('btnApiDownload').addEventListener('click', downloadViaApi);
+    </script>
+</body>
+
+</html>

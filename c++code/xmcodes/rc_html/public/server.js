@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const multer = require('multer');
+const crypto = require('crypto');
+
 // 初始化Express应用
 const app = express();
 const PORT = 3000;
@@ -120,11 +122,11 @@ function saveDataToEncryptedFile(data) {
 
                     if (result === '1') {
                         console.log('数据保存成功');
-                        resolve(true);
+                        resolve({ success: true, message: '数据保存成功' });
                     } else if (result === '') {
-                        throw new Error('服务器错误：结果文件为空');
+                        resolve({ success: false, message: '服务器错误：结果文件为空' });
                     } else {
-                        throw new Error(result);
+                        resolve({ success: false, message: result });
                     }
                 } catch (error) {
                     reject(error);
@@ -373,12 +375,29 @@ function validatePersonData(data) {
         if (!idCardRegex.test(data['身份证号'])) {
             return { valid: false, message: '身份证号格式不正确' };
         }
+        // 验证姓名格式（只允许中文、英文和空格）
+        const nameRegex = /^[\u4e00-\u9fa5a-zA-Z\s]+$/;
+        if (!nameRegex.test(data['姓名'])) {
+            return { valid: false, message: '姓名格式不正确，只允许中文、英文和空格' };
+        }
+        // 验证性别格式
+        if (data['性别'] !== '男' && data['性别'] !== '女') {
+            return { valid: false, message: '性别必须为"男"或"女"' };
+        }
+        // 验证年龄格式（如果存在）
+        if (data['年龄']) {
+            const age = parseInt(data['年龄']);
+            if (isNaN(age) || age < 0 || age > 150) {
+                return { valid: false, message: '年龄必须是0-150之间的整数' };
+            }
+        }
         return { valid: true, message: '数据验证通过' };
     } catch (error) {
         console.error('数据验证过程中出错:', error);
         return { valid: false, message: '数据验证失败' };
     }
 }
+
 // 登录API - 重构版
 app.post('/api/login', async (req, res) => {
     const { username, password, isAdmin = false, adminPassword = '' } = req.body;
@@ -588,7 +607,7 @@ function logUserActivity(req, action, username, details = '', result = '') {
 }
 // 导入缺少的模块
 const { execSync } = require('child_process');
-const crypto = require('crypto');
+
 app.get('/api/user/profile', authenticateToken, (req, res) => {
     res.json({
         success: true,
@@ -618,12 +637,46 @@ app.get('/api/data', authenticateToken, async (req, res) => {
                     if (!Array.isArray(allData)) {
                         throw new Error('数据不是数组格式');
                     }
-                } catch (e) {
-                    // 如果解析失败，使用默认的模拟数据
-                    allData = [
-                        { 序号: '1', 姓名: '张三', 性别: '男', 身份证号: '110101199001011234', 出生日期: '1990-01-01', 地点: '北京', 年龄: '33' },
-                        { 序号: '2', 姓名: '李四', 性别: '女', 身份证号: '110101199002021235', 出生日期: '1990-02-02', 地点: '上海', 年龄: '33' }
-                    ];
+                } catch (jsonError) {
+                    // 如果JSON解析失败，尝试解析为CSV格式
+                    try {
+                        // 假设数据是CSV格式，按行分割
+                        const lines = String(allData).split('\n');
+                        allData = [];
+                        
+                        // 处理每一行数据，使用逗号分割
+                        for (const line of lines) {
+                            const trimmedLine = line.trim();
+                            if (trimmedLine) { // 跳过空行
+                                const parts = trimmedLine.split(',');
+                                // 假设数据格式为：序号,姓名,性别,身份证号,出生日期,地点,年龄
+                                if (parts.length >= 7) {
+                                    allData.push({
+                                        序号: parts[0].trim(),
+                                        姓名: parts[1].trim(),
+                                        性别: parts[2].trim(),
+                                        身份证号: parts[3].trim(),
+                                        出生日期: parts[4].trim(),
+                                        地点: parts[5].trim(),
+                                        年龄: parts[6].trim()
+                                    });
+                                }
+                            }
+                        }
+                        
+                        if (allData.length === 0) {
+                            throw new Error('CSV解析后数据为空');
+                        }
+                        
+                        console.log('成功从CSV解析数据，共', allData.length, '条');
+                    } catch (csvError) {
+                        console.warn('CSV解析失败，使用默认数据:', csvError);
+                        // 如果CSV解析也失败，使用默认的模拟数据
+                        allData = [
+                            { 序号: '1', 姓名: '张三', 性别: '男', 身份证号: '110101199001011234', 出生日期: '1990-01-01', 地点: '北京', 年龄: '33' },
+                            { 序号: '2', 姓名: '李四', 性别: '女', 身份证号: '110101199002021235', 出生日期: '1990-02-02', 地点: '上海', 年龄: '33' }
+                        ];
+                    }
                 }
             }
         } catch (loadError) {
@@ -686,15 +739,26 @@ app.get('/api/data', authenticateToken, async (req, res) => {
         
         // 调试日志：记录过滤后的结果
         console.log('过滤后数据量:', filteredData.length);
+        
+        // 分页处理
+        const totalRecords = filteredData.length;
+        const pageNum = parseInt(page);
+        const pageSizeNum = parseInt(pageSize);
+        const startIndex = (pageNum - 1) * pageSizeNum;
+        const endIndex = Math.min(startIndex + pageSizeNum, totalRecords);
+        
+        // 截取分页数据
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+        
         // 记录用户活动 - 加载数据
         logUserActivity(req, 'load', req.user.username, '', 'success');
 
         res.json({
             success: true,
-            data: filteredData,
-            total: filteredData.length,
-            page: parseInt(page),
-            pageSize: parseInt(pageSize)
+            data: paginatedData,
+            total: totalRecords,
+            page: pageNum,
+            pageSize: pageSizeNum
         });
     } catch (error) {
         console.error('读取数据失败:', error);
@@ -777,7 +841,7 @@ app.put('/api/data/:id', authenticateToken, async (req, res) => {
         // 保存数据到加密文件
         await saveDataToEncryptedFile(allData);
         // 记录用户活动
-        logUserActivity(req.user.username, req.user.role, 'update_data');
+        logUserActivity(req, 'update_data', req.user.username, '', 'success');
         res.json({ success: true, message: '数据更新成功', data: updateData });
     } catch (error) {
         console.error('更新数据失败:', error);
@@ -807,7 +871,7 @@ app.post('/api/upload', authenticateToken, upload.single('file'), async (req, re
             return res.status(400).json({ success: false, message: '没有上传文件' });
         }
         // 记录用户活动
-        logUserActivity(req.user.username, req.user.role, 'upload_file', { filename: req.file.originalname });
+        logUserActivity(req, 'upload_file', req.user.username, JSON.stringify({ filename: req.file.originalname }), 'success');
         res.json({ success: true, message: '文件上传成功', filename: req.file.filename });
     } catch (error) {
         console.error('文件上传失败:', error);
@@ -824,7 +888,7 @@ app.get('/api/download/:filename', authenticateToken, (req, res) => {
                 res.status(500).json({ success: false, message: '文件下载失败' });
             } else {
                 // 记录用户活动
-                logUserActivity(req.user.username, req.user.role, 'download_file', { filename });
+                logUserActivity(req, 'download_file', req.user.username, JSON.stringify({ filename }), 'success');
             }
         });
     } else {
@@ -955,7 +1019,7 @@ app.post('/api/batch-process', [authenticateToken, requireAdmin], (req, res) => 
     }
     try {
         // 记录操作日志
-        logUserActivity(req.user.username, req.user.role, `batch_process_${ids.length}_items`);
+        logUserActivity(req, `batch_process_${ids.length}_items`, req.user.username, '', 'success');
         // 这里是简化的批量处理逻辑
         // 实际应用中应该根据业务需求实现具体的处理逻辑
         // 返回成功响应
@@ -986,7 +1050,7 @@ app.post('/api/backup', [authenticateToken, requireAdmin], (req, res) => {
         // 创建空的备份文件作为示例
         fs.writeFileSync(backupFilePath, 'Backup placeholder', 'utf8');
         // 记录备份日志
-        logUserActivity(req.user.username, req.user.role, `backup_created_${backupFileName}`);
+        logUserActivity(req, `backup_created_${backupFileName}`, req.user.username, '', 'success');
         res.json({
             success: true,
             message: '数据备份成功',
@@ -1007,7 +1071,7 @@ app.get('/api/admin/users', [authenticateToken, requireAdmin], (req, res) => {
             { username: 'user2', role: 'user' }
         ];
         // 记录操作日志
-        logUserActivity(req.user.username, req.user.role, 'view_users_list');
+        logUserActivity(req, 'view_users_list', req.user.username, '', 'success');
         res.json({
             success: true,
             users: users
@@ -1021,7 +1085,7 @@ app.get('/api/admin/users', [authenticateToken, requireAdmin], (req, res) => {
 app.post('/api/admin/reset-system', [authenticateToken, requireAdmin], (req, res) => {
     try {
         // 记录操作日志（在操作前记录）
-        logUserActivity(req.user.username, req.user.role, 'reset_system');
+        logUserActivity(req, 'reset_system', req.user.username, '', 'success');
         // 这里简化了重置系统的逻辑
         // 实际应用中应该谨慎实现，可能需要清除数据、重置配置等
         // 清除所有用户令牌
@@ -1049,7 +1113,7 @@ app.get('/api/admin/logs', [authenticateToken, requireAdmin], (req, res) => {
             logs = logContent.split('\n').filter(line => line.trim() !== '');
         }
         // 记录操作日志
-        logUserActivity(req.user.username, req.user.role, 'view_system_logs');
+        logUserActivity(req, 'view_system_logs', req.user.username, '', 'success');
         res.json({
             success: true,
             logs: logs
@@ -1072,7 +1136,7 @@ ${newPassword}\n`;
         const yyzPath = path.join(BASE_DIR, 'yyz.txt');
         fs.writeFileSync(yyzPath, fileContent, 'utf8');
         // 执行设置管理员密码程序
-        const exePath = path.join(BASE_DIR, 'AES256sr-J.exe');
+        const exePath = path.join(BASE_DIR, 'AES256-Z.exe');
         // 使用promise封装exec
         await new Promise((resolve, reject) => {
             exec(exePath, (error, stdout, stderr) => {
@@ -1091,7 +1155,7 @@ ${newPassword}\n`;
         const result = fs.readFileSync(resultFilePath, 'utf8').trim();
         if (result === '1') {
             // 记录操作日志
-            logUserActivity(req.user.username, req.user.role, 'set_admin_password');
+            logUserActivity(req, 'set_admin_password', req.user.username, '', 'success');
 
             return res.json({ success: true, message: '管理员密码设置成功' });
         } else {
@@ -1125,7 +1189,7 @@ app.post('/api/admin/clean-cache', [authenticateToken, requireAdmin], (req, res)
             }
         });
         // 记录操作日志
-        logUserActivity(req.user.username, req.user.role, `clean_cache_${cleanedCount}_files`);
+        logUserActivity(req, `clean_cache_${cleanedCount}_files`, req.user.username, '', 'success');
 
         res.json({
             success: true,
@@ -1154,7 +1218,7 @@ app.get('/api/admin/security-logs', [authenticateToken, requireAdmin], (req, res
             }
         }
         // 记录操作日志
-        logUserActivity(req.user.username, req.user.role, 'view_security_logs');
+        logUserActivity(req, 'view_security_logs', req.user.username, '', 'success');
         res.json({
             success: true,
             logs: logs
@@ -1177,7 +1241,7 @@ app.post('/api/admin/audit-data', [authenticateToken, requireAdmin], (req, res) 
             auditResult: '数据完整性良好'
         };
         // 记录操作日志
-        logUserActivity(req.user.username, req.user.role, 'audit_data_integrity');
+        logUserActivity(req, 'audit_data_integrity', req.user.username, '', 'success');
 
         res.json({
             success: true,

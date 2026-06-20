@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include <windows.h>  // Windows 系统下设置控制台编码用
+#include <windows.h>
 using namespace std;
 int main() {
     SetConsoleOutputCP(65001);

@@ -157,8 +157,8 @@ async function loadData(manualLoad = false) {
         if (result.success) {
             currentData = result.data;
             renderTable();
-            updatePaginationInfo(currentData.length);
-            console.log('从服务器加载数据成功，共', currentData.length, '条');
+            updatePaginationInfo(result.total);
+            console.log('从服务器加载数据成功，共', result.total, '条，当前显示第', result.page, '页');
         } else {
             throw new Error('服务器加载失败: ' + result.message);
         }
@@ -255,6 +255,10 @@ async function searchData() {
         id, name, gender, idCard, birth, location, age
     });
     
+    // 添加分页参数
+    searchParams.append('page', currentPage);
+    searchParams.append('pageSize', pageSize);
+    
     // 只有当输入框有值时才添加到搜索参数中
     if (id) searchParams.append('id', id);
     if (name) searchParams.append('name', name);
@@ -281,8 +285,8 @@ async function searchData() {
         if (result.success) {
             currentData = result.data;
             renderTable();
-            updatePaginationInfo(currentData.length);
-            console.log('搜索成功，找到', currentData.length, '条结果');
+            updatePaginationInfo(result.total);
+            console.log('搜索成功，找到', result.total, '条结果，当前显示第', result.page, '页');
         } else {
             console.error('搜索失败:', result.message);
             alert('搜索失败: ' + result.message);
@@ -439,7 +443,7 @@ function updateSelectAllCheckbox() {
 }
 
 // 删除选中
-function deleteSelected() {
+async function deleteSelected() {
     if (selectedRows.size === 0) {
         alert('请先选择要删除的数据');
         return;
@@ -447,10 +451,32 @@ function deleteSelected() {
 
     if (!confirm(`确定要删除选中的 ${selectedRows.size} 条数据吗？`)) return;
 
-    // 实现批量删除逻辑
-    alert(`批量删除 ${selectedRows.size} 条数据`);
-    selectedRows.clear();
-    loadData();
+    try {
+        showLoading();
+        const response = await fetch('/api/data', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: JSON.stringify({ ids: Array.from(selectedRows) })
+        });
+
+        const result = await response.json();
+        hideLoading();
+
+        if (result.success) {
+            alert(`成功删除 ${selectedRows.size} 条数据`);
+            selectedRows.clear();
+            loadData();
+        } else {
+            alert('删除失败: ' + result.message);
+        }
+    } catch (error) {
+        console.error('删除数据失败:', error);
+        hideLoading();
+        alert('删除数据时发生错误: ' + error.message);
+    }
 }
 
 // 分页功能
@@ -485,7 +511,10 @@ function showSection(sectionId) {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
-    event.target.classList.add('active');
+    const activeNavItem = document.querySelector(`.nav-item[onclick="showSection('${sectionId}')"]`);
+    if (activeNavItem) {
+        activeNavItem.classList.add('active');
+    }
 
     // 加载特定部分的数据
     if (sectionId === 'data-analysis') {

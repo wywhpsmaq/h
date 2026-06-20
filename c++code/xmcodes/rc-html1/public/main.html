@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信息管理系统</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body class="light-theme">
+    <div class="main-container">
+        <div class="header">
+            <h1>信息管理系统</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="themeToggle" onclick="toggleTheme()">
+                    🌙 深色模式
+                </button>
+                <span id="currentUser">欢迎，用户</span>
+                <button class="btn btn-danger" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="showSection('data-management')">
+                    📊 数据管理
+                </div>
+                <div class="nav-item" onclick="showSection('user-info')">
+                    👤 用户信息
+                </div>
+                <div class="nav-item" onclick="showSection('data-analysis')">
+                    📈 数据分析
+                </div>
+
+                <!-- 管理员特有菜单项 -->
+                <div class="nav-item admin-only" id="nav-admin-panel" onclick="showSection('admin-panel')" style="display: none;">
+                    🔒 管理员面板
+                </div>
+                <div class="nav-item admin-only" id="nav-admin-panel" onclick="showSection('user-permissions')" style="display: none;">
+                    🛡️ 管理用户权限
+                </div>
+            </div>
+            <div class="main-content">
+                <div id="data-management" class="section">
+                    <h2>数据管理</h2>
+                    <div class="search-bar">
+                        <input type="text" class="search-input" id="searchInput" placeholder="搜索（编号、姓名、身份证号、工作单位、联系电话）">
+                        <button class="btn btn-primary" onclick="searchData()">搜索</button>
+                        <button class="btn btn-secondary" onclick="clearSearch()">清除</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="showAddModal()">添加数据</button>
+                        <button class="btn btn-danger" onclick="deleteSelected()">删除选中</button>
+                        <button class="btn btn-primary" onclick="importData()">导入数据</button>
+                        <button class="btn btn-primary" onclick="exportData()">导出数据</button>
+                        <button class="btn btn-info" onclick="loadFromServer()">从服务器加载</button>
+                        <button class="btn btn-info" onclick="saveToServer()">保存当前至服务器</button>
+                        <!--button class="btn btn-warning" onclick="khAction()">KH功能</button!-->
+                        <input type="file" id="fileInput" accept=".csv,.txt" style="display: none;" onchange="handleFileImport(event)">
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                    <th>序号</th>
+                                    <th>姓名</th>
+                                    <th>性别</th>
+                                    <th>身份证号</th>
+                                    <th>出生日期</th>
+                                    <th>地点</th>
+                                    <th>年龄</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <button class="btn btn-secondary" onclick="previousPage()">上一页</button>
+                        <span id="pageInfo">第 1 页，共 1 页</span>
+                        <button class="btn btn-secondary" onclick="nextPage()">下一页</button>
+                    </div>
+                </div>
+                <div id="user-info" class="section" style="display: none;">
+                    <h2>用户信息</h2>
+                    <div class="user-profile">
+                        <div class="profile-info">
+                            <h3>个人信息</h3>
+                            <div class="info-item">
+                                <span class="label">用户名：</span>
+                                <span id="usernameInfo">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">角色：</span>
+                                <span id="roleInfo">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">最后登录：</span>
+                                <span id="lastLoginInfo">-</span>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <h3>账户管理</h3>
+                            <button class="btn btn-primary" onclick="showChangePasswordModal()">修改密码</button>
+                            <button class="btn btn-primary" onclick="showChangeUsernameModal()">修改用户名</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="data-analysis" class="section" style="display: none;">
+                    <h2>数据分析</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="loadAnalysis()">刷新分析</button>
+                    </div>
+                    <div id="analysisContent">
+                        <p>数据分析内容将在这里显示...</p>
+                    </div>
+                </div>
+
+                <div id="admin-panel" class="section admin-only" style="display: none;">
+                    <h2>管理员面板</h2>
+                    <div class="admin-actions">
+                        <div class="admin-section">
+                            <h3>用户管理</h3>
+                            <button class="btn btn-primary" onclick="showUserManagement()">管理用户账户</button>
+                            <button class="btn btn-success" onclick="showAddUserModal()">注册新用户</button>
+                        </div>
+                        <div class="admin-section">
+                            <h3>注册口令管理</h3>
+                            <button class="btn btn-primary" onclick="loadRegistrationToken()">查看当前口令</button>
+                            <button class="btn btn-success" onclick="generateRegistrationToken()">生成新口令</button>
+                        </div>
+                        <div class="admin-section">
+                            <h3>系统维护</h3>
+                            <button class="btn btn-info" onclick="backupSystem()">备份系统</button>
+                            <button class="btn btn-warning" onclick="viewLogs()">查看日志</button>
+                        </div>
+                    </div>
+                    <!-- 注册口令管理内容 -->
+                    <div id="registration-token-management" style="display: none; margin-top: 20px;">
+                        <h3>注册口令管理</h3>
+                        <div class="token-info">
+                            <div class="form-group">
+                                <label for="currentToken">当前注册口令：</label>
+                                <input type="text" id="currentToken" readonly style="width: 300px; margin-right: 10px;">
+                            </div>
+                            <div class="form-group">
+                                <label for="tokenExpiry">有效期至：</label>
+                                <input type="text" id="tokenExpiry" readonly style="width: 300px;">
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <button class="btn btn-success" onclick="generateRegistrationToken()">生成新口令</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 用户管理内容 -->
+                    <div id="user-management" style="display: none; margin-top: 20px;">
+                        <h3>用户列表</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>用户名</th>
+                                        <th>角色</th>
+                                        <th>状态</th>
+                                        <th>最后登录</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="user-permissions" class="section admin-only" style="display: none;">
+                    <h2>管理用户权限</h2>
+                    <p>用户权限管理功能正在开发中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据添加/编辑模态框 -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">添加数据</h3>
+                <button class="btn btn-close" onclick="closeModal('dataModal')">×</button>
+            </div>
+            <form id="dataForm" onsubmit="saveData(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="inputId">编号</label>
+                        <input type="text" id="inputId" name="编号" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputName">姓名</label>
+                        <input type="text" id="inputName" name="姓名" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputGender">性别</label>
+                        <select id="inputGender" name="性别">
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputBirth">出生年月</label>
+                        <input type="date" id="inputBirth" name="出生年月" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputIdCard">身份证号</label>
+                        <input type="text" id="inputIdCard" name="身份证号" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNation">民族</label>
+                        <input type="text" id="inputNation" name="民族">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPolitical">政治面貌</label>
+                        <input type="text" id="inputPolitical" name="政治面貌">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEducation">学历</label>
+                        <input type="text" id="inputEducation" name="学历">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputDegree">学位</label>
+                        <input type="text" id="inputDegree" name="学位">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputSchool">毕业院校</label>
+                        <input type="text" id="inputSchool" name="毕业院校">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputMajor">专业</label>
+                        <input type="text" id="inputMajor" name="专业">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputGraduationDate">毕业时间</label>
+                        <input type="date" id="inputGraduationDate" name="毕业时间">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputWorkUnit">工作单位</label>
+                        <input type="text" id="inputWorkUnit" name="工作单位">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPosition">职务</label>
+                        <input type="text" id="inputPosition" name="职务">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputTitle">职称</label>
+                        <input type="text" id="inputTitle" name="职称">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPhone">联系电话</label>
+                        <input type="text" id="inputPhone" name="联系电话">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputEmail">电子邮箱</label>
+                        <input type="email" id="inputEmail" name="电子邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputAddress">通讯地址</label>
+                        <input type="text" id="inputAddress" name="通讯地址">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPostalCode">邮编</label>
+                        <input type="text" id="inputPostalCode" name="邮编">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPartyDate">入党时间</label>
+                        <input type="date" id="inputPartyDate" name="入党时间">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputWorkStartDate">参加工作时间</label>
+                        <input type="date" id="inputWorkStartDate" name="参加工作时间">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="inputResume">简历</label>
+                        <textarea id="inputResume" name="简历" rows="4"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="inputRemarks">备注</label>
+                        <textarea id="inputRemarks" name="备注" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">保存</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('dataModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 修改密码模态框 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改密码</h3>
+                <button class="btn btn-close" onclick="closeModal('passwordModal')">×</button>
+            </div>
+            <form id="passwordForm" onsubmit="changePassword(event)">
+                <div class="form-group">
+                    <label for="oldPassword">旧密码</label>
+                    <input type="password" id="oldPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">新密码</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">确认新密码</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">确定</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('passwordModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 修改用户名模态框 -->
+    <div id="usernameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改用户名</h3>
+                <button class="btn btn-close" onclick="closeModal('usernameModal')">×</button>
+            </div>
+            <form id="usernameForm" onsubmit="changeUsername(event)">
+                <div class="form-group">
+                    <label for="currentUsername">当前用户名</label>
+                    <input type="text" id="currentUsername" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="newUsername">新用户名</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">确认密码</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">确定</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('usernameModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 注册新用户模态框 -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>注册新用户</h3>
+                <button class="btn btn-close" onclick="closeModal('addUserModal')">×</button>
+            </div>
+            <form id="addUserForm" onsubmit="addUser(event)">
+                <div class="form-group">
+                    <label for="newUserUsername">用户名</label>
+                    <input type="text" id="newUserUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUserPassword">密码</label>
+                    <input type="password" id="newUserPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUserIsAdmin">角色</label>
+                    <select id="newUserIsAdmin" required>
+                        <option value="false">普通用户</option>
+                        <option value="true">管理员</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">注册</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addUserModal')">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 加载指示器 -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>加载中...</p>
+    </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

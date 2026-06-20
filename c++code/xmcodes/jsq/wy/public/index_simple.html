@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>800x1600 Matrix Grid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        #gridCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gridCanvas"></canvas>
+
+    <script>
+        class MatrixGrid {
+            constructor() {
+                this.canvas = document.getElementById('gridCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gridSize = { rows: 800, cols: 1600 };
+                this.cellSize = 1; // 单元格大小为1像素
+                this.colors = [];
+                
+                // 初始化颜色数组
+                for (let i = 0; i < this.gridSize.rows; i++) {
+                    this.colors[i] = [];
+                    for (let j = 0; j < this.gridSize.cols; j++) {
+                        this.colors[i][j] = '#ffffff';
+                    }
+                }
+                
+                this.setupCanvas();
+                this.loadGridData();
+                this.startAutoRefresh();
+            }
+            
+            setupCanvas() {
+                // 设置Canvas大小为网格大小
+                this.canvas.width = this.gridSize.cols;
+                this.canvas.height = this.gridSize.rows;
+                this.renderGrid();
+            }
+            
+            async loadGridData() {
+                try {
+                    const response = await fetch('/api/getColors');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.colors = data.data.grid;
+                        this.renderGrid();
+                    }
+                } catch (error) {
+                    console.error('Error loading grid data:', error);
+                }
+            }
+            
+            startAutoRefresh() {
+                setInterval(() => {
+                    this.loadGridData();
+                }, 1000); // 每秒刷新一次
+            }
+            
+            renderGrid() {
+                // 创建ImageData对象
+                const imageData = this.ctx.createImageData(this.gridSize.cols, this.gridSize.rows);
+                const data = imageData.data;
+                
+                // 填充像素数据
+                for (let i = 0; i < this.gridSize.rows; i++) {
+                    for (let j = 0; j < this.gridSize.cols; j++) {
+                        const color = this.colors[i][j];
+                        const index = (i * this.gridSize.cols + j) * 4;
+                        
+                        // 解析HEX颜色
+                        const r = parseInt(color.substr(1, 2), 16);
+                        const g = parseInt(color.substr(3, 2), 16);
+                        const b = parseInt(color.substr(5, 2), 16);
+                        
+                        data[index] = r;
+                        data[index + 1] = g;
+                        data[index + 2] = b;
+                        data[index + 3] = 255; // 不透明度
+                    }
+                }
+                
+                // 绘制图像
+                this.ctx.putImageData(imageData, 0, 0);
+            }
+        }
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new MatrixGrid();
+        });
+    </script>
+</body>
+</html>

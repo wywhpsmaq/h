@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!-- saved from url=(0037)https://noi.yyoj.top/d/CC24/anim/heap -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<base href="/d/CC24/anim/heap/">--><base href=".">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二叉堆</title>
+    <link rel="stylesheet" href="./heap_files/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>🌳 认识二叉堆</h1>
+            <p class="subtitle">插入和删除</p>
+        </header>
+
+        <!-- 知识卡片区域 -->
+        <div class="knowledge-cards" id="knowledge-cards">
+            <div class="card-header" onclick="toggleKnowledge()">
+                <span>📚 什么是堆？（点击展开/收起）</span>
+                <span class="toggle-icon" id="toggle-icon">▼</span>
+            </div>
+            <div class="card-content" id="card-content">
+                <div class="concept-box">
+                    <h4>🎯 堆的定义</h4>
+                    <p><strong>堆</strong>是一种特殊的<strong>完全二叉树</strong>，它满足一个重要的规则：</p>
+                    <ul>
+                        <li><strong>大根堆</strong>：每个节点的值都 <strong>≥</strong> 它的孩子节点的值（父亲总是最大的！）</li>
+                        <li><strong>小根堆</strong>：每个节点的值都 <strong>≤</strong> 它的孩子节点的值（父亲总是最小的！）</li>
+                    </ul>
+                    <p>这个演示使用的是<strong>大根堆</strong>，所以最大的数字永远在最上面（根节点）。</p>
+                </div>
+                <div class="concept-box">
+                    <h4>🌲 什么是完全二叉树？</h4>
+                    <p>想象你在往一个"金字塔"里放球：</p>
+                    <ul>
+                        <li>必须<strong>从上往下</strong>、<strong>从左往右</strong>依次放</li>
+                        <li>每一层必须放满了，才能放下一层</li>
+                        <li>最后一层可以不放满，但必须是<strong>靠左排列</strong>的</li>
+                    </ul>
+                </div>
+                <div class="concept-box">
+                    <h4>📦 用数组存储堆</h4>
+                    <p>堆可以用一个<strong>一维数组</strong>来存储！规则非常简单：</p>
+                    <ul>
+                        <li>根节点放在 <code>h[1]</code></li>
+                        <li>节点 <code>h[i]</code> 的<strong>左孩子</strong>在 <code>h[i*2]</code></li>
+                        <li>节点 <code>h[i]</code> 的<strong>右孩子</strong>在 <code>h[i*2+1]</code></li>
+                        <li>节点 <code>h[i]</code> 的<strong>父亲</strong>在 <code>h[i/2]</code>（整数除法）</li>
+                    </ul>
+                </div>
+                <div class="concept-box">
+                    <h4>⬆️ 插入操作（上浮 up）</h4>
+                    <p>往堆里放一个新数字时：</p>
+                    <ol>
+                        <li>先把它放到数组<strong>末尾</strong>（树的最后一个位置）</li>
+                        <li>然后跟它的<strong>父亲</strong>比较：如果比父亲大，就<strong>交换</strong>位置</li>
+                        <li><strong>重复</strong>第2步，直到不比父亲大，或者已经到了根节点</li>
+                    </ol>
+                    <p>这个过程叫做<strong>"上浮"</strong>，因为大的数字会像气泡一样往上跑！</p>
+                </div>
+                <div class="concept-box">
+                    <h4>⬇️ 删除操作（下沉 down）</h4>
+                    <p>从堆里拿走最大的数字（根节点）时：</p>
+                    <ol>
+                        <li>先记住根节点的值（就是要拿走的最大值）</li>
+                        <li>把数组<strong>最后一个</strong>数字移到根节点位置</li>
+                        <li>然后跟它的<strong>两个孩子</strong>中<strong>较大的那个</strong>比较：如果比孩子小，就<strong>交换</strong>位置</li>
+                        <li><strong>重复</strong>第3步，直到不比孩子小，或者已经没有孩子了</li>
+                    </ol>
+                    <p>这个过程叫做<strong>"下沉"</strong>，因为小的数字会往下掉！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作说明气泡 -->
+        <div class="explanation-bubble" id="explanation-bubble">
+            <span id="explanation-text">点击下方按钮开始操作...</span>
+        </div>
+
+        <div class="split-container">
+            <!-- Left Panel: Visualization -->
+            <div class="viz-panel">
+                <div class="visualization-area" id="visualization-area">
+                    <div class="tree-container" id="tree-container">
+                        <svg id="connections-layer"></svg>
+                    </div>
+                </div>
+
+                <div class="array-view-container">
+                    <h3>📦 存储顺序（数组视角）</h3>
+                    <div class="array-view" id="array-view"></div>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="control-row">
+                        <div class="control-group input-group">
+                            <input type="number" id="value-input" placeholder="输入一个数字" onkeydown="if(event.key===&#39;Enter&#39;) document.getElementById(&#39;insert-btn&#39;).click()">
+                            <button id="insert-btn" class="primary-btn" title="把数字放入堆中">⬆️ 放入堆中</button>
+                        </div>
+                        <div class="control-group action-group">
+                            <button id="extract-max-btn" class="secondary-btn" title="拿走堆顶最大的数字">⬇️ 拿走最大的</button>
+                            <button id="randomize-btn" class="tertiary-btn" title="随机生成一些数字">🎲 随机生成</button>
+                            <button id="clear-btn" class="danger-btn" title="清空所有数字">🗑️ 清空</button>
+                        </div>
+                    </div>
+                    <div class="control-row secondary-controls">
+                        <div class="control-group speed-group">
+                            <label for="speed-slider">⏱️ 动画速度</label>
+                            <input type="range" id="speed-slider" min="1" max="10" value="3">
+                        </div>
+                        <div class="control-group teaching-group">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="teaching-mode-toggle">
+                                <span class="toggle-switch"></span>
+                                📖 教学模式（分步演示）
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 教学模式下一步按钮 -->
+                <div class="next-step-container" id="next-step-container" style="display: none;">
+                    <button id="next-step-btn" class="next-step-btn">👉 下一步</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Code -->
+            <div class="code-panel">
+                <div class="code-tabs">
+                    <button class="tab-btn active" data-tab="tab-up">插入 (up)</button>
+                    <button class="tab-btn" data-tab="tab-down">删除 (down)</button>
+                </div>
+
+                <div class="code-content-area">
+                    <!-- Tab 1: Up (Insert) -->
+                    <div id="tab-up" class="code-tab-content active">
+                        <pre><code class="language-cpp"><span class="code-line" id="line-up-sig"><span class="token keyword">void</span> <span class="token func">up</span>(<span class="token keyword">int</span> u)</span>
+<span class="code-line" id="line-up-brace">{</span>
+<span class="code-line" id="line-up-while">    <span class="token keyword">while</span> (u / <span class="token num">2</span> &amp;&amp; h[u / <span class="token num">2</span>] &lt; h[u])</span>
+<span class="code-line" id="line-up-while-brace">{</span>
+<span class="code-line" id="line-up-swap">        swap(h[u / <span class="token num">2</span>], h[u]);</span>
+<span class="code-line" id="line-up-move">        u /= <span class="token num">2</span>;</span>
+<span class="code-line" id="line-up-while-end">    }</span>
+<span class="code-line" id="line-up-end">}</span>
+
+<span class="code-line" id="line-add"><span class="token keyword">void</span> <span class="token func">insert</span>(<span class="token keyword">int</span> x)</span>
+<span class="code-line" id="line-add-brace">{</span>
+<span class="code-line" id="line-add-push">    h[ ++ cnt] = x;</span>
+<span class="code-line" id="line-add-up">    <span class="token func">up</span>(cnt);</span>
+<span class="code-line" id="line-add-end">}</span></code></pre>
+                    </div>
+
+                    <!-- Tab 3: Down (Extract) -->
+                    <div id="tab-down" class="code-tab-content">
+                        <pre><code class="language-cpp"><span class="code-line" id="line-down-sig"><span class="token keyword">void</span> <span class="token func">down</span>(<span class="token keyword">int</span> u)</span>
+<span class="code-line" id="line-down-brace">{</span>
+<span class="code-line" id="line-down-t">    <span class="token keyword">int</span> t = u;</span>
+<span class="code-line" id="line-down-check-l">    <span class="token keyword">if</span> (u * <span class="token num">2</span> &lt;= cnt &amp;&amp; h[u * <span class="token num">2</span>] &gt; h[t]) t = u * <span class="token num">2</span>;</span>
+<span class="code-line" id="line-down-check-r">    <span class="token keyword">if</span> (u * <span class="token num">2</span> + <span class="token num">1</span> &lt;= cnt &amp;&amp; h[u * <span class="token num">2</span> + <span class="token num">1</span>] &gt; h[t]) t = u * <span class="token num">2</span> + <span class="token num">1</span>;</span>
+<span class="code-line" id="line-down-check-swap">    <span class="token keyword">if</span> (u != t)</span>
+<span class="code-line" id="line-down-if-brace">{</span>
+<span class="code-line" id="line-down-swap">        swap(h[u], h[t]);</span>
+<span class="code-line" id="line-down-recurse">        <span class="token func">down</span>(t);</span>
+<span class="code-line" id="line-down-if-end">    }</span>
+<span class="code-line" id="line-down-end">}</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+    <script src="./heap_files/script.js.下载"></script>
+
+
+
+</body></html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>与我的本地 AI 对话</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 85vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 22px 30px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 18px 22px;
+            border-radius: 20px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message .sender {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .input-area {
+            padding: 22px 30px;
+            border-top: 1px solid #eaeaea;
+            background: #f9f9f9;
+            display: flex;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 16px 22px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+            resize: none;
+            min-height: 56px;
+        }
+
+        #messageInput:focus {
+            border-color: #764ba2;
+        }
+
+        #sendButton {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0 32px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            align-self: center;
+        }
+
+        #sendButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(118, 75, 162, 0.25);
+        }
+
+        #sendButton:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .typing-indicator {
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: #666;
+            padding: 18px 22px;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            font-style: italic;
+            display: none;
+            /* 默认隐藏，等待时显示 */
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 92vh;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 18px;
+            }
+
+            .input-area {
+                padding: 18px;
+                flex-direction: column;
+            }
+
+            #sendButton {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>🧠 本地 AI 对话助手</h1>
+            <div class="subtitle">正在与 <strong>deepseek-r1:14b</strong> 对话 · 端口: 11434</div>
+        </div>
+
+        <div class="chat-box" id="chatBox">
+            <!-- 对话消息将动态插入到这里 -->
+            <div class="message ai-message">
+                <div class="sender">AI 助手</div>
+                你好！我已准备就绪。请告诉我你想聊什么？
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">AI 正在思考...</div>
+
+        <div class="input-area">
+            <textarea id="messageInput" placeholder="输入你的消息...（按 Ctrl+Enter 发送）" rows="1"></textarea>
+            <button id="sendButton" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        
+        // 配置
+        const OLLAMA_API_URL = "http://localhost:11434/api/generate";
+        const MODEL_NAME = "deepseek-r1:14b"; // 确保与你本地运行的模型名一致
+
+        // 获取DOM元素
+        const chatBox = document.getElementById('chatBox');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // 自动调整输入框高度
+        messageInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // 按 Ctrl+Enter 发送消息
+        messageInput.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 核心：发送消息到 Ollama API
+        async function sendMessage() {
+            const userMessage = messageInput.value.trim();
+            if (!userMessage) return;
+
+            // 1. 添加用户消息到界面
+            addMessage('你', userMessage, 'user');
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // 2. 禁用按钮，显示“正在输入”指示器
+            sendButton.disabled = true;
+            typingIndicator.style.display = 'block';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // 3. 调用 Ollama API
+                const response = await fetch(OLLAMA_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: MODEL_NAME,
+                        prompt: userMessage,
+                        stream: false, // 设为 true 可支持流式响应，此处为简化设为 false
+                        options: { temperature: 0.7 }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                // 4. 添加 AI 回复到界面
+                addMessage('AI 助手', data.response.trim(), 'ai');
+
+            } catch (error) {
+                console.error('对话出错:', error);
+                addMessage('系统', `抱歉，对话出错。请检查：<br>1. Ollama 服务是否运行（命令：<code>ollama run deepseek-r1:14b</code>）<br>2. 端口 11434 是否可访问<br>错误详情: ${error.message}`, 'ai');
+            } finally {
+                // 5. 重置界面状态
+                typingIndicator.style.display = 'none';
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // 向聊天框添加消息
+        function addMessage(sender, text, type) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type}-message`;
+            messageElement.innerHTML = `<div class="sender">${sender}</div>${text}`;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight; // 滚动到底部
+        }
+    </script>
+</body>
+
+</html>

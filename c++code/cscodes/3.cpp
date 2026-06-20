@@ -202,7 +202,7 @@ int makeShootDecision(int num) {
     if (selfRatio > 0.6 && dis(gen) > 0.3) return 1;
     // 血量劣势时更可能向玩家开枪
     if (selfRatio < 0.4 && dis(gen) > 0.3) return 2;
-    
+
     // 默认策略：随机选择
     uniform_int_distribution<> shoot(1, 2);
     return shoot(gen);

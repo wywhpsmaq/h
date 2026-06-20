@@ -1,0 +1,21 @@
+{
+  "name": "matrix-grid-server",
+  "version": "1.0.0",
+  "description": "A web server for displaying and controlling an 800x1600 matrix grid",
+  "main": "matrix_server.js",
+  "scripts": {
+    "start": "node matrix_server.js",
+    "dev": "nodemon matrix_server.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

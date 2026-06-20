@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "打字鸭单词捕获器",
+    "version": "1.0",
+    "description": "捕获打字鸭游戏中出现的单词并发送到本地",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://www.daziya.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.daziya.com/game/play*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "打字鸭单词捕获器"
+    }
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 300px;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            font-size: 16px;
+            margin-top: 0;
+            color: #333;
+        }
+
+        .status {
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .word-count {
+            font-weight: bold;
+            color: #0078d4;
+        }
+
+        button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #005a9e;
+        }
+
+        .export-options {
+            margin-top: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+        }
+
+        #wordList {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .word-item {
+            padding: 2px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .word-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>打字鸭单词捕获器</h1>
+
+    <div class="status">
+        状态: <span id="status">等待中...</span><br>
+        已捕获: <span id="wordCount" class="word-count">0</span> 个单词
+    </div>
+
+    <div>
+        <button id="startBtn">开始捕获</button>
+        <button id="stopBtn">停止捕获</button>
+        <button id="clearBtn">清空列表</button>
+    </div>
+
+    <div class="export-options">
+        <select id="exportFormat">
+            <option value="txt">文本文件 (.txt)</option>
+            <option value="csv">CSV文件 (.csv)</option>
+            <option value="json">JSON文件 (.json)</option>
+        </select>
+        <button id="exportBtn">导出单词</button>
+    </div>
+
+    <div id="wordList">
+        <!-- 单词列表将在这里显示 -->
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

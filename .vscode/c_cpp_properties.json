@@ -1,16 +1,13 @@
 {
   "configurations": [
     {
-      "name": "Win64",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "C:/msys64/mingw64/include/**"
-      ],
-      "defines": [],
-      "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
-      "cStandard": "c17",
+      "compilerPath": "D:\\msys64\\mingw64\\bin\\g++.exe",
       "cppStandard": "c++23",
-      "intelliSenseMode": "windows-gcc-x64"
+      "includePath": [
+        "${{workspaceFolder}}/**"
+      ],
+      "intelliSenseMode": "windows-gcc-x64",
+      "name": "Win32"
     }
   ],
   "version": 4

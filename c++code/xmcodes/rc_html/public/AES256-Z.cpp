@@ -85,7 +85,17 @@ int main () {
 		} else if (g == 1) { // 管理员登录
 			string s, s1, s2;
 			cin >> s >> s1 >> s2;
-			if (s2 != "wyw-admin.2025") { // 暂时写死管理员密码
+			// 从password.dat文件中读取管理员密码
+			ifstream passwordFile("data\\password.dat");
+			if (!passwordFile.is_open()) {
+				freopen ("yz.txt", "w", stdout);
+				cout << 0 << '\n';
+				return 0;
+			}
+			string adminPassword;
+			getline(passwordFile, adminPassword);
+			passwordFile.close();
+			if (s2 != adminPassword) {
 				freopen ("yz.txt", "w", stdout);
 				cout << 0 << '\n';
 				return 0;

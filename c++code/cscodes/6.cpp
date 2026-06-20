@@ -1,96 +1,139 @@
-#include <bits/stdc++.h>
-#include <windows.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <sstream>
+#include <string>
+
 using namespace std;
-void js (int num) {
-	for (int i = num; i >= 0; i--) {
-		std::this_thread::sleep_for (std::chrono::milliseconds (1000));
-		std::cout << "\b" << i;
+
+struct Point {
+	double x, y;
+
+	Point(double x = 0, double y = 0) : x(x), y(y) {
 	}
+
+	bool operator <(const Point& p) const { return x < p.x || (x == p.x && y < p.y); }
+
+	bool operator ==(const Point& p) const { return x == p.x && y == p.y; }
+};
+
+// 计算叉积
+double cross(const Point& a, const Point& b, const Point& c) {
+	return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
-bool ping () {
-	string ccs = "ping -n 1 -w 1000 8.8.8.8 > nul";
-	const int jg = system (ccs.c_str ());
-	return !jg;
+
+// 计算两点之间的距离
+double distance(const Point& a, const Point& b) {
+	double dx = a.x - b.x;
+	double dy = a.y - b.y;
+	return sqrt(dx * dx + dy * dy);
 }
-vector<int> sr () {
-	vector<int> p;
-	freopen ("cs\\cs.txt", "r", stdin);
-	for (int i = 0; i < 4; i++) {
-		int a;
-		cin >> a;
-		p.push_back (a);
+
+// 计算多边形的面积
+double polygon_area(const vector<Point>& poly) {
+	double area = 0.0;
+	int n = poly.size();
+	for (int i = 0; i < n; i++) {
+		int j = (i + 1) % n;
+		area += poly[i].x * poly[j].y - poly[j].x * poly[i].y;
 	}
-	return p;
+	return fabs(area) / 2.0;
 }
-void sc (vector<int> p) {
-	freopen ("114514.txt", "r", stdin);
-	freopen ("cs\\cs.txt", "w", stdout);
-	for (int i : p) { cout << i << '\n'; }
+
+// 计算多边形的周长
+double polygon_perimeter(const vector<Point>& poly) {
+	double perimeter = 0.0;
+	int n = poly.size();
+	for (int i = 0; i < n; i++) {
+		int j = (i + 1) % n;
+		perimeter += distance(poly[i], poly[j]);
+	}
+	return perimeter;
 }
-int main () {
-		SetConsoleOutputCP (CP_UTF8);
-		SetConsoleCP (CP_UTF8);
-		setlocale (LC_ALL, "en_US.UTF-8");
-	random_device rd;
-	mt19937 gen (rd ());
-	uniform_int_distribution<> f (1, 10);
-	if (!ping ()) {
-		cout << "你的网络有问题，无法追踪定向服务器！！！\n";
-		system ("pause");
-		return 0;
+
+// 计算凸包（Andrew算法）
+vector<Point> convex_hull(vector<Point> points) {
+	int n = points.size();
+	if (n <= 1) return points;
+
+	sort(points.begin(), points.end());
+
+	vector<Point> hull;
+	hull.reserve(n + 1);
+
+	// 下凸包
+	for (int i = 0; i < n; hull.push_back(points[i++])) {
+		while (hull.size() >= 2 && cross(hull[hull.size() - 2], hull.back(), points[i]) <= 0) { hull.pop_back(); }
 	}
-	cout << "如果你要玩PCL2请输入0并按Enter\n如果你要玩PCL2社区版请输入1并按Enter\n如果你要玩zj-1创请输入2并按Enter\n如果你要玩ZJ-2创请输入3并按Enter\n";
-	int a;
-	cin >> a;
-	if (a == 0) {
-		vector<int> num = sr ();
-		if (num[a] == 0) {
-			cout << "您的次数已经用完，无法启动！！！";
-			return 0;
-		}
-		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
-		js (f (gen));
-		cout << '\n';
-		num[a]--;
-		sc (num);
-		system ("start yx-2\\PCL2\\PCL2.exe");
-	} else if (a == 1) {
-		vector<int> num = sr ();
-		if (num[a] == 0) {
-			cout << "您的次数已经用完，无法启动！！！\n";
-			return 0;
-		}
-		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
-		js (f (gen));
-		cout << '\n';
-		num[a]--;
-		sc (num);
-		system ("start yx-2\\PCL2_CE\\PCL2_CE.exe");
-	} else if (a == 2) {
-		vector<int> num = sr ();
-		if (num[a] == 0) {
-			cout << "您的次数已经用完，无法启动！！！\n";
-			return 0;
-		}
-		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
-		js (f (gen));
-		cout << '\n';
-		num[a]--;
-		sc (num);
-		system ("start yx-2\\ZJ-1\\PlantsVsZombiesRH.exe");
-	} else if (a == 3) {
-		vector<int> num = sr ();
-		if (num[a] == 0) {
-			cout << "您的次数已经用完，无法启动！！！\n";
-			return 0;
-		}
-		cout << "你只剩" << num[a] << "次，你确定要启动吗？如果是请等待环境检测结束，否则请关闭窗口。环境检测结束剩余：";
-		js (f (gen));
-		cout << '\n';
-		num[a]--;
-		sc (num);
-		system ("start yx-2\\ZJ-2\\PlantsVsZombiesRH.exe");
-	} else {
-		cout << "cnm,没有这个选项";
+
+	// 上凸包
+	for (int i = n - 2, t = hull.size() + 1; i >= 0; hull.push_back(points[i--])) {
+		while (hull.size() >= t && cross(hull[hull.size() - 2], hull.back(), points[i]) <= 0) { hull.pop_back(); }
 	}
+
+	hull.pop_back(); // 去掉重复的起点
+	return hull;
+}
+
+// 从凸包中选择m个点
+vector<Point> select_points_from_hull(const vector<Point>& hull, int m) {
+	int n = hull.size();
+	if (n <= m) return hull;
+
+	// 我们选择间隔均匀的点
+	vector<Point> selected;
+	selected.reserve(m);
+
+	double step = (double)n / m;
+	for (int i = 0; i < m; i++) {
+		int idx = round(i * step);
+		if (idx >= n) idx = n - 1;
+		selected.push_back(hull[idx]);
+	}
+
+	return selected;
+}
+
+// 从字符串中解析点坐标
+Point parse_point(const string& s) {
+	stringstream ss(s);
+	char c;
+	double x, y;
+	ss >> c >> x >> c >> y >> c;
+	return Point(x, y);
+}
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(0);
+
+	int n, m;
+	cin >> n >> m;
+
+	vector<Point> points;
+	points.reserve(n);
+
+	for (int i = 0; i < n; i++) {
+		string s;
+		cin >> s;
+		points.push_back(parse_point(s));
+	}
+
+	// 计算凸包
+	vector<Point> hull = convex_hull(points);
+
+	// 选择m个点
+	vector<Point> selected = select_points_from_hull(hull, m);
+
+	// 计算面积和周长
+	double area = polygon_area(selected);
+	double perimeter = polygon_perimeter(selected);
+
+	// 输出结果，保留6位小数
+	cout << fixed << setprecision(6);
+	cout << perimeter << " " << area << endl;
+
+	return 0;
 }

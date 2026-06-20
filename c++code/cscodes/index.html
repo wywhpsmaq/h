@@ -1,400 +1,760 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聊天对话页面</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>银河碎砖者 · 全屏街机打砖块</title>
     <style>
+        /* 全局样式：让游戏容器铺满整个屏幕 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            user-select: none;           /* 禁止选中文字，提升操作体验 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #f0f2f5;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;            /* 防止出现滚动条 */
+            background: radial-gradient(circle at 20% 30%, #0a0f2a, #020617);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Segoe UI', 'Poppins', 'Press Start 2P', monospace;
         }
 
-        .chat-container {
+        /* 游戏外层容器：完全铺满，并添加一点内边距让界面更舒适 */
+        .game-wrapper {
             width: 100%;
-            max-width: 800px;
-            height: 80vh;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            height: 100%;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-        }
-
-        .chat-header {
-            background-color: #128C7E;
-            color: white;
-            padding: 16px 20px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .date-divider {
-            text-align: center;
-            margin: 15px 0;
-            position: relative;
-        }
-
-        .date-divider span {
-            background-color: #f0f2f5;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .message {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            margin-bottom: 8px;
-            position: relative;
-            word-wrap: break-word;
-            line-height: 1.4;
-        }
-
-        .sent {
-            align-self: flex-end;
-            background-color: #dcf8c6;
-            border-bottom-right-radius: 5px;
-        }
-
-        .received {
-            align-self: flex-start;
-            background-color: white;
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 5px;
-        }
-
-        .message-time {
-            font-size: 11px;
-            color: #999;
-            margin-top: 5px;
-            text-align: right;
-        }
-
-        .chat-input {
-            display: flex;
-            padding: 15px;
-            background-color: #f0f0f0;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 24px;
-            outline: none;
-            font-size: 15px;
-        }
-
-        .send-button {
-            background-color: #128C7E;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            margin-left: 10px;
-            cursor: pointer;
-            display: flex;
             justify-content: center;
             align-items: center;
-            transition: background-color 0.2s;
+            padding: 15px;
+            box-sizing: border-box;
         }
 
-        .send-button:hover {
-            background-color: #0a6b5f;
+        /* Canvas 区域：占据主要空间，背景由内部绘制 */
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #03051a;
+            border-radius: 32px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(255, 220, 100, 0.3);
+            cursor: none;
+            /* 使用 object-fit 保证 canvas 内容不被拉伸，但 canvas 的实际像素尺寸由 JS 动态设置 */
         }
 
-        .send-button:active {
-            transform: scale(0.95);
+        /* 信息栏（得分、生命、按钮） */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 18px;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 0 12px;
         }
 
-        .info-text {
-            text-align: center;
-            color: #999;
-            font-size: 13px;
-            margin-top: 10px;
+        .stats {
+            display: flex;
+            gap: 25px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 6px 22px;
+            border-radius: 60px;
+            border: 1px solid #ffd96680;
         }
 
-        /* 滚动条样式 */
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
+        .stat {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font-weight: bold;
+            color: #f0f3ff;
+            font-size: 1.2rem;
         }
 
-        .chat-messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .stat span:first-child {
+            font-size: 1.5rem;
         }
 
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
+        .score-val, .best-val, .lives-val {
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #FFE6B0, #FFB347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
         }
 
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+        .restart-btn {
+            background: linear-gradient(95deg, #ff6a3c, #ff3a6f);
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 8px 26px;
+            border-radius: 60px;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s linear;
+            box-shadow: 0 5px 0 #9b2a4a;
         }
 
-        @media (max-width: 600px) {
-            .chat-container {
-                height: 90vh;
-                border-radius: 0;
-            }
+        .restart-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #9b2a4a;
+        }
 
-            body {
-                padding: 0;
-            }
+        .hint {
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 30px;
+            padding: 6px 18px;
+            font-size: 0.75rem;
+            color: #bbdbff;
+            display: flex;
+            gap: 18px;
+        }
 
-            .message {
-                max-width: 85%;
-            }
+        .hint i {
+            font-style: normal;
+            background: #1f2a4e;
+            padding: 3px 10px;
+            border-radius: 30px;
+        }
+
+        /* 手机横屏或小尺寸调整字体 */
+        @media (max-width: 720px) {
+            .stat { font-size: 1rem; }
+            .score-val, .best-val { font-size: 1.5rem; }
+            .restart-btn { padding: 6px 20px; font-size: 1rem; }
         }
     </style>
 </head>
-
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            聊天对话
+<div class="game-wrapper">
+    <canvas id="gameCanvas"></canvas>
+    <div class="info-bar">
+        <div class="stats">
+            <div class="stat">⭐ <span class="score-val" id="scoreDisplay">0</span></div>
+            <div class="stat">🏆 <span class="best-val" id="bestDisplay">0</span></div>
+            <div class="stat">❤️ <span class="lives-val" id="livesDisplay">3</span></div>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <!-- 消息将在这里动态添加 -->
-        </div>
-        <div class="chat-input">
-            <input type="text" class="message-input" id="messageInput" placeholder="输入消息..." maxlength="500">
-            <button class="send-button" id="sendButton">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white" />
-                </svg>
-            </button>
-        </div>
-        <div class="info-text">最多显示最近5天的对话记录</div>
+        <button class="restart-btn" id="restartButton">🌀 重新开始 🌀</button>
     </div>
+    <div class="hint">
+        🖱️ <i>鼠标移动</i> 控制滑板 &nbsp;&nbsp;|&nbsp;&nbsp; 📱 <i>手指滑动</i> 控制 &nbsp;&nbsp;|&nbsp;&nbsp; 💥 击碎所有砖块进入下一关
+    </div>
+</div>
 
-    <script>
-        // 获取DOM元素
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
+<script>
+    (function(){
+        // ---------- 获取画布元素 ----------
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // 初始化消息数据（模拟5天的数据）
-        let messages = [
-            // {
-            //     date: getFormattedDate(0),
-            //     text: "你好！最近怎么样？",
-            //     time: "09:15",
-            //     type: "received"
-            // },
-            // {
-            //     date: getFormattedDate(0),
-            //     text: "我很好，谢谢！你呢？",
-            //     time: "09:16",
-            //     type: "sent"
-            // },
-            // {
-            //     date: getFormattedDate(0),
-            //     text: "我也很好。最近有什么新消息吗？",
-            //     time: "09:20",
-            //     type: "received"
-            // },
-            // {
-            //     date: getFormattedDate(1),
-            //     text: "昨天我们讨论的那个项目怎么样了？",
-            //     time: "10:05",
-            //     type: "sent"
-            // },
-            // {
-            //     date: getFormattedDate(1),
-            //     text: "还在进行中，预计下周可以完成。",
-            //     time: "10:10",
-            //     type: "received"
-            // },
-            // {
-            //     date: getFormattedDate(2),
-            //     text: "记得明天下午2点开会。",
-            //     time: "16:30",
-            //     type: "received"
-            // },
-            // {
-            //     date: getFormattedDate(2),
-            //     text: "好的，我会准时参加。",
-            //     time: "16:32",
-            //     type: "sent"
-            // },
-            // {
-            //     date: getFormattedDate(3),
-            //     text: "这个周末有什么计划吗？",
-            //     time: "19:45",
-            //     type: "sent"
-            // },
-            // {
-            //     date: getFormattedDate(4),
-            //     text: "还没有确定，你有什么建议？",
-            //     time: "08:20",
-            //     type: "received"
-            // }
-        ];
+        // ---------- 全局游戏变量 ----------
+        let gameRunning = true;      // 游戏是否运行中（生命 > 0）
+        let score = 0;               // 当前得分
+        let bestScore = 0;           // 历史最高分（存储于 localStorage）
+        let lives = 7891;               // 剩余生命
+        let currentLevel = 1;        // 当前关卡（影响难度）
 
-        // 初始化显示消息
-        renderMessages();
+        // 砖块数组及布局参数（动态计算，每次窗口大小改变时重新生成）
+        let bricks = [];
+        let BRICK_ROWS = 6;           // 固定行数
+        let BRICK_COLS = 10;          // 固定列数
+        let brickGap = 2;             // 砖块间隙（像素）
+        let brickWidth = 0;           // 砖块宽度（动态计算）
+        let brickHeight = 20;         // 砖块高度（固定值，但可根据窗口比例微调）
+        let brickOffsetX = 0;         // 砖块区域左偏移（动态计算）
+        let brickOffsetY = 70;        // 砖块区域顶部偏移（固定值，但可根据窗口高度微调）
 
-        // 发送消息功能
-        sendButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        // 不同行砖块的颜色与分值
+        const brickColors = ["#E76F51", "#F4A261", "#E9C46A", "#6A994E", "#81B29A", "#3B8EA5"];
+        const brickPoints = [10, 20, 30, 40, 50, 60];
 
-        function sendMessage() {
-            const messageText = messageInput.value.trim();
-            if (messageText === '') return;
+        // 挡板参数
+        let paddleWidth = 110;         // 挡板宽度（初始值，动态适配）
+        let paddleHeight = 16;         // 挡板高度（固定）
+        let paddleX = 0;               // 挡板当前X坐标（动态）
+        let paddleY = 0;               // 挡板Y坐标（动态，距离底部一定距离）
+        const paddleSpeed = 12;        // 鼠标/触摸移动速度（无实际限制，只控制最大边界）
 
-            // 获取当前时间
-            const now = new Date();
-            const currentDate = getFormattedDate(0);
-            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        // 球参数
+        let ball = {
+            x: 0, y: 0,                // 坐标
+            r: 7,                      // 半径
+            dx: 3.2,                   // 水平速度
+            dy: -4.2,                  // 垂直速度
+            active: false              // false表示附着在挡板上，等待发射
+        };
 
-            // 添加新消息
-            messages.push({
-                date: currentDate,
-                text: messageText,
-                time: currentTime,
-                type: "sent"
-            });
+        // 特效粒子数组
+        let particles = [];
 
-            // 清空输入框
-            messageInput.value = '';
+        // 辅助标志：防止在关卡切换动画期间重复更新游戏逻辑
+        let levelClearFlag = false;
 
-            // 重新渲染消息
-            renderMessages();
+        // 当前画布的宽高（动态获取，每次窗口改变时更新）
+        let canvasWidth = 0;
+        let canvasHeight = 0;
 
-            // 自动滚动到底部
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // 模拟回复（可选）
-            // setTimeout(() => {
-            //     const replyTime = new Date();
-            //     const replyTimeStr = `${replyTime.getHours().toString().padStart(2, '0')}:${(replyTime.getMinutes() + 1).toString().padStart(2, '0')}`;
-
-            //     messages.push({
-            //         date: currentDate,
-            //         text: "收到你的消息了，稍后回复。",
-            //         time: replyTimeStr,
-            //         type: "received"
-            //     });
-
-            //     renderMessages();
-            //     chatMessages.scrollTop = chatMessages.scrollHeight;
-            // }, 1000);
+        // ---------- 辅助函数 ----------
+        // 加载本地存储的最高分
+        function loadBestScore() {
+            let saved = localStorage.getItem('brickBreakerBest');
+            if(saved && !isNaN(parseInt(saved))) bestScore = parseInt(saved);
+            document.getElementById('bestDisplay').innerText = bestScore;
         }
 
-        function renderMessages() {
-            // 清空消息容器
-            chatMessages.innerHTML = '';
-
-            // 获取最近5天的日期
-            const recentDates = [];
-            for (let i = 0; i < 5; i++) {
-                recentDates.push(getFormattedDate(i));
-            }
-
-            // 过滤出最近5天的消息
-            const recentMessages = messages.filter(msg => recentDates.includes(msg.date));
-
-            // 按日期分组
-            const groupedMessages = {};
-            recentMessages.forEach(msg => {
-                if (!groupedMessages[msg.date]) {
-                    groupedMessages[msg.date] = [];
-                }
-                groupedMessages[msg.date].push(msg);
-            });
-
-            // 渲染消息（按日期倒序排列，最新的在前面）
-            Object.keys(groupedMessages).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-                // 添加日期分隔符
-                const dateDivider = document.createElement('div');
-                dateDivider.className = 'date-divider';
-
-                const today = new Date();
-                const messageDate = new Date(date);
-                let dateText = formatDateDisplay(date, today);
-
-                dateDivider.innerHTML = `<span>${dateText}</span>`;
-                chatMessages.appendChild(dateDivider);
-
-                // 添加当天的消息
-                groupedMessages[date].forEach(msg => {
-                    const messageElement = document.createElement('div');
-                    messageElement.className = `message ${msg.type}`;
-                    messageElement.innerHTML = `
-                        <div class="message-text">${msg.text}</div>
-                        <div class="message-time">${msg.time}</div>
-                    `;
-                    chatMessages.appendChild(messageElement);
-                });
-            });
-
-            // 如果没有消息，显示提示
-            if (recentMessages.length === 0) {
-                const noMessages = document.createElement('div');
-                noMessages.className = 'info-text';
-                noMessages.style.padding = '20px';
-                noMessages.textContent = '最近5天内没有对话记录';
-                chatMessages.appendChild(noMessages);
+        // 更新最高分UI，若当前分数超过历史则保存
+        function updateBestUI() {
+            if(score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('brickBreakerBest', bestScore);
+                document.getElementById('bestDisplay').innerText = bestScore;
             }
         }
 
-        // 获取格式化日期（0=今天，1=昨天，2=前天，以此类推）
-        function getFormattedDate(daysAgo) {
-            const date = new Date();
-            date.setDate(date.getDate() - daysAgo);
-            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        // 更新所有UI数值（得分、生命）
+        function updateUI() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('livesDisplay').innerText = lives;
+            if(score > bestScore) document.getElementById('bestDisplay').innerText = score;
         }
 
-        // 格式化日期显示
-        function formatDateDisplay(dateString, today) {
-            const date = new Date(dateString);
-            const diffTime = Math.abs(today - date);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // ---------- 动态布局：根据当前画布尺寸重新计算所有几何元素 ----------
+        function recalcLayout() {
+            // 获取画布实际像素尺寸（CSS 样式会影响尺寸，但 canvas 的属性宽高必须与样式一致）
+            canvasWidth = canvas.clientWidth;
+            canvasHeight = canvas.clientHeight;
+            // 设置 canvas 的实际像素尺寸（防止模糊）
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
 
-            if (diffDays === 1) {
-                return "今天";
-            } else if (diffDays === 2) {
-                return "昨天";
-            } else if (diffDays === 3) {
-                return "前天";
+            // 重新计算砖块区域
+            brickOffsetX = 15;   // 左右边距
+            brickWidth = (canvasWidth - brickOffsetX * 2 - brickGap * (BRICK_COLS - 1)) / BRICK_COLS;
+            brickHeight = Math.max(16, Math.min(24, canvasHeight / 20)); // 动态砖块高度，但保持稳定
+            brickOffsetY = Math.max(60, canvasHeight * 0.08);  // 顶部偏移随窗口变化，保证不超出
+
+            // 重新计算挡板位置
+            paddleWidth = Math.max(80, Math.min(180, canvasWidth * 0.18)); // 宽度为屏幕宽度的18%左右，限制范围
+            paddleHeight = Math.max(12, canvasHeight * 0.025);
+            paddleY = canvasHeight - paddleHeight - 25;   // 距离底部25像素
+            // 确保挡板不超出左右边界（后面根据鼠标位置设置）
+
+            // 重新计算球的半径（按比例，不超出挡板宽度）
+            ball.r = Math.max(6, Math.min(12, canvasWidth * 0.012));
+
+            // 根据当前挡板位置重新放置球（若未激活则跟随）
+            if(!ball.active) {
+                // 确保挡板 X 在合法范围内
+                let maxX = canvasWidth - paddleWidth;
+                if(paddleX > maxX) paddleX = maxX;
+                if(paddleX < 0) paddleX = 0;
+                ball.x = paddleX + paddleWidth/2;
+                ball.y = paddleY - ball.r - 2;
             } else {
-                return `${date.getMonth() + 1}月${date.getDate()}日`;
+                // 如果球已激活，仅保证球不超出画布（边界碰撞会在update中处理，但坐标无需额外处理）
+                // 但需要防止球被卡在画布外，但概率极低
+            }
+
+            // 重新构建砖块布局（保持当前分数和生命，仅重新摆放砖块）
+            rebuildBricksFromLayout();
+        }
+
+        // 根据当前布局参数重建砖块（保留未摧毁的砖块状态？）
+        // 注意：窗口大小改变时，我们希望保留当前砖块的存活状态（active），但位置需要重新计算。
+        // 为了简单且不失公平，窗口改变时我们完全重置当前关卡的砖块（因为位置变化太大，保留状态反而奇怪）。
+        // 这样玩家改变窗口大小时会重置本关砖块，但分数生命不变，不会影响游戏进度。
+        function rebuildBricksFromLayout() {
+            bricks = [];
+            for(let row = 0; row < BRICK_ROWS; row++) {
+                for(let col = 0; col < BRICK_COLS; col++) {
+                    bricks.push({
+                        x: brickOffsetX + col * (brickWidth + brickGap),
+                        y: brickOffsetY + row * (brickHeight + brickGap),
+                        w: brickWidth,
+                        h: brickHeight,
+                        row: row,
+                        col: col,
+                        active: true,                      // 新布局下所有砖块都恢复为未击碎状态
+                        points: brickPoints[row % brickPoints.length],
+                        color: brickColors[row % brickColors.length]
+                    });
+                }
             }
         }
-    </script>
-</body>
 
+        // ---------- 游戏初始化/重置 ----------
+        function resetGame() {
+            gameRunning = true;
+            score = 0;
+            lives = 3;
+            currentLevel = 1;
+            updateUI();
+            updateBestUI();
+
+            // 重置速度等参数为初始值（但速度会随着关卡递增而增加，重置后速度应恢复）
+            ball.dx = 2;
+            ball.dy = -2;
+            // 重置挡板宽度为初始比例（后续 recalcLayout 会根据窗口重新计算）
+            // 注意 recalcLayout 会重新计算 paddleWidth，因此我们只需重置 paddleX 位置
+            paddleX = (canvasWidth - paddleWidth) / 2;
+            if(paddleX < 0) paddleX = 0;
+            if(paddleX + paddleWidth > canvasWidth) paddleX = canvasWidth - paddleWidth;
+
+            // 重置球为未发射状态
+            ball.active = false;
+            ball.x = paddleX + paddleWidth/2;
+            ball.y = paddleY - ball.r - 2;
+
+            // 清空粒子特效
+            particles = [];
+            levelClearFlag = false;
+
+            // 重建砖块（根据当前布局）
+            rebuildBricksFromLayout();
+        }
+
+        // 重置球和挡板位置（丢命时调用，不改变砖块状态）
+        function resetBallAndPaddle() {
+            paddleX = (canvasWidth - paddleWidth) / 2;
+            if(paddleX < 0) paddleX = 0;
+            if(paddleX + paddleWidth > canvasWidth) paddleX = canvasWidth - paddleWidth;
+            ball.active = false;
+            ball.x = paddleX + paddleWidth/2;
+            ball.y = paddleY - ball.r - 2;
+            // 速度方向稍微随机，避免每次一样
+            ball.dx = (Math.random() > 0.5 ? 3.2 : -3.2);
+            ball.dy = -4.2;
+        }
+
+        // 发射球（在附着状态下调用）
+        function launchBall() {
+            if(!gameRunning) return;
+            if(!ball.active) {
+                ball.active = true;
+            }
+        }
+
+        // 添加粒子特效（碰撞或收集时产生光点）
+        function addParticles(px, py, color, count=8) {
+            for(let i=0;i<count;i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 2.5 + 0.8;
+                let vx = Math.cos(angle) * speed;
+                let vy = Math.sin(angle) * speed;
+                particles.push({
+                    x: px, y: py, vx: vx, vy: vy,
+                    life: 1.0,
+                    color: color,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+
+        // 更新粒子动画（生命周期）
+        function updateParticles() {
+            for(let i=0;i<particles.length;i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.025;
+                p.size *= 0.97;
+                if(p.life <= 0 || p.x < -50 || p.x > canvasWidth+50 || p.y < -50 || p.y > canvasHeight+100) {
+                    particles.splice(i,1);
+                    i--;
+                }
+            }
+        }
+
+        // 失去生命
+        function loseLife() {
+            lives--;
+            updateUI();
+            if(lives <= 0) {
+                gameRunning = false;
+                updateBestUI();
+                return;
+            }
+            // 重置球和挡板，进入未发射状态
+            resetBallAndPaddle();
+        }
+
+        // 关卡升级（所有砖块被击碎时调用）
+        function levelUp() {
+            levelClearFlag = true;
+            currentLevel++;
+            // 增加难度：提升球速，但不超过最大值
+            let speedInc = 0.4;
+            let newDx = ball.dx + (ball.dx > 0 ? speedInc : -speedInc);
+            let newDy = ball.dy + (ball.dy > 0 ? speedInc : -speedInc);
+            ball.dx = Math.min(Math.abs(newDx), 7.8) * Math.sign(newDx);
+            ball.dy = Math.min(Math.abs(newDy), 7.8) * Math.sign(newDy);
+            if(Math.abs(ball.dx) < 2) ball.dx = ball.dx > 0 ? 2.5 : -2.5;
+
+            // 挡板宽度随等级略微缩小（不低于窗口宽度的10%）
+            let minPaddle = canvasWidth * 0.1;
+            paddleWidth = Math.max(minPaddle, paddleWidth - 5);
+            if(paddleWidth < minPaddle) paddleWidth = minPaddle;
+
+            // 重建砖块（新的一关）
+            rebuildBricksFromLayout();
+            // 重置球未发射
+            ball.active = false;
+            resetBallAndPaddle();  // 重置位置和发射状态
+            levelClearFlag = false;
+
+            // 庆祝特效
+            for(let i=0;i<50;i++) {
+                addParticles(canvasWidth/2, canvasHeight/2, "#ffaa44", 8);
+            }
+        }
+
+        // ---------- 游戏核心更新逻辑 ----------
+        function updateGame() {
+            if(!gameRunning) return;
+            if(levelClearFlag) return;  // 关卡切换时不更新移动
+
+            // 若球处于激活状态，则移动并处理碰撞
+            if(ball.active) {
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+                // 边界碰撞（左右上）
+                if(ball.x + ball.r > canvasWidth) {
+                    ball.x = canvasWidth - ball.r;
+                    ball.dx = -ball.dx;
+                    addParticles(ball.x, ball.y, "#88ccff", 6);
+                } else if(ball.x - ball.r < 0) {
+                    ball.x = ball.r;
+                    ball.dx = -ball.dx;
+                    addParticles(ball.x, ball.y, "#88ccff", 6);
+                }
+                if(ball.y - ball.r < 0) {
+                    ball.y = ball.r;
+                    ball.dy = -ball.dy;
+                    addParticles(ball.x, ball.y, "#aaffdd", 5);
+                }
+
+                // 底部碰撞：丢命
+                if(ball.y + ball.r > canvasHeight) {
+                    loseLife();
+                    return;
+                }
+
+                // 挡板碰撞（精确检测）
+                if(ball.y + ball.r >= paddleY && ball.y - ball.r <= paddleY + paddleHeight &&
+                    ball.x + ball.r > paddleX && ball.x - ball.r < paddleX + paddleWidth) {
+                    // 根据撞击点在挡板上的相对位置改变水平方向，增加策略性
+                    let hitPos = (ball.x - paddleX) / paddleWidth;  // 范围 0~1
+                    let angle = (hitPos - 0.5) * 1.2;               // 角度偏移 -0.6 到 0.6
+                    let speed = Math.hypot(ball.dx, ball.dy);
+                    let newDx = Math.sin(angle) * speed;
+                    let newDy = -Math.cos(angle) * speed;
+                    ball.dx = newDx;
+                    ball.dy = newDy;
+                    // 防止水平速度过慢
+                    if(Math.abs(ball.dx) < 1.5) ball.dx = ball.dx > 0 ? 1.8 : -1.8;
+                    // 保证最低垂直速度
+                    let minSpeed = 4.0;
+                    if(Math.abs(ball.dy) < minSpeed) ball.dy = ball.dy > 0 ? minSpeed : -minSpeed;
+                    // 将球放到挡板上面，避免卡进挡板
+                    ball.y = paddleY - ball.r;
+                    addParticles(ball.x, ball.y, "#ffcc66", 8);
+                }
+
+                // 砖块碰撞
+                let collisionHappened = false;
+                for(let i=0; i<bricks.length; i++) {
+                    const b = bricks[i];
+                    if(!b.active) continue;
+                    // 矩形碰撞检测
+                    if(ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w &&
+                        ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h) {
+                        collisionHappened = true;
+                        // 计算碰撞方向（取最小的重叠方向）
+                        let overlapLeft = (ball.x + ball.r) - b.x;
+                        let overlapRight = (b.x + b.w) - (ball.x - ball.r);
+                        let overlapTop = (ball.y + ball.r) - b.y;
+                        let overlapBottom = (b.y + b.h) - (ball.y - ball.r);
+                        let minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+                        if(minOverlap === overlapLeft || minOverlap === overlapRight) {
+                            ball.dx = -ball.dx;
+                        } else {
+                            ball.dy = -ball.dy;
+                        }
+                        // 加分并移除砖块
+                        score += b.points;
+                        updateUI();
+                        updateBestUI();
+                        b.active = false;
+                        addParticles(b.x + b.w/2, b.y + b.h/2, b.color, 12);
+                        break;  // 一次只处理一个碰撞，避免多块同时碰撞导致穿透
+                    }
+                }
+
+                // 检查是否所有砖块都已击碎
+                let anyActive = bricks.some(b => b.active === true);
+                if(!anyActive) {
+                    levelUp();
+                    return;
+                }
+            }
+
+            // 如果球未激活，则跟随挡板移动
+            if(!ball.active && gameRunning) {
+                ball.x = paddleX + paddleWidth/2;
+                ball.y = paddleY - ball.r - 2;
+            }
+        }
+
+        // ---------- 绘制图形（全屏自适应绘制） ----------
+        function drawBackground() {
+            // 星空渐变背景
+            let grad = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+            grad.addColorStop(0, "#04081f");
+            grad.addColorStop(1, "#101935");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            // 随机星星闪烁
+            for(let i=0;i<300;i++) {
+                if(i%2 === 0) continue;
+                let sx = (i*131) % canvasWidth;
+                let sy = (i*253) % canvasHeight;
+                let bright = 0.4 + Math.sin(Date.now() * 0.001 + i) * 0.3;
+                ctx.fillStyle = `rgba(255,240,200,${bright*0.5})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, 1.2, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        function drawBricks() {
+            for(let b of bricks) {
+                if(!b.active) continue;
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = "rgba(0,0,0,0.4)";
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+                ctx.fillStyle = "rgba(255,255,200,0.3)";
+                ctx.fillRect(b.x+2, b.y+2, b.w-4, 4);
+                ctx.fillStyle = "rgba(0,0,0,0.2)";
+                ctx.fillRect(b.x, b.y + b.h-3, b.w, 3);
+                ctx.strokeStyle = "#ffe8b0";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(b.x, b.y, b.w, b.h);
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        function drawPaddle() {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = "#00a6ff";
+            ctx.fillStyle = "#41b3ff";
+            ctx.beginPath();
+            ctx.roundRect(paddleX, paddleY, paddleWidth, paddleHeight, 12);
+            ctx.fill();
+            ctx.fillStyle = "#c0e4ff";
+            ctx.beginPath();
+            ctx.roundRect(paddleX+4, paddleY-3, paddleWidth-8, 6, 4);
+            ctx.fill();
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.roundRect(paddleX+8, paddleY+2, paddleWidth-16, 4, 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
+            ctx.fillStyle = "#FFE484";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(ball.x-1.5, ball.y-1.5, 2, 0, Math.PI*2);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.fillStyle = "#00000066";
+            ctx.beginPath();
+            ctx.arc(ball.x+1, ball.y+1, 1.5, 0, Math.PI*2);
+            ctx.fill();
+            // 光晕
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = "#ffc107";
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r+1, 0, Math.PI*2);
+            ctx.fillStyle = "rgba(255,200,80,0.3)";
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawParticles() {
+            for(let p of particles) {
+                ctx.globalAlpha = p.life * 0.9;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size*0.7, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawGameStatus() {
+            if(!gameRunning) {
+                ctx.fillStyle = "rgba(0,0,0,0.75)";
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                ctx.font = `bold ${Math.min(38, canvasWidth/12)}px 'Segoe UI', monospace`;
+                ctx.fillStyle = "#ffbc6e";
+                ctx.textAlign = "center";
+                ctx.fillText("💀 GAME OVER 💀", canvasWidth/2, canvasHeight/2-40);
+                ctx.font = `${Math.min(20, canvasWidth/20)}px monospace`;
+                ctx.fillStyle = "#ffd99b";
+                ctx.fillText("点击「重新开始」继续挑战", canvasWidth/2, canvasHeight/2+40);
+                ctx.font = `${Math.min(16, canvasWidth/25)}px monospace`;
+                ctx.fillStyle = "#bbbbff";
+                ctx.fillText("★ 击碎所有砖块升级 ★", canvasWidth/2, canvasHeight/2+100);
+                ctx.textAlign = "left";
+            } else if(!ball.active && gameRunning) {
+                ctx.font = `bold ${Math.min(18, canvasWidth/30)}px monospace`;
+                ctx.fillStyle = "#FFE8C5";
+                ctx.shadowBlur = 3;
+                ctx.textAlign = "center";
+                ctx.fillText("👉 点击屏幕 / 触摸画布 发射光球 👈", canvasWidth/2, canvasHeight-70);
+                ctx.textAlign = "left";
+            }
+            // 关卡显示
+            ctx.font = `bold ${Math.min(14, canvasWidth/40)}px monospace`;
+            ctx.fillStyle = "#cceeff";
+            ctx.fillText("第 " + currentLevel + " 关", canvasWidth-80, 35);
+        }
+
+        // 辅助绘制圆角矩形
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.moveTo(x+r, y);
+                this.lineTo(x+w-r, y);
+                this.quadraticCurveTo(x+w, y, x+w, y+r);
+                this.lineTo(x+w, y+h-r);
+                this.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+                this.lineTo(x+r, y+h);
+                this.quadraticCurveTo(x, y+h, x, y+h-r);
+                this.lineTo(x, y+r);
+                this.quadraticCurveTo(x, y, x+r, y);
+                return this;
+            };
+        }
+
+        function render() {
+            drawBackground();
+            drawBricks();
+            drawPaddle();
+            drawBall();
+            drawParticles();
+            drawGameStatus();
+        }
+
+        // ---------- 事件处理（全屏适配鼠标/触摸） ----------
+        function handleMove(clientX, clientY) {
+            if(!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            // 将屏幕坐标转换为 canvas 内部坐标
+            const scaleX = canvas.width / rect.width;
+            let canvasX = (clientX - rect.left) * scaleX;
+            // 限制挡板边界
+            let minX = 0;
+            let maxX = canvasWidth - paddleWidth;
+            canvasX = Math.min(Math.max(canvasX, minX), maxX);
+            paddleX = canvasX;
+            if(!ball.active) {
+                ball.x = paddleX + paddleWidth/2;
+                ball.y = paddleY - ball.r - 2;
+            }
+        }
+
+        function onMouseMove(e) {
+            e.preventDefault();
+            handleMove(e.clientX, e.clientY);
+        }
+
+        function onTouchMove(e) {
+            e.preventDefault();
+            if(e.touches.length) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+
+        function onCanvasClick(e) {
+            if(!gameRunning) return;
+            if(!ball.active) launchBall();
+            e.preventDefault();
+        }
+
+        function onTouchStart(e) {
+            e.preventDefault();
+            if(!gameRunning) return;
+            if(!ball.active) launchBall();
+            if(e.touches.length) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+
+        // ---------- 窗口大小改变时重新布局 ----------
+        function onWindowResize() {
+            recalcLayout();      // 重新计算布局并重建砖块
+            // 保证挡板不超出边界
+            let maxX = canvasWidth - paddleWidth;
+            if(paddleX > maxX) paddleX = maxX;
+            if(paddleX < 0) paddleX = 0;
+            if(!ball.active) {
+                ball.x = paddleX + paddleWidth/2;
+                ball.y = paddleY - ball.r - 2;
+            }
+        }
+
+        // ---------- 重启游戏 ----------
+        function restartGame() {
+            resetGame();
+            // 确保布局重新应用
+            recalcLayout();
+            gameRunning = true;
+            updateUI();
+        }
+
+        // ---------- 动画循环 ----------
+        function gameLoop() {
+            updateGame();
+            updateParticles();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ---------- 初始化 ----------
+        function init() {
+            loadBestScore();
+            // 首次布局
+            recalcLayout();
+            resetGame();        // 初始化游戏状态（并重建砖块）
+            // 绑定事件
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('click', onCanvasClick);
+            canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+            canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+            window.addEventListener('resize', onWindowResize);
+            document.getElementById('restartButton').addEventListener('click', () => restartGame());
+            gameLoop();
+        }
+
+        init();
+    })();
+</script>
+</body>
 </html>
