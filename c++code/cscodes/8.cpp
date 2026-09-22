@@ -1,58 +1,46 @@
 #include <bits/stdc++.h>
 using namespace std;
-#define itn int
-#define inr int
-//#define int long long
+using ll = long long;
+
+void countUpTo(ll n, vector<ll>& cnt) {
+	cnt.assign(10, 0);
+	if (n <= 0) return;
+	for (ll factor = 1; factor <= n; factor *= 10) {
+		ll lower = n % factor;
+		ll cur = (n / factor) % 10;
+		ll higher = n / (factor * 10);
+		for (int d = 0; d <= 9; ++d) {
+			if (d == 0) {
+				if (higher == 0) continue;
+				if (cur == 0) cnt[0] += (higher - 1) * factor + lower + 1;
+				else cnt[0] += higher * factor;
+			} else {
+				if (cur < d) cnt[d] += higher * factor;
+				else if (cur == d) cnt[d] += higher * factor + lower + 1;
+				else cnt[d] += (higher + 1) * factor;
+			}
+		}
+	}
+}
+
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(0);
-    int n, m,s, t,k;
-    cin >> n >> m;
-    vector<pair<int,int>> v[n+1], vv[n+1];
-    for (int i = 0; i < m; ++i) {
-        int x,y; int z;
-        cin >> x >> y >> z;
-        v[x].emplace_back(y, z);
-        vv[y].emplace_back(x, z);
-    }
-    cin >> s >> t >> k;
-    vector h(n+1, INT_MAX);
-    priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> q;
-    h[t] = 0;
-    q.emplace(0, t);
-    while (!q.empty()) {
-        auto [x, y] = q.top(); q.pop();
-        // if (x != h[y]) continue;
-        for (auto i : vv[y]) {
-            if (h[i.first] > x + i.second) {
-                h[i.first] = x + i.second;
-                q.emplace(h[i.first], i.first);
-            }
-        }
-    }
-    if (h[s] == INT_MAX && s != t) {
-        cout << -1;
-        return 0;
-    }
-    priority_queue<tuple<int, int, int>, vector<tuple<int, int, int>>, greater<tuple<int, int, int>>> pq;
-    pq.emplace(h[s], 0LL, s);
-    int ff = 0;
-    while (!pq.empty()) {
-        auto [x, y, z] = pq.top(); pq.pop();
-        if (h[z] == INT_MAX && z != t) continue;
-        if (z == t) {
-            if (!(z == s && y == 0)) {
-                ff++;
-                if (ff == k) {
-                    cout << y;
-                    return 0;
-                }
-            }
-        }
-        for (auto i : v[z]) {
-            if (h[i.first] == INT_MAX) continue;
-            pq.emplace(y+i.second+h[i.first], y+i.second, i.first);
-        }
-    }
-    cout << -1 << "\n";
+	ios::sync_with_stdio(false);
+	cin.tie(nullptr);
+
+	long long a, b;
+	while (cin >> a >> b) {
+		if (a == 0 && b == 0) break;
+		if (a > b) swap(a, b);
+		vector<ll> cntB(10), cntA1(10);
+		countUpTo(b, cntB);
+		countUpTo(a - 1, cntA1);
+		for (int i = 0; i <= 9; ++i) {
+			ll ans = cntB[i] - cntA1[i];
+			if (i) cout << ans;
+			else cout << ans; // keep same formatting
+			if (i != 9) cout << ' ';
+		}
+		cout << '\n';
+	}
+	return 0;
 }
