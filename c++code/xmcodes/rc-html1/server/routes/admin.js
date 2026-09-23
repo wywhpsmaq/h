@@ -4,7 +4,7 @@ const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 const RegistrationToken = require('../models/RegistrationToken');
 const { adminAuth, ultimateAdminAuth } = require('../middlewares/auth');
-
+const { Op } = require('sequelize');
 const router = express.Router();
 
 // 获取所有用户

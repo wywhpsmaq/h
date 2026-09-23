@@ -6,13 +6,18 @@ const RegistrationToken = require('../models/RegistrationToken');
 const { auth } = require('../middlewares/auth');
 const jwtConfig = require('../config/jwt');
 const { Op } = require('sequelize');
-
+const { verifyHumanToken } = require('../utils/captcha');
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ where: { username } });
+    try {
+        const { username, password, captchaToken } = req.body;
+
+        if (!(await verifyHumanToken(captchaToken, req.ip))) {
+            return res.status(400).json({ error: '人机验证失败，请重试' });
+        }
+
+        const user = await User.findOne({ where: { username } });
 
     if (!user || !(await user.validPassword(password))) {
       return res.status(401).json({ error: '用户名或密码错误' });
@@ -117,7 +122,11 @@ router.get('/me', auth, async (req, res) => {
 // 用户注册（需要注册口令）
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, registrationToken } = req.body;
+      const { username, password, registrationToken, captchaToken } = req.body;
+
+      if (!(await verifyHumanToken(captchaToken, req.ip))) {
+          return res.status(400).json({ error: '人机验证失败，请重试' });
+      }
 
     // 验证参数
     if (!username || !password || !registrationToken) {

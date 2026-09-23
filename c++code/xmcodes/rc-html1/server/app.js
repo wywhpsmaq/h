@@ -11,6 +11,8 @@ const authRoutes = require('./routes/auth');
 const dataRoutes = require('./routes/data');
 const adminRoutes = require('./routes/admin');
 
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
