@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 using namespace std;
-
 int main() {
 	int n;
 	vector<pair<int, int>> v;
