@@ -141,5 +141,6 @@
     "cmake.generator": "MinGW Makefiles",
     "cmake.debugConfig": {
         "program": "${command:cmake.launchTargetPath}"
-    }
+    },
+    "cmake.sourceDirectory": "E:/h/c++code/xmcodes/sbxt"
 }
