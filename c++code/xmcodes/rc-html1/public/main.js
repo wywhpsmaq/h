@@ -66,8 +66,18 @@ function applyPermissionVisibility() {
   });
 
   const userSelect = document.getElementById('permissionUserSelect');
-  if (userSelect && !userInfo.isAdmin) {
+  if (userSelect) {
     userSelect.innerHTML = '<option value="">请选择用户</option>';
+    if (!userInfo.isAdmin) {
+      userSelect.disabled = true;
+    } else {
+      userSelect.disabled = false;
+    }
+  }
+
+  const saveBtn = document.querySelector('#user-permissions .btn-success');
+  if (saveBtn) {
+    saveBtn.disabled = !userInfo.isAdmin;
   }
 }
 
@@ -822,7 +832,7 @@ async function toggleBanUser(userId, isBanned) {
   }
 }
 
-// 删除��户
+// 删除用户
 async function deleteUser(userId) {
   if (!confirm('确定要删除该用户吗？')) {
     return;
@@ -1658,11 +1668,12 @@ async function loadPermissionUserOptions() {
     const select = document.getElementById('permissionUserSelect');
     if (!select) return;
 
+    select.disabled = !userInfo.isAdmin;
     select.innerHTML = '<option value="">请选择用户</option>' + users.map(user => `
       <option value="${user.id}">${user.username}${user.isAdmin ? '（管理员）' : ''}</option>
     `).join('');
 
-    if (users.length) {
+    if (userInfo.isAdmin && users.length) {
       select.value = users[0] ? String(users[0].id) : '';
       const selected = users.find(user => String(user.id) === select.value) || users[0];
       renderPermissionTable(selected);
@@ -1703,6 +1714,11 @@ async function onPermissionUserChange() {
 }
 
 async function saveUserPermissions() {
+  if (!userInfo.isAdmin) {
+    alert('只有真实管理员才能修改用户细分权限');
+    return;
+  }
+
   const select = document.getElementById('permissionUserSelect');
   if (!select || !select.value) {
     alert('请选择要修改权限的用户');

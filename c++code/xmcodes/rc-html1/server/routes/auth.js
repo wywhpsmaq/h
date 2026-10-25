@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const RegistrationToken = require('../models/RegistrationToken');
 const LoginAudit = require('../models/LoginAudit');
-const { auth, hasPermission } = require('../middlewares/auth');
+const { auth, hasPermission, isEffectiveAdmin } = require('../middlewares/auth');
 const jwtConfig = require('../config/jwt');
 const { Op } = require('sequelize');
 const router = express.Router();
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ error: '账户已被封禁' });
     }
 
-    const isAdminAccount = Boolean(user.isAdmin || user.username === 'admin');
+    const isAdminAccount = Boolean(user.isAdmin || user.username === 'admin' || isEffectiveAdmin(user));
 
     if (!isAdminAccount && user.emailVerificationRequired && !user.emailVerified) {
       return res.status(403).json({ error: '该账户邮箱尚未通过审核，暂时无法登录' });
@@ -105,7 +105,7 @@ router.post('/login', async (req, res) => {
       ...getClientInfo(req)
     });
 
-    const token = jwt.sign({ id: user.id, username: user.username, isAdmin: user.isAdmin }, jwtConfig.secret, {
+    const token = jwt.sign({ id: user.id, username: user.username, isAdmin: Boolean(user.isAdmin) }, jwtConfig.secret, {
       expiresIn: jwtConfig.expiresIn
     });
 
@@ -121,7 +121,7 @@ router.post('/login', async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        isAdmin: user.isAdmin,
+        isAdmin: Boolean(user.isAdmin),
         permissions: user.permissions || {}
       }
     });
@@ -211,7 +211,7 @@ router.get('/me', auth, async (req, res) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      isAdmin: user.isAdmin,
+      isAdmin: Boolean(user.isAdmin || isEffectiveAdmin(user)),
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
       permissions: user.permissions || {}
@@ -255,7 +255,7 @@ router.post('/register', async (req, res) => {
       });
 
       if (!validToken) {
-        return res.status(403).json({ error: '注册口令无效或已过期' });
+        return res.status(403).json({ error: '���册口令无效或已过期' });
       }
     }
 

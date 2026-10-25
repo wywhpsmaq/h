@@ -44,7 +44,7 @@ app.get('/main', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/main.html'));
 });
 
-// 数据库同步和服务器启�����
+// 数据库同步和服务器启�������
 async function startServer() {
   try {
     // 同步数据库模型
@@ -89,29 +89,31 @@ async function ensureAdminPermissions() {
   if (adminUser) {
     const basePermissions = require('./models/User').buildAdminPermissions();
     const existingPermissions = adminUser.permissions || {};
-    const mergedPermissions = {
-      ...basePermissions,
-      ...existingPermissions,
-      dataManagement: { ...basePermissions.dataManagement, ...(existingPermissions.dataManagement || {}) },
-      changeInfo: { ...basePermissions.changeInfo, ...(existingPermissions.changeInfo || {}) },
-      enterAdmin: { ...basePermissions.enterAdmin, ...(existingPermissions.enterAdmin || {}) },
-      userManagement: { ...basePermissions.userManagement, ...(existingPermissions.userManagement || {}) },
-      registrationManagement: { ...basePermissions.registrationManagement, ...(existingPermissions.registrationManagement || {}) }
-    };
+    const mergedPermissions = {};
 
-    Object.keys(mergedPermissions).forEach(groupKey => {
-      const group = mergedPermissions[groupKey] || {};
-      if (group && typeof group === 'object') {
-        group.enabled = true;
-        Object.keys(group).forEach(key => {
-          if (typeof group[key] === 'boolean') {
-            group[key] = true;
-          }
-        });
+    Object.keys(basePermissions).forEach(groupKey => {
+      const baseGroup = basePermissions[groupKey] || {};
+      const existingGroup = existingPermissions[groupKey] || {};
+      mergedPermissions[groupKey] = {
+        ...baseGroup,
+        ...existingGroup
+      };
+
+      Object.keys(baseGroup).forEach(key => {
+        if (typeof baseGroup[key] === 'boolean') {
+          mergedPermissions[groupKey][key] = existingGroup[key] !== undefined ? Boolean(existingGroup[key]) : Boolean(baseGroup[key]);
+        }
+      });
+
+      if (mergedPermissions[groupKey] && typeof mergedPermissions[groupKey] === 'object') {
+        mergedPermissions[groupKey].enabled = Boolean(
+          existingGroup.enabled !== undefined ? existingGroup.enabled : baseGroup.enabled
+        );
       }
     });
 
-    if (!adminUser.permissions || JSON.stringify(adminUser.permissions) !== JSON.stringify(mergedPermissions)) {
+    const needsUpdate = !adminUser.permissions || JSON.stringify(adminUser.permissions) !== JSON.stringify(mergedPermissions);
+    if (needsUpdate) {
       await adminUser.update({ permissions: mergedPermissions, isAdmin: true });
     } else if (!adminUser.isAdmin) {
       await adminUser.update({ isAdmin: true });

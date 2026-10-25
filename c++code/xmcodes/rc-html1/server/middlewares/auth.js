@@ -3,9 +3,32 @@ const jwtConfig = require('../config/jwt');
 const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 
-const normalizeUserPermissions = (rawPermissions = {}) => {
+const getGroupPermissionState = (group = {}) => {
+  if (!group || typeof group !== 'object') return false;
+  if (group.enabled === true) return true;
+  return Object.keys(group).some(key => {
+    return key !== 'enabled' && typeof group[key] === 'boolean' && group[key] === true;
+  });
+};
+
+const normalizeUserPermissions = (rawPermissions = {}, user = null) => {
   const basePermissions = require('../models/User').defaultPermissions;
   const result = JSON.parse(JSON.stringify(basePermissions));
+
+  if (user && user.isAdmin) {
+    Object.keys(result).forEach(groupKey => {
+      const group = result[groupKey];
+      if (group && typeof group === 'object') {
+        Object.keys(group).forEach(key => {
+          if (typeof group[key] === 'boolean') {
+            group[key] = true;
+          }
+        });
+        group.enabled = true;
+      }
+    });
+    return result;
+  }
 
   Object.keys(basePermissions).forEach(groupKey => {
     const sourceGroup = rawPermissions[groupKey] || {};
@@ -20,24 +43,65 @@ const normalizeUserPermissions = (rawPermissions = {}) => {
           result[groupKey][key] = Boolean(sourceGroup[key] !== undefined ? sourceGroup[key] : basePermissions[groupKey][key]);
         }
       });
+
+      result[groupKey].enabled = Boolean(
+        result[groupKey].enabled ||
+        Object.keys(result[groupKey]).some(key => key !== 'enabled' && typeof result[groupKey][key] === 'boolean' && result[groupKey][key] === true)
+      );
     }
   });
 
   return result;
 };
 
+const isDefaultPermissionProfile = (permissions = {}) => {
+  const basePermissions = require('../models/User').defaultPermissions;
+
+  return Object.keys(basePermissions).every(groupKey => {
+    const sourceGroup = permissions[groupKey] || {};
+    const baseGroup = basePermissions[groupKey] || {};
+
+    return Object.keys(baseGroup).every(key => {
+      return sourceGroup[key] === undefined || sourceGroup[key] === baseGroup[key];
+    });
+  });
+};
+
+const isCustomPermissionProfile = (permissions = {}) => {
+  const basePermissions = require('../models/User').defaultPermissions;
+
+  return Object.keys(basePermissions).some(groupKey => {
+    const sourceGroup = permissions[groupKey] || {};
+    const baseGroup = basePermissions[groupKey] || {};
+
+    return Object.keys(baseGroup).some(key => {
+      if (sourceGroup[key] === undefined) return false;
+      return sourceGroup[key] !== baseGroup[key];
+    });
+  });
+};
+
 const hasPermission = (user, groupKey, itemKey = null) => {
   if (!user) return false;
-  if (user.isAdmin) return true;
 
-  const permissions = normalizeUserPermissions(user.permissions || {});
+  const permissions = normalizeUserPermissions(user.permissions || {}, user);
   const group = permissions[groupKey] || {};
 
   if (itemKey) {
-    return Boolean(group.enabled && group[itemKey]);
+    return Boolean(group.enabled || group[itemKey]);
   }
 
-  return Boolean(group.enabled);
+  return Boolean(group.enabled || getGroupPermissionState(group));
+};
+
+const isEffectiveAdmin = (user) => {
+  if (!user) return false;
+  if (user.isAdmin) return true;
+  const permissions = normalizeUserPermissions(user.permissions || {}, user);
+  return Boolean(
+    permissions.enterAdmin &&
+    (permissions.enterAdmin.enabled || getGroupPermissionState(permissions.enterAdmin))
+  );
 };
 
 const permissionGuard = (groupKey, itemKey = null) => async (req, res, next) => {
@@ -124,4 +188,4 @@ const logActivity = async (req, res, next) => {
   next();
 };
 
-module.exports = { auth, adminAuth, ultimateAdminAuth, logActivity, normalizeUserPermissions, hasPermission, permissionGuard };
+module.exports = { auth, adminAuth, ultimateAdminAuth, logActivity, normalizeUserPermissions, hasPermission, permissionGuard, isEffectiveAdmin };

@@ -45,6 +45,10 @@ router.put('/users/:id/permissions', adminAuth, async (req, res) => {
       return res.status(404).json({ error: '用户不存在' });
     }
 
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ error: '只有真实管理员才能修改用户细分权限' });
+    }
+
     if (user.isAdmin || user.username === 'admin') {
       return res.status(403).json({ error: '不能修改管理员权限' });
     }
