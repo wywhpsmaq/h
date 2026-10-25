@@ -1,15 +1,16 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize({
+const connectionString = 'postgresql://neondb_owner:npg_MEUTa30SkWmx@ep-frosty-snow-b7k9697f-pooler.c-13.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+
+const sequelize = new Sequelize(connectionString, {
   dialect: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  database: 'rc_html1',
-  username: 'postgres',
-  password: '159875321', // 默认密码，请根据实际情况修改
   logging: false,
   dialectOptions: {
-    connectTimeout: 10000,
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    },
+    connectTimeout: 30000,
   },
   pool: {
     max: 10,

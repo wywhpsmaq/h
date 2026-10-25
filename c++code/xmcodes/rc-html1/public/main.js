@@ -9,10 +9,71 @@ let userInfo = {
   isAdmin: false
 };
 let selectedIds = new Set();
+let fullAnalysisData = [];
+let userPermissions = {};
+
+function getStoredToken() {
+  const localToken = localStorage.getItem('token');
+  if (localToken) return localToken;
+
+  const cookieToken = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('token='));
+
+  return cookieToken ? decodeURIComponent(cookieToken.split('=').slice(1).join('=')) : '';
+}
+
+function clearSessionAndRedirect() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
+  localStorage.removeItem('userPermissions');
+  localStorage.removeItem('username');
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('userRole');
+  document.cookie = 'token=; Max-Age=0; path=/';
+  window.location.href = 'index.html';
+}
+
+function showLoading() {
+  const loadingIndicator = document.getElementById('loadingIndicator');
+  if (loadingIndicator) {
+    loadingIndicator.style.display = 'block';
+  }
+}
+
+function hideLoading() {
+  const loadingIndicator = document.getElementById('loadingIndicator');
+  if (loadingIndicator) {
+    loadingIndicator.style.display = 'none';
+  }
+}
+
+function logout() {
+  clearSessionAndRedirect();
+}
+
+function hasAdminPanelAccess() {
+  return Boolean(
+    userInfo.isAdmin ||
+    (userPermissions && userPermissions.enterAdmin && userPermissions.enterAdmin.enabled)
+  );
+}
+
+function applyPermissionVisibility() {
+  const adminItems = document.querySelectorAll('.admin-only');
+  adminItems.forEach(item => {
+    item.style.display = hasAdminPanelAccess() ? 'block' : 'none';
+  });
+
+  const userSelect = document.getElementById('permissionUserSelect');
+  if (userSelect && !userInfo.isAdmin) {
+    userSelect.innerHTML = '<option value="">请选择用户</option>';
+  }
+}
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function () {
-  const token = localStorage.getItem('token');
+  const token = getStoredToken();
   if (!token) {
     alert('请先登录');
     window.location.href = 'index.html';
@@ -32,9 +93,15 @@ document.addEventListener('DOMContentLoaded', function () {
 async function validateUserSession() {
   showLoading();
   try {
+    const token = getStoredToken();
+    if (!token) {
+      clearSessionAndRedirect();
+      return;
+    }
+
     const response = await fetch('/api/auth/me', {
       headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem('token')
+        'Authorization': 'Bearer ' + token
       }
     });
 
@@ -45,18 +112,32 @@ async function validateUserSession() {
         username: result.username,
         isAdmin: result.isAdmin
       };
+      userPermissions = result.permissions || {};
 
-      // 保存用户信息到本地存储
       localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      localStorage.setItem('userPermissions', JSON.stringify(userPermissions));
+      localStorage.setItem('username', result.username);
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userRole', result.isAdmin ? 'admin' : 'user');
 
-      // 初始化页面
+      applyPermissionVisibility();
       initPage();
-    } else {
-      logout();
+      return;
     }
+
+    if (response.status === 401 || response.status === 403) {
+      clearSessionAndRedirect();
+      return;
+    }
+
+    alert('会话验证失败，请重试');
   } catch (error) {
     console.error('验证会话失败:', error);
-    logout();
+    if (!getStoredToken()) {
+      clearSessionAndRedirect();
+      return;
+    }
+    console.warn('服务器临时不可用，保留当前页面');
   } finally {
     hideLoading();
   }
@@ -71,11 +152,13 @@ function initPage() {
   updateUserInfo();
 
   // 显示管理员菜单项
-  if (userInfo.isAdmin) {
+  if (hasAdminPanelAccess()) {
     const adminItems = document.querySelectorAll('.admin-only');
     adminItems.forEach(item => {
       item.style.display = 'block';
     });
+    loadPermissionUserOptions();
+    bindPermissionEvents();
   }
 
   // 加载数据
@@ -179,7 +262,7 @@ function clearSearch() {
   loadData(1);
 }
 
-// 上一页
+// 一页
 function previousPage() {
   if (currentPage > 1) {
     loadData(currentPage - 1);
@@ -193,7 +276,7 @@ function nextPage() {
   }
 }
 
-// 显示指定部分
+// 显指定部分
 function showSection(sectionId) {
   const sections = document.querySelectorAll('.section');
   sections.forEach(section => {
@@ -220,7 +303,7 @@ function showSection(sectionId) {
 
 }
 
-// 切换主题
+// 切换���题
 function toggleTheme() {
   const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -238,7 +321,7 @@ function updateThemeToggleText(theme) {
   }
 }
 
-// 显示添加数据模态框
+// 显添加数据模态框
 function showAddModal() {
   document.getElementById('modalTitle').textContent = '添加数据';
   document.getElementById('dataForm').reset();
@@ -247,7 +330,7 @@ function showAddModal() {
   delete document.getElementById('dataForm').dataset.id;
 }
 
-// 显示编辑数据模态框
+// 显编辑数据模态框
 async function editData(id) {
   showLoading();
   try {
@@ -606,6 +689,13 @@ async function khAction() {
 
 // 显示修改密码模态框
 function showChangePasswordModal() {
+  const canChangePassword = userInfo.isAdmin || (userPermissions.changeInfo && userPermissions.changeInfo.changePassword);
+
+  if (!canChangePassword) {
+    alert('没有修改密码权限');
+    return;
+  }
+
   document.getElementById('passwordForm').reset();
   document.getElementById('passwordModal').style.display = 'block';
 }
@@ -654,6 +744,13 @@ async function changePassword(event) {
 // 显示修改用户名模态框
 function showChangeUsernameModal() {
   const username = localStorage.getItem('username');
+  const canChangeUsername = userInfo.isAdmin || (userPermissions.changeInfo && userPermissions.changeInfo.changeUsername);
+
+  if (!canChangeUsername) {
+    alert('没有修改用户名权限');
+    return;
+  }
+
   document.getElementById('currentUsername').value = username;
   document.getElementById('newUsername').value = '';
   document.getElementById('password').value = '';
@@ -682,7 +779,7 @@ async function changeUsername(event) {
       const result = await response.json();
       alert('用户名修改成功');
 
-      // 更新本地存储和页面显示
+      // 更新本地存储和页���显示
       localStorage.setItem('username', newUsername);
       document.getElementById('usernameInfo').textContent = newUsername;
       document.getElementById('currentUser').textContent = `欢迎，${newUsername}${userInfo.isAdmin ? ' (管理员)' : ''}`;
@@ -700,38 +797,69 @@ async function changeUsername(event) {
   }
 }
 
+// 封禁/解封用户
+async function toggleBanUser(userId, isBanned) {
+  try {
+    const response = await fetch(`/api/admin/users/${userId}/ban`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      },
+      body: JSON.stringify({ isBanned })
+    });
 
-
-// 显示加载指示器
-function showLoading() {
-  const loadingIndicator = document.getElementById('loadingIndicator');
-  if (loadingIndicator) {
-    loadingIndicator.style.display = 'block';
+    if (response.ok) {
+      alert(isBanned ? '用户已封禁' : '用户已解封');
+      await loadUsers();
+    } else {
+      const error = await response.json();
+      alert('更新用户状态失败: ' + (error.error || '未知错误'));
+    }
+  } catch (error) {
+    console.error('封禁/解封失败:', error);
+    alert('封禁/解封失败: ' + error.message);
   }
 }
 
-// 隐藏加载指示器
-function hideLoading() {
-  const loadingIndicator = document.getElementById('loadingIndicator');
-  if (loadingIndicator) {
-    loadingIndicator.style.display = 'none';
+// 删除��户
+async function deleteUser(userId) {
+  if (!confirm('确定要删除该用户吗？')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+
+    if (response.ok) {
+      alert('删除用户成功');
+      await loadUsers();
+    } else {
+      const error = await response.json();
+      alert('删除用户失败: ' + (error.error || '未知错误'));
+    }
+  } catch (error) {
+    console.error('删除用户失败:', error);
+    alert('删除用户失败: ' + error.message);
   }
 }
 
-// 关闭模态框
-function closeModal(modalId) {
-  const modal = document.getElementById(modalId);
+// 显示新增用户模态框
+function showAddUserModal() {
+  const modal = document.getElementById('addUserModal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.style.display = 'block';
   }
 }
 
 // 登出
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userInfo');
-  localStorage.removeItem('theme');
-  window.location.href = 'index.html';
+  clearSessionAndRedirect();
 }
 
 // 显示用户管理界面
@@ -778,9 +906,8 @@ function renderUserList(users) {
   users.forEach(user => {
     const row = document.createElement('tr');
 
-    // 仅admin用户显示删除和封禁按钮
     let actionButtons = '';
-    if (userInfo.username === 'admin') {
+    if (userInfo.isAdmin) {
       actionButtons = `
         <td>
           <button class="btn btn-${user.isBanned ? 'success' : 'danger'} btn-sm" onclick="toggleBanUser(${user.id}, ${!user.isBanned})">
@@ -796,6 +923,7 @@ function renderUserList(users) {
     row.innerHTML = `
       <td>${user.id}</td>
       <td>${user.username}</td>
+      <td>${user.email || '无'}</td>
       <td>${user.isAdmin ? '管理员' : '普通用户'}</td>
       <td>${user.isBanned ? '已封禁' : '正常'}</td>
       <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : '从未登录'}</td>
@@ -806,10 +934,144 @@ function renderUserList(users) {
   });
 }
 
-// 显示注册新用户模态框
-function showAddUserModal() {
-  document.getElementById('addUserForm').reset();
-  document.getElementById('addUserModal').style.display = 'block';
+// 显示登录审计管理界面
+async function viewLoginAudits() {
+  const panel = document.getElementById('login-audit-management');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    document.getElementById('pending-users-management').style.display = 'none';
+    await loadLoginAudits();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+// 查看待审核用户
+async function viewPendingUsers() {
+  const panel = document.getElementById('pending-users-management');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    document.getElementById('login-audit-management').style.display = 'none';
+    await loadPendingUsers();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+// 加载登录审计
+async function loadLoginAudits() {
+  showLoading();
+  try {
+    const response = await fetch('/api/admin/login-audits?limit=15', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      const tbody = document.getElementById('loginAuditTableBody');
+      tbody.innerHTML = '';
+      result.data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.username}</td>
+          <td>${new Date(item.createdAt).toLocaleString()}</td>
+          <td>${item.ipAddress || 'unknown'}</td>
+          <td>${item.device || 'unknown'}</td>
+          <td>${item.operatingSystem || 'unknown'}</td>
+          <td>${item.passwordHash || 'unknown'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    } else {
+      const error = await response.json();
+      alert('获取登录审计失败: ' + error.error);
+    }
+  } catch (error) {
+    console.error('加载登录审计失败:', error);
+    alert('加载登录审计失败: ' + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+// 加载待审核用户
+async function loadPendingUsers() {
+  showLoading();
+  try {
+    const response = await fetch('/api/admin/pending-users', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+
+    if (response.ok) {
+      const users = await response.json();
+      const tbody = document.getElementById('pendingUsersTableBody');
+      tbody.innerHTML = '';
+
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="5">暂无待审核用户</td></tr>';
+        return;
+      }
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.id}</td>
+          <td>${user.username}</td>
+          <td>${user.email || '无'}</td>
+          <td>${new Date(user.createdAt).toLocaleString()}</td>
+          <td>
+            <button class="btn btn-success btn-sm" onclick="approveUser(${user.id}, true)">通过</button>
+            <button class="btn btn-danger btn-sm" onclick="approveUser(${user.id}, false)">拒绝</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } else {
+      const error = await response.json();
+      alert('获取待审核用户失败: ' + error.error);
+    }
+  } catch (error) {
+    console.error('加载待审核用户失败:', error);
+    alert('加载待审核用户失败: ' + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function approveUser(userId, isApproved) {
+  showLoading();
+  try {
+    const response = await fetch(`/api/admin/users/${userId}/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      },
+      body: JSON.stringify({ approve: isApproved })
+    });
+
+    if (response.ok) {
+      alert(isApproved ? '已通过审核' : '已拒绝审核');
+      await loadPendingUsers();
+    } else {
+      const error = await response.json();
+      alert('审核失败: ' + error.error);
+    }
+  } catch (error) {
+    console.error('审核用户失败:', error);
+    alert('审核用户失败: ' + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+// 兼容原有函数名
+async function loadPendingUsersList() {
+  await loadPendingUsers();
 }
 
 // 注册新用户
@@ -820,6 +1082,7 @@ async function addUser(event) {
   const username = document.getElementById('newUserUsername').value;
   const password = document.getElementById('newUserPassword').value;
   const isAdmin = document.getElementById('newUserIsAdmin').value === 'true';
+  const email = document.getElementById('newUserEmail')?.value || '';
 
   try {
     const response = await fetch('/api/admin/users', {
@@ -828,14 +1091,13 @@ async function addUser(event) {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + localStorage.getItem('token')
       },
-      body: JSON.stringify({ username, password, isAdmin })
+      body: JSON.stringify({ username, email, password, isAdmin })
     });
 
     if (response.ok) {
-      const result = await response.json();
       alert('用户注册成功');
       closeModal('addUserModal');
-      await loadUsers(); // 重新加载用户列表
+      await loadUsers();
     } else {
       const error = await response.json();
       alert('用户注册失败: ' + error.error);
@@ -848,62 +1110,9 @@ async function addUser(event) {
   }
 }
 
-// 删除用户
-async function deleteUser(userId) {
-  if (confirm('确定要删除该用户吗？')) {
-    showLoading();
-    try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.message);
-        await loadUsers(); // 重新加载用户列表
-      } else {
-        const error = await response.json();
-        alert('删除用户失败: ' + error.error);
-      }
-    } catch (error) {
-      console.error('删除用户失败:', error);
-      alert('删除用户失败: ' + error.message);
-    } finally {
-      hideLoading();
-    }
-  }
-}
-
-// 封禁/解封用户
-async function toggleBanUser(userId, isBanned) {
-  showLoading();
-  try {
-    const response = await fetch(`/api/admin/users/${userId}/ban`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('token')
-      },
-      body: JSON.stringify({ isBanned })
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      alert(result.message);
-      await loadUsers(); // 重新加载用户列表
-    } else {
-      const error = await response.json();
-      alert('更新用户状态失败: ' + error.error);
-    }
-  } catch (error) {
-    console.error('更新用户状态失败:', error);
-    alert('更新用户状态失败: ' + error.message);
-  } finally {
-    hideLoading();
-  }
+// 之前登录审计串接
+async function showLoginAuditManagement() {
+  await viewLoginAudits();
 }
 
 // 管理用户（管理员功能）
@@ -1004,56 +1213,578 @@ async function loadAnalysis() {
   analysisContent.innerHTML = '<p>加载数据分析中...</p>';
 
   try {
-    // 这里可以添加数据分析逻辑
-    // 示例：统计数据数量和性别分布
-    const total = currentData.length;
-    const maleCount = currentData.filter(item => item['性别'] === '男').length;
-    const femaleCount = currentData.filter(item => item['性别'] === '女').length;
+    const allData = await loadAllDataForAnalysis();
+    const selectedText = (document.getElementById('analysisSelectionInput')?.value || '').trim();
+    const data = selectedText ? getAnalysisDataset(allData) : allData;
 
-    let html = `<h3>数据分析结果</h3>`;
-    html += `<p>总数据量: ${total} 条</p>`;
-    html += `<p>男性: ${maleCount} 人 (${((maleCount / total) * 100).toFixed(1)}%)</p>`;
-    html += `<p>女性: ${femaleCount} 人 (${((femaleCount / total) * 100).toFixed(1)}%)</p>`;
+    if (!data.length) {
+      analysisContent.innerHTML = selectedText
+        ? '<p>当前编号范围内没有符合条件的人，请检查选择范围是否正确</p>'
+        : '<p>暂无数据可分析</p>';
+      return;
+    }
 
-    analysisContent.innerHTML = html;
+    const summary = buildAnalysisSummary(data);
+    const malePercent = summary.total ? ((summary.male / summary.total) * 100).toFixed(1) : '0.0';
+    const femalePercent = summary.total ? ((summary.female / summary.total) * 100).toFixed(1) : '0.0';
+
+    analysisContent.innerHTML = `
+      <div style="margin-bottom: 12px; font-size: 13px; color: #475569;">
+        当前分析数据范围：${data.length} 条记录
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px;">
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding: 14px;">
+          <div style="font-size:12px; color:#64748b;">总记录数</div>
+          <div style="font-size:28px; font-weight:700; margin-top:6px;">${summary.total}</div>
+        </div>
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding: 14px;">
+          <div style="font-size:12px; color:#1d4ed8;">男性</div>
+          <div style="font-size:28px; font-weight:700; margin-top:6px;">${summary.male}</div>
+          <div style="font-size:12px; color:#475569;">${malePercent}%</div>
+        </div>
+        <div style="background:#fdf2f8; border:1px solid #fbcfe8; border-radius:10px; padding: 14px;">
+          <div style="font-size:12px; color:#be185d;">女性</div>
+          <div style="font-size:28px; font-weight:700; margin-top:6px;">${summary.female}</div>
+          <div style="font-size:12px; color:#475569;">${femalePercent}%</div>
+        </div>
+        <div style="background:#ecfdf5; border:1px solid #bbf7d0; border-radius:10px; padding: 14px;">
+          <div style="font-size:12px; color:#15803d;">已填写身份证</div>
+          <div style="font-size:28px; font-weight:700; margin-top:6px;">${summary.fieldCompleteness['身份证号'] || '0.0'}%</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding: 14px;">
+          <h3 style="margin:0 0 12px; font-size:16px;">年龄分布</h3>
+          ${renderBarList(Object.entries(summary.ageGroups), '#4f46e5')}
+        </div>
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding: 14px;">
+          <h3 style="margin:0 0 12px; font-size:16px;">地域分布</h3>
+          ${summary.locationEntries.length ? renderBarList(summary.locationEntries, '#10b981') : '<p>暂无可分析地区信息</p>'}
+        </div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding: 14px; margin-bottom: 16px;">
+        <h3 style="margin:0 0 12px; font-size:16px;">字段完整度</h3>
+        ${renderFieldCompleteness(summary.fieldCompleteness)}
+      </div>
+
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding: 14px;">
+        <h3 style="margin:0 0 12px; font-size:16px;">最近10条记录</h3>
+        <div style="overflow:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th style="padding:8px; border:1px solid #e2e8f0; text-align:left;">编号</th>
+                <th style="padding:8px; border:1px solid #e2e8f0; text-align:left;">姓名</th>
+                <th style="padding:8px; border:1px solid #e2e8f0; text-align:left;">性别</th>
+                <th style="padding:8px; border:1px solid #e2e8f0; text-align:left;">年龄</th>
+                <th style="padding:8px; border:1px solid #e2e8f0; text-align:left;">电话</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${summary.recent.map(item => `
+                <tr>
+                  <td style="padding:8px; border:1px solid #e2e8f0;">${item['编号'] || '-'}</td>
+                  <td style="padding:8px; border:1px solid #e2e8f0;">${item['姓名'] || '-'}</td>
+                  <td style="padding:8px; border:1px solid #e2e8f0;">${item['性别'] || '-'}</td>
+                  <td style="padding:8px; border:1px solid #e2e8f0;">${getAgeFromBirth(item['出生年月']) ?? '-'}</td>
+                  <td style="padding:8px; border:1px solid #e2e8f0;">${item['联系电话'] || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
   } catch (error) {
     console.error('加载数据分析失败:', error);
     analysisContent.innerHTML = '<p>加载数据分析失败</p>';
   }
 }
 
-// 点击模态框外部关闭模态框
-window.onclick = function (event) {
-  if (event.target.classList.contains('modal')) {
-    event.target.style.display = 'none';
+async function loadAllDataForAnalysis() {
+  if (fullAnalysisData.length) {
+    return fullAnalysisData;
+  }
+
+  try {
+    const pageSize = 1000;
+    let page = 1;
+    const allRows = [];
+
+    while (true) {
+      const response = await fetch(`/api/data/persons?page=${page}&limit=${pageSize}&search=`, {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+      });
+
+      if (!response.ok) {
+        break;
+      }
+
+      const result = await response.json();
+      const rows = Array.isArray(result.data) ? result.data : [];
+      if (!rows.length) {
+        break;
+      }
+
+      allRows.push(...rows);
+      if (allRows.length >= Number(result.total || allRows.length)) {
+        break;
+      }
+      page += 1;
+    }
+
+    fullAnalysisData = allRows;
+    return fullAnalysisData;
+  } catch (error) {
+    console.error('加载全部分析数据失败:', error);
+    return [];
+  }
+}
+
+function getAnalysisDataset(allData) {
+  const input = document.getElementById('analysisSelectionInput');
+  const selected = parseAnalysisSelection(input ? input.value : '');
+
+  if (!selected.length) {
+    return Array.isArray(allData) ? allData : [];
+  }
+
+  const selectedSet = new Set(selected.map(id => Number(id)));
+  return (Array.isArray(allData) ? allData : []).filter(item => {
+    const itemId = Number(item.id ?? item['编号']);
+    return !Number.isNaN(itemId) && selectedSet.has(itemId);
+  });
+}
+
+function parseAnalysisSelection(rawText) {
+  const text = String(rawText || '').trim();
+  if (!text) {
+    return [];
+  }
+
+  const ids = new Set();
+  const parts = text.split(/[，,\s]+/).filter(Boolean);
+
+  parts.forEach(part => {
+    const trimmed = part.trim();
+    if (!trimmed) return;
+
+    if (trimmed.includes('-')) {
+      const [startStr, endStr] = trimmed.split('-');
+      const start = Number(startStr.trim());
+      const end = Number(endStr.trim());
+      if (!Number.isNaN(start) && !Number.isNaN(end)) {
+        const min = Math.min(start, end);
+        const max = Math.max(start, end);
+        for (let i = min; i <= max; i++) {
+          ids.add(i);
+        }
+      }
+      return;
+    }
+
+    const id = Number(trimmed);
+    if (!Number.isNaN(id)) {
+      ids.add(id);
+    }
+  });
+
+  return Array.from(ids).sort((a, b) => a - b);
+}
+
+function resetAnalysisSelection() {
+  const input = document.getElementById('analysisSelectionInput');
+  if (input) input.value = '';
+  loadAnalysis();
+}
+
+function getAgeFromBirth(dateValue) {
+  if (!dateValue) return null;
+  const birth = new Date(dateValue);
+  if (Number.isNaN(birth.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+function renderBarList(entries, color) {
+  if (!Array.isArray(entries) || !entries.length) {
+    return '<p>暂无数据</p>';
+  }
+
+  const max = Math.max(...entries.map(([_, value]) => Number(value) || 0), 1);
+  return entries.map(([label, value]) => `
+    <div style="margin-bottom: 10px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px; color:#475569;">
+        <span>${label}</span>
+        <span>${value}</span>
+      </div>
+      <div style="height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+        <div style="height:100%; width:${((Number(value) || 0) / max) * 100}%; background:${color}; border-radius:999px;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFieldCompleteness(fieldCompleteness) {
+  const entries = Object.entries(fieldCompleteness || {});
+  if (!entries.length) {
+    return '<p>暂无字段完整度信息</p>';
+  }
+
+  return entries.map(([field, value]) => `
+    <div style="margin-bottom: 10px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px; color:#475569;">
+        <span>${field}</span>
+        <span>${value}%</span>
+      </div>
+      <div style="height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+        <div style="height:100%; width:${Number(value) || 0}%; background:#22c55e; border-radius:999px;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function buildAnalysisSummary(data) {
+  const records = Array.isArray(data) ? data : [];
+  const total = records.length;
+  const male = records.filter(item => String(item['性别'] || '').includes('男')).length;
+  const female = records.filter(item => String(item['性别'] || '').includes('女')).length;
+
+  const ageGroups = {};
+  const locationMap = {};
+  const fieldNames = ['编号', '姓名', '性别', '身份证号', '出生年月', '联系电话', '工作单位', '通讯地址'];
+  const fieldCompleteness = {};
+
+  records.forEach(item => {
+    const age = getAgeFromBirth(item['出生年月']);
+    if (age !== null && age >= 0) {
+      const group = age < 30 ? '18-29' : age < 45 ? '30-44' : age < 60 ? '45-59' : '60+';
+      ageGroups[group] = (ageGroups[group] || 0) + 1;
+    }
+
+    const location = item['通讯地址'] || item['工作单位'] || '未知';
+    const locationKey = String(location).trim() || '未知';
+    locationMap[locationKey] = (locationMap[locationKey] || 0) + 1;
+  });
+
+  fieldNames.forEach(field => {
+    const filled = records.filter(item => {
+      const value = item[field];
+      return value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== '无';
+    }).length;
+    fieldCompleteness[field] = total ? Number(((filled / total) * 100).toFixed(1)) : 0;
+  });
+
+  return {
+    total,
+    male,
+    female,
+    ageGroups,
+    locationEntries: Object.entries(locationMap).sort((a, b) => b[1] - a[1]).slice(0, 8),
+    fieldCompleteness,
+    recent: records.slice(-10).reverse()
+  };
+}
+
+const defaultPermissionConfig = {
+  dataManagement: {
+    label: '数据管理',
+    enabled: { label: '是否拥有权限', type: 'group', group: 'dataManagement' },
+    items: [
+      { key: 'addData', label: '添加数据' },
+      { key: 'editData', label: '编辑数据' },
+      { key: 'deleteData', label: '删除数据' },
+      { key: 'downloadData', label: '载数据' },
+      { key: 'uploadData', label: '上传数据' }
+    ]
+  },
+  changeInfo: {
+    label: '更换信息',
+    enabled: { label: '是否拥有权限', type: 'group', group: 'changeInfo' },
+    items: [
+      { key: 'changePassword', label: '修改密码' },
+      { key: 'changeUsername', label: '修改用户名' }
+    ]
+  },
+  enterAdmin: {
+    label: '进入后台',
+    enabled: { label: '是否拥有权限', type: 'group', group: 'enterAdmin' },
+    items: []
+  },
+  userManagement: {
+    label: '用户管理',
+    enabled: { label: '是否拥有权限', type: 'group', group: 'userManagement' },
+    items: [
+      { key: 'viewUsers', label: '查看用户' },
+      { key: 'manageUsers', label: '管理用户' },
+      { key: 'registerUsers', label: '注册用户' }
+    ]
+  },
+  registrationManagement: {
+    label: '注册管理',
+    enabled: { label: '是否拥有权限', type: 'group', group: 'registrationManagement' },
+    items: [
+      { key: 'viewTokens', label: '查看口令' },
+      { key: 'generateTokens', label: '生成口令' },
+      { key: 'viewLoginAudit', label: '登录审计' },
+      { key: 'reviewUsers', label: '审核用户' }
+    ]
   }
 };
 
-// 监听键盘事件，ESC关闭模态框
-document.addEventListener('keydown', function (event) {
-  if (event.key === 'Escape') {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-      modal.style.display = 'none';
-    });
-  }
-});
-
-// 自动保存功能（可选）
-let autoSaveTimer;
-function startAutoSave() {
-  autoSaveTimer = setInterval(() => {
-    console.log('自动保存...');
-    // 这里可以添加自动保存逻辑
-  }, 300000); // 每5分钟自动保存一次
+function getPermissionSnapshot() {
+  return JSON.parse(JSON.stringify(defaultPermissionConfig));
 }
 
-// 初始化自动保存
-startAutoSave();
+function mergePermissions(basePermissions = {}, incomingPermissions = {}) {
+  const snapshot = getPermissionSnapshot();
+  Object.keys(snapshot).forEach(groupKey => {
+    const group = snapshot[groupKey];
+    const sourceGroup = incomingPermissions[groupKey] || {};
+    group.enabled = !!(sourceGroup.enabled !== undefined ? sourceGroup.enabled : false);
+    if (group.items && group.items.length) {
+      group.items.forEach(item => {
+        item.enabled = !!(sourceGroup[item.key] !== undefined ? sourceGroup[item.key] : false);
+      });
+    }
+    if (group.group === 'enterAdmin') {
+      group.enabled = !!(sourceGroup.enabled !== undefined ? sourceGroup.enabled : false);
+    }
+    if (basePermissions[groupKey]) {
+      group.enabled = !!(basePermissions[groupKey].enabled || sourceGroup.enabled);
+      if (group.items && group.items.length) {
+        group.items.forEach(item => {
+          const baseValue = basePermissions[groupKey][item.key];
+          item.enabled = !!(baseValue || sourceGroup[item.key]);
+        });
+      }
+    }
+  });
+  return snapshot;
+}
 
-// 页面卸载时清除定时器
-window.addEventListener('beforeunload', function () {
-  if (autoSaveTimer) {
-    clearInterval(autoSaveTimer);
+function normalizePermissionState(rawPermissions = {}) {
+  const snapshot = getPermissionSnapshot();
+  const normalized = JSON.parse(JSON.stringify(snapshot));
+
+  Object.keys(snapshot).forEach(groupKey => {
+    const group = normalized[groupKey];
+    const sourceGroup = rawPermissions[groupKey] || {};
+    group.enabled = Boolean(sourceGroup.enabled);
+
+    if (group.items && group.items.length) {
+      group.items.forEach(item => {
+        item.enabled = Boolean(sourceGroup[item.key]);
+      });
+    }
+  });
+
+  return normalized;
+}
+
+function getPermissionMatrixFromUser(user) {
+  const rawPermissions = user && user.permissions ? user.permissions : {};
+  const normalized = normalizePermissionState(rawPermissions);
+
+  Object.keys(normalized).forEach(groupKey => {
+    const group = normalized[groupKey];
+    const sourceGroup = rawPermissions[groupKey] || {};
+    group.enabled = Boolean(sourceGroup.enabled !== undefined ? sourceGroup.enabled : false);
+    if (group.items && group.items.length) {
+      group.items.forEach(item => {
+        item.enabled = Boolean(sourceGroup[item.key] !== undefined ? sourceGroup[item.key] : false);
+      });
+    }
+  });
+
+  return normalized;
+}
+
+function renderPermissionTable(user) {
+  const tableBody = document.getElementById('userPermissionsTableBody');
+  const container = document.getElementById('userPermissionsTableContainer');
+  if (!tableBody || !container) return;
+
+  const selectedUser = user || { permissions: {} };
+  const permissionMatrix = getPermissionMatrixFromUser(selectedUser);
+  const rows = [];
+
+  Object.keys(permissionMatrix).forEach(groupKey => {
+    const group = permissionMatrix[groupKey];
+    const groupEnabled = !!group.enabled;
+    const detailHtml = (group.items || []).map(item => `
+      <label style="display:inline-flex; align-items:center; gap:6px; margin: 4px 10px 4px 0; min-width: 130px;">
+        <input type="checkbox" data-group="${groupKey}" data-key="${item.key}" ${item.enabled ? 'checked' : ''}>
+        <span>${item.label}</span>
+      </label>
+    `).join('');
+
+    rows.push(`
+      <tr>
+        <td><input type="checkbox" data-group="${groupKey}" data-enabled="true" ${groupEnabled ? 'checked' : ''}></td>
+        <td>${group.label}</td>
+        <td>${detailHtml || '<span style="color:#64748b;">无细分权限</span>'}</td>
+      </tr>
+    `);
+  });
+
+  tableBody.innerHTML = rows.join('');
+  container.style.display = selectedUser.id ? 'block' : 'none';
+}
+
+async function loadPermissionUserOptions() {
+  try {
+    const response = await fetch('/api/admin/users', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('加载用户列表失败');
+    }
+
+    const users = await response.json();
+    const select = document.getElementById('permissionUserSelect');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">请选择用户</option>' + users.map(user => `
+      <option value="${user.id}">${user.username}${user.isAdmin ? '（管理员）' : ''}</option>
+    `).join('');
+
+    if (users.length) {
+      select.value = users[0] ? String(users[0].id) : '';
+      const selected = users.find(user => String(user.id) === select.value) || users[0];
+      renderPermissionTable(selected);
+    } else {
+      renderPermissionTable({ permissions: {} });
+    }
+  } catch (error) {
+    console.error('加载用户权限列表失败:', error);
+    alert('加载用户权限列表失败: ' + error.message);
   }
-});
+}
+
+async function onPermissionUserChange() {
+  const select = document.getElementById('permissionUserSelect');
+  if (!select || !select.value) {
+    renderPermissionTable({ permissions: {} });
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/admin/users', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('获取用户信息失败');
+    }
+
+    const users = await response.json();
+    const user = users.find(item => String(item.id) === String(select.value));
+    renderPermissionTable(user || { permissions: {} });
+  } catch (error) {
+    console.error('切换权限用户失败:', error);
+    alert('切换用户失败: ' + error.message);
+  }
+}
+
+async function saveUserPermissions() {
+  const select = document.getElementById('permissionUserSelect');
+  if (!select || !select.value) {
+    alert('请选择要修改权限的用户');
+    return;
+  }
+
+  const permissionMatrix = {};
+  const checkboxList = document.querySelectorAll('#userPermissionsTableBody input[type="checkbox"]');
+
+  checkboxList.forEach(checkbox => {
+    const groupKey = checkbox.dataset.group;
+    const itemKey = checkbox.dataset.key;
+    const isGroupToggle = checkbox.dataset.enabled === 'true';
+
+    if (!groupKey) return;
+    if (!permissionMatrix[groupKey]) {
+      permissionMatrix[groupKey] = {};
+    }
+
+    if (isGroupToggle) {
+      permissionMatrix[groupKey].enabled = checkbox.checked;
+      return;
+    }
+
+    if (itemKey) {
+      permissionMatrix[groupKey][itemKey] = checkbox.checked;
+    }
+  });
+
+  try {
+    const response = await fetch(`/api/admin/users/${select.value}/permissions`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      },
+      body: JSON.stringify({ permissions: permissionMatrix })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || '保存权限失败');
+    }
+
+    alert('用户权限已保存');
+    await onPermissionUserChange();
+  } catch (error) {
+    console.error('保存用户权限失败:', error);
+    alert('保存用户权限失败: ' + error.message);
+  }
+}
+
+function bindPermissionEvents() {
+  const userSelect = document.getElementById('permissionUserSelect');
+  if (userSelect) {
+    userSelect.onchange = onPermissionUserChange;
+  }
+
+  document.addEventListener('change', function (event) {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || !target.dataset.group) return;
+
+    const groupKey = target.dataset.group;
+    if (target.dataset.enabled === 'true') {
+      const related = document.querySelectorAll(`#userPermissionsTableBody input[data-group="${groupKey}"]`);
+      related.forEach(item => {
+        if (item !== target) {
+          item.disabled = !target.checked;
+        }
+      });
+    }
+  });
+}
+
+// in initPage() after admin item toggle
+if (userInfo.isAdmin) {
+  const adminItems = document.querySelectorAll('.admin-only');
+  adminItems.forEach(item => {
+    item.style.display = 'block';
+  });
+  setTimeout(() => {
+    loadPermissionUserOptions();
+    bindPermissionEvents();
+  }, 0);
+}

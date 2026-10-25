@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
 const Person = require('../models/Person');
-const { auth } = require('../middlewares/auth');
+const { auth, permissionGuard } = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -61,7 +61,7 @@ router.get('/persons', auth, async (req, res) => {
 });
 
 // 添加单条数据
-router.post('/persons', auth, async (req, res) => {
+router.post('/persons', auth, permissionGuard('dataManagement', 'addData'), async (req, res) => {
   try {
     const person = await Person.create(req.body);
     res.status(201).json(person);
@@ -71,7 +71,7 @@ router.post('/persons', auth, async (req, res) => {
 });
 
 // 获取单个数据
-router.get('/persons/:id', auth, async (req, res) => {
+router.get('/persons/:id', auth, permissionGuard('dataManagement', 'editData'), async (req, res) => {
   try {
     const person = await Person.findByPk(req.params.id);
     if (!person) {
@@ -85,7 +85,7 @@ router.get('/persons/:id', auth, async (req, res) => {
 });
 
 // 更新数据
-router.put('/persons/:id', auth, async (req, res) => {
+router.put('/persons/:id', auth, permissionGuard('dataManagement', 'editData'), async (req, res) => {
   try {
     const person = await Person.findByPk(req.params.id);
     if (!person) {
@@ -100,7 +100,7 @@ router.put('/persons/:id', auth, async (req, res) => {
 });
 
 // 删除单条数据
-router.delete('/persons/:id', auth, async (req, res) => {
+router.delete('/persons/:id', auth, permissionGuard('dataManagement', 'deleteData'), async (req, res) => {
   try {
     const person = await Person.findByPk(req.params.id);
     if (!person) {
@@ -115,7 +115,7 @@ router.delete('/persons/:id', auth, async (req, res) => {
 });
 
 // 批量删除数据
-router.delete('/persons', auth, async (req, res) => {
+router.delete('/persons', auth, permissionGuard('dataManagement', 'deleteData'), async (req, res) => {
   try {
     const { ids } = req.body;
     if (!ids || !Array.isArray(ids)) {
@@ -130,7 +130,7 @@ router.delete('/persons', auth, async (req, res) => {
 });
 
 // 导入数据
-router.post('/import', auth, upload.single('file'), async (req, res) => {
+router.post('/import', auth, permissionGuard('dataManagement', 'uploadData'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请选择要导入的文件' });
@@ -335,7 +335,7 @@ router.post('/kh', auth, async (req, res) => {
     const { data } = req.body;
 
     // 这里实现KH功能的逻辑，根据实际需求调整
-    // 示例：将数据存储到文件
+    // 示例：��数据存储到文件
     const khFilePath = path.join(__dirname, '../../public/output/kh.txt');
     const dir = path.dirname(khFilePath);
     if (!fs.existsSync(dir)) {

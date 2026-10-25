@@ -1,46 +1,45 @@
-#include <bits/stdc++.h>
-using namespace std;
-using ll = long long;
+#include <cstdio>
+#include <cstring>
+#include <iostream>
 
-void countUpTo(ll n, vector<ll>& cnt) {
-	cnt.assign(10, 0);
-	if (n <= 0) return;
-	for (ll factor = 1; factor <= n; factor *= 10) {
-		ll lower = n % factor;
-		ll cur = (n / factor) % 10;
-		ll higher = n / (factor * 10);
-		for (int d = 0; d <= 9; ++d) {
-			if (d == 0) {
-				if (higher == 0) continue;
-				if (cur == 0) cnt[0] += (higher - 1) * factor + lower + 1;
-				else cnt[0] += higher * factor;
-			} else {
-				if (cur < d) cnt[d] += higher * factor;
-				else if (cur == d) cnt[d] += higher * factor + lower + 1;
-				else cnt[d] += (higher + 1) * factor;
-			}
-		}
-	}
-}
+using namespace std;
+
+// 定义结构体存储地毯信息
+struct Carpet {
+    int a, b, g, k; // 左下角坐标(a,b) 和右上角坐标(g,k)
+};
+
+const int N = 10005;
+Carpet carpets[N];
+int n, m, t, ans = -1;
 
 int main() {
-	ios::sync_with_stdio(false);
-	cin.tie(nullptr);
+    int x, y;
 
-	long long a, b;
-	while (cin >> a >> b) {
-		if (a == 0 && b == 0) break;
-		if (a > b) swap(a, b);
-		vector<ll> cntB(10), cntA1(10);
-		countUpTo(b, cntB);
-		countUpTo(a - 1, cntA1);
-		for (int i = 0; i <= 9; ++i) {
-			ll ans = cntB[i] - cntA1[i];
-			if (i) cout << ans;
-			else cout << ans; // keep same formatting
-			if (i != 9) cout << ' ';
-		}
-		cout << '\n';
-	}
-	return 0;
+    // 读取地毯数量
+    scanf("%d", &n);
+
+    // 读取每张地毯的信息
+    for (int i = 1; i <= n; i++) {
+        scanf("%d%d%d%d", &carpets[i].a, &carpets[i].b,&carpets[i].g, &carpets[i].k);
+    }
+
+    // 读取查询点坐标
+    scanf("%d%d", &x, &y);
+
+    // 从后往前遍历，找到最上面覆盖该点的地毯
+    for (int i = n; i >= 1; i--) {
+        // 判断点是否在某个地毯范围内
+        // x >= a && x <= g && y >= b && y <= k
+        if (x >= carpets[i].a && x <= carpets[i].g && 
+            y >= carpets[i].b && y <= carpets[i].k) {
+            ans = i;  // 找到最上面的地毯编号
+            break;    // 因为是逆序遍历，第一个满足条件的就是最上面的
+        }
+    }
+
+    // 输出结果
+    printf("%d\n", ans);
+
+    return 0;
 }

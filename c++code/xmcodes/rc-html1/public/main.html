@@ -110,7 +110,9 @@
                 <div id="data-analysis" class="section" style="display: none;">
                     <h2>数据分析</h2>
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="loadAnalysis()">刷新分析</button>
+                        <input type="text" id="analysisSelectionInput" placeholder="如：1,2,3 或 1-3" style="min-width: 220px; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px;">
+                        <button class="btn btn-primary" onclick="loadAnalysis()">分析所选</button>
+                        <button class="btn btn-secondary" onclick="resetAnalysisSelection()">重置</button>
                     </div>
                     <div id="analysisContent">
                         <p>数据分析内容将在这里显示...</p>
@@ -131,9 +133,52 @@
                             <button class="btn btn-success" onclick="generateRegistrationToken()">生成新口令</button>
                         </div>
                         <div class="admin-section">
+                            <h3>登录审计</h3>
+                            <button class="btn btn-info" onclick="viewLoginAudits()">查看登录记录</button>
+                        </div>
+                        <div class="admin-section">
+                            <h3>待审核用户</h3>
+                            <button class="btn btn-warning" onclick="viewPendingUsers()">查看待审核</button>
+                        </div>
+                        <div class="admin-section">
                             <h3>系统维护</h3>
                             <button class="btn btn-info" onclick="backupSystem()">备份系统</button>
                             <button class="btn btn-warning" onclick="viewLogs()">查看日志</button>
+                        </div>
+                    </div>
+                    <div id="login-audit-management" style="display: none; margin-top: 20px;">
+                        <h3>最近15次登录记录</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>账户</th>
+                                        <th>时间</th>
+                                        <th>IP</th>
+                                        <th>设备</th>
+                                        <th>系统</th>
+                                        <th>登录密码（哈希后）</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="loginAuditTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="pending-users-management" style="display: none; margin-top: 20px;">
+                        <h3>待审核用户</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>用户名</th>
+                                        <th>邮箱</th>
+                                        <th>注册时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingUsersTableBody"></tbody>
+                            </table>
                         </div>
                     </div>
                     <!-- 注册口令管理内容 -->
@@ -162,6 +207,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>用户名</th>
+                                        <th>邮箱</th>
                                         <th>角色</th>
                                         <th>状态</th>
                                         <th>最后登录</th>
@@ -177,7 +223,31 @@
                 </div>
                 <div id="user-permissions" class="section admin-only" style="display: none;">
                     <h2>管理用户权限</h2>
-                    <p>用户权限管理功能正在开发中...</p>
+                    <div class="user-permission-panel" style="margin-bottom: 16px;">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <label for="permissionUserSelect" style="font-weight: 600;">选择用户：</label>
+                            <select id="permissionUserSelect" style="min-width: 220px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                <option value="">请选择用户</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="loadPermissionUserOptions()">刷新列表</button>
+                            <button class="btn btn-success" onclick="saveUserPermissions()">保存权限</button>
+                        </div>
+                    </div>
+
+                    <div id="userPermissionsTableContainer" style="display: none;">
+                        <div class="table-container">
+                            <table class="data-table" style="min-width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 110px;">是否拥有权限</th>
+                                        <th style="min-width: 140px;">权限名称</th>
+                                        <th>权限细节</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userPermissionsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -360,6 +430,10 @@
                 <button class="btn btn-close" onclick="closeModal('addUserModal')">×</button>
             </div>
             <form id="addUserForm" onsubmit="addUser(event)">
+                <div class="form-group">
+                    <label for="newUserEmail">邮箱</label>
+                    <input type="email" id="newUserEmail" required>
+                </div>
                 <div class="form-group">
                     <label for="newUserUsername">用户名</label>
                     <input type="text" id="newUserUsername" required>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API开放平台 - CloudAPI</title>
+    <meta
+      name="description"
+      content="API开放平台模板，适合展示开放接口、开发者文档、SDK、价格和控制台入口。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="container nav">
+          <div class="brand">
+            <span class="brand-mark">C</span>
+            <span>CloudAPI</span>
+          </div>
+
+          <nav class="main-nav">
+            <a href="#overview">概览</a>
+            <a href="#products">能力</a>
+            <a href="#docs">文档</a>
+            <a href="#pricing">价格</a>
+            <a href="#faq">FAQ</a>
+          </nav>
+
+          <div class="nav-actions">
+            <button class="btn btn-ghost">登录</button>
+            <button class="btn btn-primary">开发者控制台</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" id="overview">
+          <div class="container hero-grid">
+            <div class="hero-copy">
+              <span class="eyebrow">面向开发者的智能接入平台</span>
+              <h1>一站式接入，构建更强的数字能力</h1>
+              <p>
+                CloudAPI 为企业和开发者提供安全稳定的开放接口服务，统一认证、统一监控、统一文档，
+                让每一次接入更快、更稳、更省心。
+              </p>
+
+              <div class="hero-actions">
+                <button class="btn btn-primary">立即体验</button>
+                <button class="btn btn-secondary">查看文档</button>
+              </div>
+
+              <div class="hero-meta">
+                <div>
+                  <strong>1,200+</strong>
+                  <span>接入企业</span>
+                </div>
+                <div>
+                  <strong>99.99%</strong>
+                  <span>服务稳定性</span>
+                </div>
+                <div>
+                  <strong>24/7</strong>
+                  <span>技术支持</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-panel">
+              <div class="panel-card">
+                <div class="panel-header">
+                  <span class="status-dot"></span>
+                  <span>服务状态：正常</span>
+                </div>
+
+                <div class="metric-grid">
+                  <div class="metric-box">
+                    <div class="metric-label">请求量</div>
+                    <div class="metric-value">2.4M</div>
+                    <div class="metric-trend up">+18.2%</div>
+                  </div>
+                  <div class="metric-box">
+                    <div class="metric-label">成功率</div>
+                    <div class="metric-value">99.97%</div>
+                    <div class="metric-trend up">+0.21%</div>
+                  </div>
+                </div>
+
+                <div class="api-preview">
+                  <div class="api-line">
+                    <span class="method">GET</span>
+                    <span class="path">/v1/ai/chat</span>
+                  </div>
+                  <div class="api-line">
+                    <span class="method post">POST</span>
+                    <span class="path">/v1/ocr/recognize</span>
+                  </div>
+                  <div class="api-line">
+                    <span class="method put">PUT</span>
+                    <span class="path">/v1/workflow/configs</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="features section" id="products">
+          <div class="container">
+            <div class="section-head">
+              <span class="eyebrow">开放能力</span>
+              <h2>覆盖业务场景的 API 能力集合</h2>
+            </div>
+
+            <div class="card-grid three-columns">
+              <article class="feature-card">
+                <div class="icon-wrap icon-blue">AI</div>
+                <h3>AI 能力开放</h3>
+                <p>文本生成、对话、知识问答和内容审核等能力快速接入，支持多种模型。</p>
+              </article>
+
+              <article class="feature-card">
+                <div class="icon-wrap icon-purple">OCR</div>
+                <h3>图像识别</h3>
+                <p>文档识别、身份证识别、票据处理、图片理解，高效完成业务自动化。</p>
+              </article>
+
+              <article class="feature-card">
+                <div class="icon-wrap icon-green">DATA</div>
+                <h3>数据服务</h3>
+                <p>企业数据同步、对象存储、事件回调和分析接口，适应多种业务系统集成。</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="docs section" id="docs">
+          <div class="container docs-grid">
+            <div class="doc-text">
+              <span class="eyebrow">开发者文档</span>
+              <h2>从创建应用到调用上线，只需 3 步</h2>
+              <ul class="step-list">
+                <li>
+                  <span>01</span>
+                  <div>
+                    <h3>创建应用</h3>
+                    <p>在控制台创建应用并获取 AppKey 与 SecretKey。</p>
+                  </div>
+                </li>
+                <li>
+                  <span>02</span>
+                  <div>
+                    <h3>调用接口</h3>
+                    <p>使用 SDK 或 HTTP 请求方式发起 API 调用。</p>
+                  </div>
+                </li>
+                <li>
+                  <span>03</span>
+                  <div>
+                    <h3>监控运维</h3>
+                    <p>查看日志、余额、限额和调用趋势，实时保障服务质量。</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="code-panel">
+              <div class="code-header">
+                <span>Example Request</span>
+                <span class="chip">cURL</span>
+              </div>
+              <pre><code>curl --request POST \
+  --url https://api.cloudapi.com/v1/ai/chat \
+  --header "Authorization: Bearer {token}" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "model": "gpt-4o-mini",
+    "messages": [{"role": "user", "content": "你好，帮我写一段企业介绍"}]
+  }'</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="endpoints section">
+          <div class="container">
+            <div class="section-head inline-head">
+              <div>
+                <span class="eyebrow">API 列表</span>
+                <h2>热门接口一览</h2>
+              </div>
+              <input id="apiSearch" type="text" class="search-box" placeholder="搜索接口名称/路径" />
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>接口名称</th>
+                    <th>方法</th>
+                    <th>路径</th>
+                    <th>状态</th>
+                    <th>描述</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>文本生成</td>
+                    <td><span class="tag method-post">POST</span></td>
+                    <td>/v1/ai/chat</td>
+                    <td><span class="status success">在线</span></td>
+                    <td>支持对话生成、问答与内容扩写。</td>
+                  </tr>
+                  <tr>
+                    <td>图片识别</td>
+                    <td><span class="tag method-post">POST</span></td>
+                    <td>/v1/ocr/recognize</td>
+                    <td><span class="status success">在线</span></td>
+                    <td>对图片中的文字、票据、证件进行识别。</td>
+                  </tr>
+                  <tr>
+                    <td>工作流配置</td>
+                    <td><span class="tag method-put">PUT</span></td>
+                    <td>/v1/workflow/configs</td>
+                    <td><span class="status success">在线</span></td>
+                    <td>创建和更新流程编排配置。</td>
+                  </tr>
+                  <tr>
+                    <td>消息回调</td>
+                    <td><span class="tag method-get">GET</span></td>
+                    <td>/v1/callback/logs</td>
+                    <td><span class="status warning">维护</span></td>
+                    <td>查询事件回调记录和异常消息。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="pricing section" id="pricing">
+          <div class="container">
+            <div class="section-head">
+              <span class="eyebrow">价格方案</span>
+              <h2>按需选用，灵活扩展</h2>
+            </div>
+
+            <div class="pricing-grid">
+              <article class="price-card">
+                <h3>开发者版</h3>
+                <div class="price">¥0</div>
+                <ul>
+                  <li>1个应用</li>
+                  <li>免费调用额度</li>
+                  <li>基础SDK</li>
+                </ul>
+                <button class="btn btn-secondary">免费试用</button>
+              </article>
+
+              <article class="price-card featured">
+                <div class="badge">热门</div>
+                <h3>专业版</h3>
+                <div class="price">¥499<span>/月</span></div>
+                <ul>
+                  <li>无限制应用</li>
+                  <li>优先调用资源</li>
+                  <li>高级监控与告警</li>
+                </ul>
+                <button class="btn btn-primary">立即购买</button>
+              </article>
+
+              <article class="price-card">
+                <h3>企业版</h3>
+                <div class="price">定制</div>
+                <ul>
+                  <li>专属私有网络</li>
+                  <li>企业级权限控制</li>
+                  <li>7×24 技术支持</li>
+                </ul>
+                <button class="btn btn-secondary">联系商务</button>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="faq section" id="faq">
+          <div class="container faq-layout">
+            <div>
+              <span class="eyebrow">常见问题</span>
+              <h2>开发中遇到的问题，通常都能在这里解决</h2>
+            </div>
+
+            <div class="faq-list">
+              <details open>
+                <summary>如何获取 API Key？</summary>
+                <p>登录控制台，进入“应用管理”→“创建应用”，即可获取 AppKey 与 SecretKey。</p>
+              </details>
+              <details>
+                <summary>是否支持多语言 SDK？</summary>
+                <p>支持 Python、JavaScript、Java、Go 等常见语言 SDK，并提供 HTTP 接口示例。</p>
+              </details>
+              <details>
+                <summary>接口调用量有限制吗？</summary>
+                <p>不同套餐支持不同的调用额度，支持按需升级以满足业务扩展需求。</p>
+              </details>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="container footer-inner">
+          <div>
+            <div class="brand">
+              <span class="brand-mark">C</span>
+              <span>CloudAPI</span>
+            </div>
+            <p>让每一次接入都更安全、更高效。</p>
+          </div>
+
+          <div class="footer-links">
+            <a href="#overview">平台概览</a>
+            <a href="#products">开放能力</a>
+            <a href="#docs">开发文档</a>
+            <a href="#pricing">价格方案</a>
+          </div>
+
+          <div class="footer-meta">
+            <p>© 2026 CloudAPI</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+

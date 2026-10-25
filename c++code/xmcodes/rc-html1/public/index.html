@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户登录系统</title>
     <link rel="stylesheet" href="style1.css">
-    <script src="http://localhost:8080/static/js/saobbyCaptchaV3.js" async></script>
 </head>
 
 <body>
@@ -36,10 +35,6 @@
                     <input type="password" id="password" placeholder="请输入密码">
                     <div class="error-message" id="passwordError">密码长度至少为6个字符</div>
                 </div>
-                <div class="form-group">
-                    <label>人机验证</label>
-                    <div id="loginCaptcha"></div>
-                </div>
                 <div class="remember-forgot">
                     <div class="remember-me">
                         <input type="checkbox" id="remember">
@@ -63,6 +58,11 @@
             <h2>用户注册</h2>
             <form id="registerForm">
                 <div class="form-group">
+                    <label for="regEmail">邮箱</label>
+                    <input type="email" id="regEmail" placeholder="请输入邮箱地址（管理员口令注册可为空）">
+                    <div class="error-message" id="regEmailError">请输入有效的邮箱地址</div>
+                </div>
+                <div class="form-group">
                     <label for="regUsername">用户名</label>
                     <input type="text" id="regUsername" placeholder="请输入用户名">
                     <div class="error-message" id="regUsernameError">请输入有效的用户名</div>
@@ -82,9 +82,11 @@
                     <input type="text" id="regToken" placeholder="请输入管理员提供的注册口令">
                     <div class="error-message" id="regTokenError">请输入有效的管理员口令</div>
                 </div>
-                <div class="form-group">
-                    <label>人机验证</label>
-                    <div id="registerCaptcha"></div>
+                <div class="form-group checkbox-group">
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="useEmailVerification">
+                        <span>使用邮箱验证（无需管理员口令，提交后需管理员审核）</span>
+                    </label>
                 </div>
                 <button type="submit" class="register-btn">注册</button>
                 <div class="loading" id="registerLoading">
@@ -124,14 +126,12 @@
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
 
-        // 清空状态
         document.getElementById('usernameError').style.display = 'none';
         document.getElementById('passwordError').style.display = 'none';
         document.getElementById('loginSuccessMessage').style.display = 'none';
         document.getElementById('loginFailureMessage').style.display = 'none';
         document.getElementById('loginLoading').style.display = 'none';
 
-        // 前端字段校验
         let isValid = true;
         if (username === '') {
             document.getElementById('usernameError').textContent = '请输入用户名或邮箱';
@@ -153,20 +153,12 @@
         }
         if (!isValid) return;
 
-        // 取人机验证 token
-        const captchaToken = await getSaobbyToken(loginCaptchaInstance, 'login');
-        if (!captchaToken) {
-            document.getElementById('loginFailureMessage').textContent = '请先完成人机验证';
-            document.getElementById('loginFailureMessage').style.display = 'block';
-            return;
-        }
-
         document.getElementById('loginLoading').style.display = 'block';
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, captchaToken })
+                body: JSON.stringify({ username, password })
             });
             const result = await response.json();
             document.getElementById('loginLoading').style.display = 'none';
@@ -182,7 +174,6 @@
             } else {
                 document.getElementById('loginFailureMessage').textContent = result.error || '登录失败，请检查用户名和密码';
                 document.getElementById('loginFailureMessage').style.display = 'block';
-                resetSaobbyCaptcha('login');
                 setTimeout(() => {
                     document.getElementById('loginForm').reset();
                     document.getElementById('loginFailureMessage').style.display = 'none';
@@ -193,7 +184,6 @@
             document.getElementById('loginLoading').style.display = 'none';
             document.getElementById('loginFailureMessage').textContent = '网络错误，请重试';
             document.getElementById('loginFailureMessage').style.display = 'block';
-            resetSaobbyCaptcha('login');
             setTimeout(() => {
                 document.getElementById('loginForm').reset();
                 document.getElementById('loginFailureMessage').style.display = 'none';
@@ -206,10 +196,13 @@
         e.preventDefault();
 
         const username = document.getElementById('regUsername').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         const registrationToken = document.getElementById('regToken').value.trim();
+        const useEmailVerification = document.getElementById('useEmailVerification').checked;
 
+        document.getElementById('regEmailError').style.display = 'none';
         document.getElementById('regUsernameError').style.display = 'none';
         document.getElementById('regPasswordError').style.display = 'none';
         document.getElementById('regConfirmPasswordError').style.display = 'none';
@@ -219,6 +212,15 @@
         document.getElementById('registerLoading').style.display = 'none';
 
         let isValid = true;
+        if (useEmailVerification && email === '') {
+            document.getElementById('regEmailError').textContent = '请输入邮箱';
+            document.getElementById('regEmailError').style.display = 'block';
+            isValid = false;
+        } else if (email !== '' && !isValidEmail(email)) {
+            document.getElementById('regEmailError').textContent = '请输入有效的邮箱地址';
+            document.getElementById('regEmailError').style.display = 'block';
+            isValid = false;
+        }
         if (username === '') {
             document.getElementById('regUsernameError').textContent = '请输入用户名';
             document.getElementById('regUsernameError').style.display = 'block';
@@ -246,50 +248,43 @@
             document.getElementById('regConfirmPasswordError').style.display = 'block';
             isValid = false;
         }
-        if (registrationToken === '') {
+        if (!useEmailVerification && registrationToken === '') {
             document.getElementById('regTokenError').textContent = '请输入管理员口令';
             document.getElementById('regTokenError').style.display = 'block';
             isValid = false;
         }
         if (!isValid) return;
 
-        // 取人机验证 token
-        const captchaToken = await getSaobbyToken(registerCaptchaInstance, 'register');
-        if (!captchaToken) {
-            document.getElementById('registerFailureMessage').textContent = '请先完成人机验证';
-            document.getElementById('registerFailureMessage').style.display = 'block';
-            return;
-        }
-
         document.getElementById('registerLoading').style.display = 'block';
         try {
+            const payload = {
+                username,
+                email: email || undefined,
+                password,
+                useEmailVerification,
+                ...(useEmailVerification ? {} : { registrationToken })
+            };
+
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username,
-                    password,
-                    registrationToken,
-                    captchaToken
-                })
+                body: JSON.stringify(payload)
             });
             const result = await response.json();
             document.getElementById('registerLoading').style.display = 'none';
 
             if (response.ok) {
-                document.getElementById('registerSuccessMessage').textContent = '注册成功！';
+                document.getElementById('registerSuccessMessage').textContent = result.message || '注册成功！';
                 document.getElementById('registerSuccessMessage').style.display = 'block';
                 setTimeout(() => {
                     document.getElementById('registerFormContainer').classList.add('hidden');
                     document.getElementById('loginFormContainer').classList.remove('hidden');
                     document.getElementById('registerForm').reset();
-                    resetSaobbyCaptcha('register');
                     document.getElementById('registerSuccessMessage').style.display = 'none';
                 }, 1500);
             } else {
                 document.getElementById('registerFailureMessage').textContent = result.error || '注册失败，请重试';
                 document.getElementById('registerFailureMessage').style.display = 'block';
-                resetSaobbyCaptcha('register');
                 setTimeout(() => {
                     document.getElementById('registerFailureMessage').style.display = 'none';
                 }, 5000);
@@ -299,12 +294,26 @@
             document.getElementById('registerLoading').style.display = 'none';
             document.getElementById('registerFailureMessage').textContent = '网络错误，请重试';
             document.getElementById('registerFailureMessage').style.display = 'block';
-            resetSaobbyCaptcha('register');
             setTimeout(() => {
                 document.getElementById('registerFailureMessage').style.display = 'none';
             }, 5000);
         }
     });
+
+    /* ============ 注册表单邮箱验证开关 ============ */
+    const emailVerificationToggle = document.getElementById('useEmailVerification');
+    const regTokenInput = document.getElementById('regToken');
+    function syncEmailVerificationState() {
+        const checked = emailVerificationToggle.checked;
+        regTokenInput.disabled = checked;
+        regTokenInput.value = checked ? '' : regTokenInput.value;
+        if (checked) {
+            document.getElementById('regTokenError').style.display = 'none';
+        }
+    }
+    emailVerificationToggle.addEventListener('change', syncEmailVerificationState);
+    syncEmailVerificationState();
+
 
     /* ============ 邮箱格式校验 ============ */
     function isValidEmail(email) {
@@ -322,6 +331,11 @@
     document.getElementById('password').addEventListener('input', function () {
         if (this.value.length >= 6) {
             document.getElementById('passwordError').style.display = 'none';
+        }
+    });
+    document.getElementById('regEmail').addEventListener('input', function () {
+        if (this.value.trim() !== '' && isValidEmail(this.value.trim())) {
+            document.getElementById('regEmailError').style.display = 'none';
         }
     });
     document.getElementById('regUsername').addEventListener('input', function () {
@@ -349,131 +363,6 @@
         document.documentElement.style.setProperty('--offset-multiplier-left', left);
         document.documentElement.style.setProperty('--offset-multiplier-right', right);
     }
-
-    /* ============ SaobbyCaptcha 初始化与 token 获取 ============ */
-
-    let loginCaptchaInstance = null;
-    let registerCaptchaInstance = null;
-
-    // token 缓存，避免 verify() 被重复调用（token 可能一次性消费）
-    let loginCaptchaToken = '';
-    let registerCaptchaToken = '';
-
-    const CAPTCHA_OPTIONS = {
-        apiBaseUrl: 'http://localhost:8080',
-        showTrigger: true
-    };
-
-    /**
-     * 轮询等待 SaobbyCaptchaV3 脚本加载完成
-     */
-    function waitForCaptcha(maxTries = 30, interval = 200) {
-        return new Promise((resolve, reject) => {
-            let tries = 0;
-            const timer = setInterval(() => {
-                if (typeof SaobbyCaptchaV3 !== 'undefined') {
-                    clearInterval(timer);
-                    resolve();
-                } else if (++tries >= maxTries) {
-                    clearInterval(timer);
-                    reject(new Error('SaobbyCaptchaV3 脚本加载超时'));
-                }
-            }, interval);
-        });
-    }
-
-    /**
-     * 初始化两个验证组件实例
-     */
-    async function initCaptcha() {
-        try {
-            await waitForCaptcha();
-        } catch (e) {
-            console.error(e);
-            return;
-        }
-
-        loginCaptchaInstance = new SaobbyCaptchaV3({
-            ...CAPTCHA_OPTIONS,
-            container: document.getElementById('loginCaptcha')
-        });
-
-        registerCaptchaInstance = new SaobbyCaptchaV3({
-            ...CAPTCHA_OPTIONS,
-            container: document.getElementById('registerCaptcha')
-        });
-
-        console.log('SaobbyCaptchaV3 初始化完成');
-    }
-
-    /**
-     * 取人机验证 token。
-     * SaobbyCaptchaV3 的 verify() 返回结构为：
-     *   { data: { token: "xxxx" }, msg: "OK", retcode: 0 }
-     * 所以真正的 token 在 res.data.token。
-     */
-    async function getSaobbyToken(instance, cacheKey) {
-        // 已缓存就直接返回
-        if (cacheKey === 'login' && loginCaptchaToken) return loginCaptchaToken;
-        if (cacheKey === 'register' && registerCaptchaToken) return registerCaptchaToken;
-
-        if (!instance) return '';
-
-        try {
-            const res = await instance.verify();
-
-            let token = '';
-            if (res && typeof res === 'object') {
-                if (res.retcode !== undefined && res.retcode !== 0) {
-                    console.warn('[captcha] verify 返回非成功状态:', res);
-                    return '';
-                }
-                token = (res.data && res.data.token) || '';
-            } else if (typeof res === 'string') {
-                token = res;
-            }
-
-            if (token) {
-                if (cacheKey === 'login') loginCaptchaToken = token;
-                if (cacheKey === 'register') registerCaptchaToken = token;
-            }
-            return token;
-        } catch (e) {
-            console.warn('[captcha] verify 被取消或失败:', e);
-            return '';
-        }
-    }
-
-    /**
-     * 重置验证组件与缓存 token
-     */
-    function resetSaobbyCaptcha(which) {
-        if (which === 'login') {
-            loginCaptchaToken = '';
-            if (loginCaptchaInstance && typeof loginCaptchaInstance.destroy === 'function') {
-                try { loginCaptchaInstance.destroy(); } catch (e) {}
-            }
-            const container = document.getElementById('loginCaptcha');
-            container.innerHTML = '';
-            loginCaptchaInstance = new SaobbyCaptchaV3({
-                ...CAPTCHA_OPTIONS,
-                container
-            });
-        } else if (which === 'register') {
-            registerCaptchaToken = '';
-            if (registerCaptchaInstance && typeof registerCaptchaInstance.destroy === 'function') {
-                try { registerCaptchaInstance.destroy(); } catch (e) {}
-            }
-            const container = document.getElementById('registerCaptcha');
-            container.innerHTML = '';
-            registerCaptchaInstance = new SaobbyCaptchaV3({
-                ...CAPTCHA_OPTIONS,
-                container
-            });
-        }
-    }
-
-    window.addEventListener('load', initCaptcha);
 </script>
 </body>
 
