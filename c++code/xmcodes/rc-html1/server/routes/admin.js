@@ -26,9 +26,19 @@ const normalizePermissions = (incomingPermissions = {}) => {
   return merged;
 };
 
+const requirePermission = (req, res, groupKey, itemKey, errorMessage = '没有权限访问此资源') => {
+  const { hasPermission } = require('../middlewares/auth');
+  if (!hasPermission(req.user, groupKey, itemKey)) {
+    res.status(403).json({ error: errorMessage });
+    return false;
+  }
+  return true;
+};
+
 // 获取所有用户
 router.get('/users', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'userManagement', 'viewUsers', '没有查看用户权限')) return;
     const users = await User.findAll({ attributes: ['id', 'username', 'email', 'isAdmin', 'isBanned', 'lastLogin', 'createdAt', 'updatedAt', 'approvalStatus', 'emailVerified', 'emailVerificationRequired', 'permissions'] });
     res.json(users);
   } catch (error) {
@@ -38,7 +48,8 @@ router.get('/users', adminAuth, async (req, res) => {
 
 router.put('/users/:id/permissions', adminAuth, async (req, res) => {
   try {
-    const { permissions } = req.body;
+    if (!requirePermission(req, res, 'userManagement', 'manageUsers', '没有管理用户权限')) return;
+    const { permissions, isAdmin } = req.body;
     const user = await User.findByPk(req.params.id);
 
     if (!user) {
@@ -54,9 +65,15 @@ router.put('/users/:id/permissions', adminAuth, async (req, res) => {
     }
 
     const normalizedPermissions = normalizePermissions(permissions || user.permissions || {});
-    await user.update({ permissions: normalizedPermissions });
+    const updates = { permissions: normalizedPermissions };
 
-    res.json({ message: '用户权限已更新', permissions: normalizedPermissions });
+    if (typeof isAdmin === 'boolean') {
+      updates.isAdmin = isAdmin;
+    }
+
+    await user.update(updates);
+
+    res.json({ message: '用户权限已更新', permissions: normalizedPermissions, isAdmin: updates.isAdmin ?? user.isAdmin });
   } catch (error) {
     res.status(500).json({ error: '更新用户权限失败', message: error.message });
   }
@@ -65,6 +82,7 @@ router.put('/users/:id/permissions', adminAuth, async (req, res) => {
 // 创建新用户
 router.post('/users', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'userManagement', 'registerUsers', '没有注册用户权限')) return;
     const { username, email, password, isAdmin } = req.body;
 
     if (!username || !password) {
@@ -91,6 +109,7 @@ router.post('/users', adminAuth, async (req, res) => {
 // 删除用户（仅终极管理员）
 router.delete('/users/:id', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'userManagement', 'manageUsers', '没有管理用户权限')) return;
     const user = await User.findByPk(req.params.id);
 
     if (!user) {
@@ -115,6 +134,7 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
 // 封禁/解封用户（仅终极管理员）
 router.put('/users/:id/ban', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'userManagement', 'manageUsers', '没有管理用户权限')) return;
     const { isBanned } = req.body;
     const user = await User.findByPk(req.params.id);
 
@@ -140,6 +160,7 @@ router.put('/users/:id/ban', adminAuth, async (req, res) => {
 // 获取活动日志
 router.get('/logs', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'userManagement', 'manageUsers', '没有查看日志权限')) return;
     const { page = 1, limit = 100 } = req.query;
     const offset = (page - 1) * limit;
 
@@ -157,6 +178,7 @@ router.get('/logs', adminAuth, async (req, res) => {
 
 router.get('/pending-users', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'registrationManagement', 'reviewUsers', '没有审核用户权限')) return;
     const users = await User.findAll({
       where: { approvalStatus: 'pending' },
       attributes: ['id', 'username', 'email', 'createdAt', 'approvalStatus']
@@ -169,6 +191,7 @@ router.get('/pending-users', adminAuth, async (req, res) => {
 
 router.post('/users/:id/approve', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'registrationManagement', 'reviewUsers', '没有审核用户权限')) return;
     const { approve } = req.body;
     const user = await User.findByPk(req.params.id);
     if (!user) {
@@ -190,6 +213,7 @@ router.post('/users/:id/approve', adminAuth, async (req, res) => {
 
 router.get('/login-audits', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'registrationManagement', 'viewLoginAudit', '没有查看登录审计权限')) return;
     const { page = 1, limit = 15 } = req.query;
     const offset = (page - 1) * limit;
 
@@ -208,6 +232,7 @@ router.get('/login-audits', adminAuth, async (req, res) => {
 // 服务器状态
 router.get('/status', adminAuth, (req, res) => {
   try {
+    if (!requirePermission(req, res, 'userManagement', 'manageUsers', '没有查看服务器状态权限')) return;
     const status = {
       uptime: process.uptime(),
       timestamp: Date.now(),
@@ -224,6 +249,7 @@ router.get('/status', adminAuth, (req, res) => {
 // 获取当前注册口令
 router.get('/registration-token', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'registrationManagement', 'viewTokens', '没有查看注册口令权限')) return;
     const token = await RegistrationToken.findOne({
       where: {
         expiresAt: {
@@ -241,6 +267,7 @@ router.get('/registration-token', adminAuth, async (req, res) => {
 // 生成新的注册口令
 router.post('/registration-token', adminAuth, async (req, res) => {
   try {
+    if (!requirePermission(req, res, 'registrationManagement', 'generateTokens', '没有生成注册口令权限')) return;
     await RegistrationToken.destroy({ truncate: true });
 
     const token = crypto.randomInt(100000, 999999).toString();

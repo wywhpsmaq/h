@@ -129,8 +129,8 @@
                         </div>
                         <div class="admin-section">
                             <h3>注册口令管理</h3>
-                            <button class="btn btn-primary" onclick="loadRegistrationToken()">查看当前口令</button>
-                            <button class="btn btn-success" onclick="generateRegistrationToken()">生成新口令</button>
+                            <button id="viewRegistrationTokenBtn" class="btn btn-primary" onclick="loadRegistrationToken()">查看当前口令</button>
+                            <button id="generateRegistrationTokenBtn" class="btn btn-success" onclick="generateRegistrationToken()">生成新口令</button>
                         </div>
                         <div class="admin-section">
                             <h3>登录审计</h3>
@@ -231,6 +231,11 @@
                             </select>
                             <button class="btn btn-primary" onclick="loadPermissionUserOptions()">刷新列表</button>
                             <button class="btn btn-success" onclick="saveUserPermissions()">保存权限</button>
+                            <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; margin-left: 8px;">
+                                <input type="checkbox" id="adminRoleToggle" disabled>
+                                是否为管理员
+                            </label>
+
                         </div>
                     </div>
 

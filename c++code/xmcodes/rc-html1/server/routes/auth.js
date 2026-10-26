@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ error: '账户已被封禁' });
     }
 
-    const isAdminAccount = Boolean(user.isAdmin || user.username === 'admin' || isEffectiveAdmin(user));
+    const isAdminAccount = Boolean(user.isAdmin || user.username === 'admin');
 
     if (!isAdminAccount && user.emailVerificationRequired && !user.emailVerified) {
       return res.status(403).json({ error: '该账户邮箱尚未通过审核，暂时无法登录' });
@@ -279,7 +279,7 @@ router.post('/register', async (req, res) => {
     });
 
     res.status(201).json({
-      message: shouldUseEmailVerification ? '注册已提交，等待管理员审核通过后方可登录' : '用户注册成功',
+      message: shouldUseEmailVerification ? '注册已提交，等待��理员审核通过后方可登录' : '用户注册成功',
       user: { id: user.id, username: user.username, email: user.email, isAdmin: user.isAdmin, approvalStatus: user.approvalStatus }
     });
   } catch (error) {

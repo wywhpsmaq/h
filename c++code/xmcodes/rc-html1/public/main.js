@@ -52,6 +52,32 @@ function logout() {
   clearSessionAndRedirect();
 }
 
+function canUseFeature(featureKey) {
+  if (!featureKey) return false;
+  if (userInfo.isAdmin) return true;
+  return Boolean(
+    userPermissions &&
+    userPermissions[featureKey] &&
+    (userPermissions[featureKey].enabled || Object.values(userPermissions[featureKey]).some(v => v === true))
+  );
+}
+
+function canUseAction(groupKey, itemKey) {
+  if (!groupKey) return false;
+  if (userInfo.isAdmin) return true;
+  if (!userPermissions || !userPermissions[groupKey]) return false;
+  return Boolean(userPermissions[groupKey][itemKey] === true || userPermissions[groupKey].enabled === true);
+}
+
+function requirePermission(groupKey, itemKey, message = '没有权限执行此操作') {
+  if (userInfo.isAdmin) return true;
+  if (!canUseAction(groupKey, itemKey)) {
+    alert(message);
+    return false;
+  }
+  return true;
+}
+
 function hasAdminPanelAccess() {
   return Boolean(
     userInfo.isAdmin ||
@@ -68,16 +94,17 @@ function applyPermissionVisibility() {
   const userSelect = document.getElementById('permissionUserSelect');
   if (userSelect) {
     userSelect.innerHTML = '<option value="">请选择用户</option>';
-    if (!userInfo.isAdmin) {
-      userSelect.disabled = true;
-    } else {
-      userSelect.disabled = false;
-    }
+    userSelect.disabled = !userInfo.isAdmin;
   }
 
   const saveBtn = document.querySelector('#user-permissions .btn-success');
   if (saveBtn) {
     saveBtn.disabled = !userInfo.isAdmin;
+  }
+
+  const adminToggle = document.getElementById('adminRoleToggle');
+  if (adminToggle) {
+    adminToggle.disabled = !userInfo.isAdmin;
   }
 }
 
@@ -178,7 +205,7 @@ function initPage() {
 // 更新用户信息页面
 function updateUserInfo() {
   document.getElementById('usernameInfo').textContent = userInfo.username;
-  document.getElementById('roleInfo').textContent = userInfo.isAdmin ? '管理员' : '普通用户';
+  document.getElementById('roleInfo').textContent = userInfo.isAdmin ? '管理��' : '普通用户';
   document.getElementById('lastLoginInfo').textContent = new Date().toLocaleString();
 }
 
@@ -433,7 +460,7 @@ async function saveData(event) {
     }
   } catch (error) {
     console.error('保存数据失败:', error);
-    alert('保存数据失败: ' + error.message);
+    alert('���存数据失败: ' + error.message);
   } finally {
     hideLoading();
   }
@@ -546,7 +573,7 @@ function importData() {
   document.getElementById('fileInput').click();
 }
 
-// 处理文件导入
+// ��理文件导入
 async function handleFileImport(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -663,7 +690,7 @@ async function saveToServer() {
     }
   } catch (error) {
     console.error('保存到服务器失败:', error);
-    alert('保存到服务器失败: ' + error.message);
+    alert('保存到服务��失败: ' + error.message);
   } finally {
     hideLoading();
   }
@@ -809,6 +836,9 @@ async function changeUsername(event) {
 
 // 封禁/解封用户
 async function toggleBanUser(userId, isBanned) {
+  if (!requirePermission('userManagement', 'manageUsers', '没有管理用户权限')) {
+    return;
+  }
   try {
     const response = await fetch(`/api/admin/users/${userId}/ban`, {
       method: 'PUT',
@@ -834,6 +864,9 @@ async function toggleBanUser(userId, isBanned) {
 
 // 删除用户
 async function deleteUser(userId) {
+  if (!requirePermission('userManagement', 'manageUsers', '没有管理用户权限')) {
+    return;
+  }
   if (!confirm('确定要删除该用户吗？')) {
     return;
   }
@@ -861,6 +894,9 @@ async function deleteUser(userId) {
 
 // 显示新增用户模态框
 function showAddUserModal() {
+  if (!requirePermission('userManagement', 'registerUsers', '没有注册用户权限')) {
+    return;
+  }
   const modal = document.getElementById('addUserModal');
   if (modal) {
     modal.style.display = 'block';
@@ -874,6 +910,9 @@ function logout() {
 
 // 显示用户管理界面
 async function showUserManagement() {
+  if (!requirePermission('userManagement', 'viewUsers', '没有查看用户权限')) {
+    return;
+  }
   const userManagementDiv = document.getElementById('user-management');
   if (userManagementDiv.style.display === 'none') {
     userManagementDiv.style.display = 'block';
@@ -885,6 +924,9 @@ async function showUserManagement() {
 
 // 加载用户列表
 async function loadUsers() {
+  if (!requirePermission('userManagement', 'viewUsers', '没有查看用户权限')) {
+    return;
+  }
   showLoading();
   try {
     const response = await fetch('/api/admin/users', {
@@ -944,8 +986,11 @@ function renderUserList(users) {
   });
 }
 
-// 显示登录审计管理界面
+// 显示登录审���管理界面
 async function viewLoginAudits() {
+  if (!requirePermission('registrationManagement', 'viewLoginAudit', '没有查看登录审计权限')) {
+    return;
+  }
   const panel = document.getElementById('login-audit-management');
   if (panel.style.display === 'none') {
     panel.style.display = 'block';
@@ -958,6 +1003,9 @@ async function viewLoginAudits() {
 
 // 查看待审核用户
 async function viewPendingUsers() {
+  if (!requirePermission('registrationManagement', 'reviewUsers', '没有审核用户权限')) {
+    return;
+  }
   const panel = document.getElementById('pending-users-management');
   if (panel.style.display === 'none') {
     panel.style.display = 'block';
@@ -970,6 +1018,9 @@ async function viewPendingUsers() {
 
 // 加载登录审计
 async function loadLoginAudits() {
+  if (!requirePermission('registrationManagement', 'viewLoginAudit', '没有查看登录审计权限')) {
+    return;
+  }
   showLoading();
   try {
     const response = await fetch('/api/admin/login-audits?limit=15', {
@@ -1008,6 +1059,9 @@ async function loadLoginAudits() {
 
 // 加载待审核用户
 async function loadPendingUsers() {
+  if (!requirePermission('registrationManagement', 'reviewUsers', '没有审核用户权限')) {
+    return;
+  }
   showLoading();
   try {
     const response = await fetch('/api/admin/pending-users', {
@@ -1053,6 +1107,9 @@ async function loadPendingUsers() {
 }
 
 async function approveUser(userId, isApproved) {
+  if (!requirePermission('registrationManagement', 'reviewUsers', '没有审核用户权限')) {
+    return;
+  }
   showLoading();
   try {
     const response = await fetch(`/api/admin/users/${userId}/approve`, {
@@ -1073,7 +1130,7 @@ async function approveUser(userId, isApproved) {
     }
   } catch (error) {
     console.error('审核用户失败:', error);
-    alert('审核用户失败: ' + error.message);
+    alert('审核用户失: ' + error.message);
   } finally {
     hideLoading();
   }
@@ -1086,6 +1143,9 @@ async function loadPendingUsersList() {
 
 // 注册新用户
 async function addUser(event) {
+  if (!requirePermission('userManagement', 'registerUsers', '没有注册用户权限')) {
+    return;
+  }
   event.preventDefault();
   showLoading();
 
@@ -1120,11 +1180,6 @@ async function addUser(event) {
   }
 }
 
-// 之前登录审计串接
-async function showLoginAuditManagement() {
-  await viewLoginAudits();
-}
-
 // 管理用户（管理员功能）
 function manageUsers() {
   showUserManagement();
@@ -1132,6 +1187,9 @@ function manageUsers() {
 
 // 加载当前注册口令
 async function loadRegistrationToken() {
+  if (!requirePermission('registrationManagement', 'viewTokens', '没有查看注册口令权限')) {
+    return;
+  }
   showLoading();
   try {
     const response = await fetch('/api/admin/registration-token', {
@@ -1153,16 +1211,14 @@ async function loadRegistrationToken() {
         document.getElementById('tokenExpiry').value = '无';
       }
 
-      // 显示注册口令管理内容
       tokenManagementDiv.style.display = 'block';
-      // 隐藏用户管理内容
       document.getElementById('user-management').style.display = 'none';
     } else {
       const error = await response.json();
       alert('获取注册口令失败: ' + error.error);
     }
   } catch (error) {
-    console.error('加载注册口令失败:', error);
+    console.error('加载注册口令失:', error);
     alert('加载注册口令失败: ' + error.message);
   } finally {
     hideLoading();
@@ -1171,6 +1227,9 @@ async function loadRegistrationToken() {
 
 // 生成新的注册口令
 async function generateRegistrationToken() {
+  if (!requirePermission('registrationManagement', 'generateTokens', '没有生成注册口令权限')) {
+    return;
+  }
   if (confirm('确定要生成新的注册口令吗？这将使之前的口令失效。')) {
     showLoading();
     try {
@@ -1187,10 +1246,7 @@ async function generateRegistrationToken() {
 
         document.getElementById('currentToken').value = token.token;
         document.getElementById('tokenExpiry').value = new Date(token.expiresAt).toLocaleString();
-
-        // 显示注册口令管理内容
         document.getElementById('registration-token-management').style.display = 'block';
-        // 隐藏用户管理内容
         document.getElementById('user-management').style.display = 'none';
 
         alert('新的注册口令已生成！');
@@ -1690,6 +1746,11 @@ async function onPermissionUserChange() {
   const select = document.getElementById('permissionUserSelect');
   if (!select || !select.value) {
     renderPermissionTable({ permissions: {} });
+    const adminToggle = document.getElementById('adminRoleToggle');
+    if (adminToggle) {
+      adminToggle.checked = false;
+      adminToggle.disabled = true;
+    }
     return;
   }
 
@@ -1706,6 +1767,11 @@ async function onPermissionUserChange() {
 
     const users = await response.json();
     const user = users.find(item => String(item.id) === String(select.value));
+    const adminToggle = document.getElementById('adminRoleToggle');
+    if (adminToggle) {
+      adminToggle.checked = !!(user && user.isAdmin);
+      adminToggle.disabled = !userInfo.isAdmin;
+    }
     renderPermissionTable(user || { permissions: {} });
   } catch (error) {
     console.error('切换权限用户失败:', error);
@@ -1725,6 +1791,7 @@ async function saveUserPermissions() {
     return;
   }
 
+  const adminToggle = document.getElementById('adminRoleToggle');
   const permissionMatrix = {};
   const checkboxList = document.querySelectorAll('#userPermissionsTableBody input[type="checkbox"]');
 
@@ -1755,7 +1822,10 @@ async function saveUserPermissions() {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + localStorage.getItem('token')
       },
-      body: JSON.stringify({ permissions: permissionMatrix })
+      body: JSON.stringify({
+        permissions: permissionMatrix,
+        isAdmin: adminToggle ? adminToggle.checked : undefined
+      })
     });
 
     if (!response.ok) {

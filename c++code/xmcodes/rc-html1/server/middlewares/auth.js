@@ -11,24 +11,9 @@ const getGroupPermissionState = (group = {}) => {
   });
 };
 
-const normalizeUserPermissions = (rawPermissions = {}, user = null) => {
+const normalizeUserPermissions = (rawPermissions = {}) => {
   const basePermissions = require('../models/User').defaultPermissions;
   const result = JSON.parse(JSON.stringify(basePermissions));
-
-  if (user && user.isAdmin) {
-    Object.keys(result).forEach(groupKey => {
-      const group = result[groupKey];
-      if (group && typeof group === 'object') {
-        Object.keys(group).forEach(key => {
-          if (typeof group[key] === 'boolean') {
-            group[key] = true;
-          }
-        });
-        group.enabled = true;
-      }
-    });
-    return result;
-  }
 
   Object.keys(basePermissions).forEach(groupKey => {
     const sourceGroup = rawPermissions[groupKey] || {};
@@ -83,8 +68,9 @@ const isCustomPermissionProfile = (permissions = {}) => {
 
 const hasPermission = (user, groupKey, itemKey = null) => {
   if (!user) return false;
+  if (user.isAdmin) return true;
 
-  const permissions = normalizeUserPermissions(user.permissions || {}, user);
+  const permissions = normalizeUserPermissions(user.permissions || {});
   const group = permissions[groupKey] || {};
 
   if (itemKey) {
@@ -97,7 +83,8 @@ const hasPermission = (user, groupKey, itemKey = null) => {
 const isEffectiveAdmin = (user) => {
   if (!user) return false;
   if (user.isAdmin) return true;
-  const permissions = normalizeUserPermissions(user.permissions || {}, user);
+
+  const permissions = normalizeUserPermissions(user.permissions || {});
   return Boolean(
     permissions.enterAdmin &&
     (permissions.enterAdmin.enabled || getGroupPermissionState(permissions.enterAdmin))
@@ -148,7 +135,7 @@ const auth = async (req, res, next) => {
 const adminAuth = async (req, res, next) => {
   try {
     await auth(req, res, () => {});
-    if (!req.user.isAdmin && !hasPermission(req.user, 'enterAdmin')) {
+    if (!hasPermission(req.user, 'enterAdmin')) {
       throw new Error('没有管理员权限');
     }
     next();
